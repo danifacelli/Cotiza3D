@@ -1,3 +1,4 @@
+
 import type { Quote, Material, Machine, Settings } from './types';
 
 export interface CostBreakdown {
@@ -28,7 +29,9 @@ export function calculateCosts(
     return null;
   }
 
+  // Material cost is based on the cost per KG stored in the material object
   const materialCost = (quote.materialGrams / 1000) * material.cost;
+  
   const machineEnergyCost = (machine.powerConsumption / 1000) * quote.printHours * settings.energyCostPerKwh;
   const machineDepreciationCost = machine.costPerHour * quote.printHours;
   const laborCost = settings.laborCostPerHour * quote.printHours;

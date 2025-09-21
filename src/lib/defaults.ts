@@ -1,3 +1,4 @@
+
 import type { Settings, Material, Machine, Quote } from './types';
 import { nanoid } from 'nanoid';
 
@@ -14,9 +15,8 @@ export const DEFAULT_SETTINGS: Settings = {
 };
 
 export const DEFAULT_MATERIALS: Material[] = [
-  { id: 'pla_default', name: 'PLA Estándar', cost: 20 },
-  { id: 'petg_default', name: 'PETG Estándar', cost: 25 },
-  { id: 'abs_default', name: 'ABS Estándar', cost: 22 },
+  { id: 'pla_default', name: 'PLA Estándar', type: 'PLA', cost: 20 },
+  { id: 'petg_default', name: 'PETG Estándar', type: 'PETG', cost: 25 },
 ];
 
 export const DEFAULT_MACHINES: Machine[] = [
