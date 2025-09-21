@@ -3,7 +3,6 @@ import type { Settings, Material, Machine, Quote } from './types';
 import { nanoid } from 'nanoid';
 
 export const DEFAULT_SETTINGS: Settings = {
-  exchangeRate: 40.0,
   laborCostPerHour: 10,
   energyCostPerKwh: 0.2,
   profitMargin: 50,

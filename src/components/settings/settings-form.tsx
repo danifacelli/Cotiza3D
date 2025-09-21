@@ -21,7 +21,6 @@ export const SettingsSchema = z.object({
   companyContact: z.string().email("Debe ser un email válido"),
   currencySymbol: z.string().min(1, "El símbolo es requerido").max(5),
   currencyCode: z.string().min(3, "Debe ser un código de 3 letras").max(3),
-  exchangeRate: z.coerce.number().min(0, "Debe ser un número positivo"),
   laborCostPerHour: z.coerce.number().min(0, "Debe ser un número positivo"),
   energyCostPerKwh: z.coerce.number().min(0, "Debe ser un número positivo"),
   profitMargin: z.coerce.number().min(0, "Debe ser un número positivo"),
@@ -103,22 +102,6 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                       )}
                     />
                  </div>
-                 <FormField
-                    control={form.control}
-                    name="exchangeRate"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Tipo de Cambio (a Pesos)</FormLabel>
-                        <FormControl>
-                        <Input type="number" step="0.01" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                         1 {defaultValues.currencyCode} = {field.value} Pesos
-                        </FormDescription>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
             </div>
             <div className="space-y-4">
                 <h3 className="text-lg font-medium">Costos y Ganancias</h3>
