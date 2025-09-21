@@ -84,18 +84,29 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       machineId: quote?.machineId || "",
       extraCosts: quote?.extraCosts || [],
       notes: quote?.notes || "",
+      printHours: quote?.printHours ? Math.floor(quote.printHours) : 0,
+      printMinutes: quote?.printHours ? Math.floor((quote.printHours * 60) % 60) : 0,
+      printSeconds: quote?.printHours ? Math.round((quote.printHours * 3600) % 60) : 0,
     },
   })
   
   useEffect(() => {
     if (isMaterialsHydrated && !quote && materials.length > 0) {
-      form.reset({
+       form.reset({
         ...form.getValues(),
-        parts: [{ id: generateId(), materialId: materials[0].id, materialGrams: 0 }]
+        name: quote?.name || "",
+        clientName: quote?.clientName || "",
+        machineId: quote?.machineId || "",
+        extraCosts: quote?.extraCosts || [],
+        notes: quote?.notes || "",
+        printHours: 0,
+        printMinutes: 0,
+        printSeconds: 0,
+        parts: [{ id: generateId(), materialId: materials[0].id, materialGrams: 0 }],
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMaterialsHydrated, materials, quote, form.reset]);
+  }, [isMaterialsHydrated, materials.length, quote]);
   
   useEffect(() => {
     if (quote?.printHours) {
@@ -266,7 +277,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                         <FormItem>
                           <FormLabel className="text-xs text-muted-foreground">Horas</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber || 0)} />
+                            <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
                           </FormControl>
                         </FormItem>
                       )}
@@ -278,7 +289,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                         <FormItem>
                           <FormLabel className="text-xs text-muted-foreground">Minutos</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber || 0)} />
+                            <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
                           </FormControl>
                         </FormItem>
                       )}
@@ -290,7 +301,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                         <FormItem>
                            <FormLabel className="text-xs text-muted-foreground">Segundos</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber || 0)} />
+                            <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
                           </FormControl>
                         </FormItem>
                       )}
@@ -463,5 +474,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    
