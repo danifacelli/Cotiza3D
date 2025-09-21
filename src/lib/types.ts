@@ -21,8 +21,6 @@ export interface Settings {
   iva: number; // percentage
   companyName: string;
   companyContact: string;
-  currencySymbol: string; // e.g., '$'
-  currencyCode: string; // e.g., 'USD'
 }
 
 export interface ExtraCost {

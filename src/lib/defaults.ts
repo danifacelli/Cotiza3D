@@ -9,8 +9,6 @@ export const DEFAULT_SETTINGS: Settings = {
   iva: 22,
   companyName: 'Cotiza3D',
   companyContact: 'tuemail@ejemplo.com',
-  currencySymbol: '$',
-  currencyCode: 'USD',
 };
 
 export const DEFAULT_MATERIALS: Material[] = [

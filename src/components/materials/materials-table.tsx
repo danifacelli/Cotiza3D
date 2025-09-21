@@ -21,10 +21,6 @@ import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency } from "@/lib/utils"
-import { useLocalStorage } from "@/hooks/use-local-storage"
-import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
-import { DEFAULT_SETTINGS } from "@/lib/defaults"
-import type { Settings } from "@/lib/types"
 
 interface MaterialsTableProps {
   materials: (Material & { description?: string })[]
@@ -34,8 +30,6 @@ interface MaterialsTableProps {
 }
 
 export function MaterialsTable({ materials, onEdit, onDelete, isHydrated }: MaterialsTableProps) {
-  const [settings] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
-
   if (!isHydrated) {
     return (
       <div className="space-y-2">
@@ -71,7 +65,7 @@ export function MaterialsTable({ materials, onEdit, onDelete, isHydrated }: Mate
                   <Badge variant="secondary">{material.type}</Badge>
                 </TableCell>
                 <TableCell className="text-right align-top">
-                  {formatCurrency(material.cost, settings.currencyCode, 'es-UY', true)}
+                  {formatCurrency(material.cost, 'USD', 'es-UY', true)}
                 </TableCell>
                 <TableCell className="align-top">
                   <DropdownMenu>

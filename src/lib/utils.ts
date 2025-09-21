@@ -15,7 +15,13 @@ export function formatCurrency(amount: number, currencyCode: string = 'USD', loc
 
   if (useCode) {
     options.currencyDisplay = 'code';
+  } else {
+    // When not using code, force the symbol for USD to be $ instead of locale-specific
+    if (currencyCode === 'USD') {
+        return new Intl.NumberFormat('en-US', options).format(amount);
+    }
   }
+
 
   return new Intl.NumberFormat(locale, options).format(amount);
 }

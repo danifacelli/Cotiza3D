@@ -16,10 +16,6 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import type { Machine } from "@/lib/types"
-import { useLocalStorage } from "@/hooks/use-local-storage"
-import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
-import type { Settings } from "@/lib/types"
-import { DEFAULT_SETTINGS } from "@/lib/defaults"
 import { Search } from "lucide-react"
 import Link from "next/link"
 
@@ -38,8 +34,6 @@ interface MachineFormProps {
 }
 
 export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormProps) {
-  const [settings] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
-
   const form = useForm<MachineFormValues>({
     resolver: zodResolver(MachineSchema),
     defaultValues: {
@@ -78,7 +72,7 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
           name="costPerHour"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Costo de Depreciación por Hora ({settings.currencyCode})</FormLabel>
+              <FormLabel>Costo de Depreciación por Hora (USD)</FormLabel>
               <FormControl>
                 <Input type="number" step="0.01" {...field} />
               </FormControl>

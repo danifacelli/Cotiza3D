@@ -19,8 +19,6 @@ import type { Settings } from "@/lib/types"
 export const SettingsSchema = z.object({
   companyName: z.string().min(1, "El nombre es requerido"),
   companyContact: z.string().email("Debe ser un email válido"),
-  currencySymbol: z.string().min(1, "El símbolo es requerido").max(5),
-  currencyCode: z.string().min(3, "Debe ser un código de 3 letras").max(3),
   laborCostPerHour: z.coerce.number().min(0, "Debe ser un número positivo"),
   energyCostPerKwh: z.coerce.number().min(0, "Debe ser un número positivo"),
   profitMargin: z.coerce.number().min(0, "Debe ser un número positivo"),
@@ -47,7 +45,7 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
-                 <h3 className="text-lg font-medium">Empresa y Moneda</h3>
+                 <h3 className="text-lg font-medium">Empresa</h3>
                 <FormField
                   control={form.control}
                   name="companyName"
@@ -74,34 +72,6 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                     </FormItem>
                   )}
                 />
-                 <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="currencySymbol"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Símbolo Moneda</FormLabel>
-                          <FormControl>
-                            <Input placeholder="$" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="currencyCode"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Código Moneda</FormLabel>
-                          <FormControl>
-                            <Input placeholder="USD" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                 </div>
             </div>
             <div className="space-y-4">
                 <h3 className="text-lg font-medium">Costos y Ganancias</h3>

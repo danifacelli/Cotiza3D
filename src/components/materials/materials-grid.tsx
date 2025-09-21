@@ -17,8 +17,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
@@ -27,10 +25,6 @@ import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency } from "@/lib/utils"
-import { useLocalStorage } from "@/hooks/use-local-storage"
-import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
-import { DEFAULT_SETTINGS } from "@/lib/defaults"
-import type { Settings } from "@/lib/types"
 
 interface MaterialsGridProps {
   materials: (Material & { description?: string })[]
@@ -81,7 +75,6 @@ function MaterialCardActions({ material, onEdit, onDelete }: { material: Materia
 }
 
 export function MaterialsGrid({ materials, onEdit, onDelete, isHydrated }: MaterialsGridProps) {
-  const [settings] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
 
   if (!isHydrated) {
     return (
@@ -137,7 +130,7 @@ export function MaterialsGrid({ materials, onEdit, onDelete, isHydrated }: Mater
           </CardContent>
           <CardFooter>
              <div className="text-lg font-semibold">
-                {formatCurrency(material.cost, settings.currencyCode, 'es-UY', true)}
+                {formatCurrency(material.cost, 'USD', 'es-UY', true)}
                  <span className="text-xs text-muted-foreground font-normal"> / kg</span>
             </div>
           </CardFooter>
