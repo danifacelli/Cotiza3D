@@ -24,12 +24,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Trash2, PlusCircle, FileDown, Copy } from "lucide-react"
+import { Trash2, PlusCircle, FileDown, Copy, Bot } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { calculateCosts, CostBreakdown } from "@/lib/calculations"
 import { CostSummary } from "@/components/quotes/cost-summary"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { formatCurrency } from "@/lib/utils"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const PartSchema = z.object({
   id: z.string(),
@@ -85,13 +87,15 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   
   useEffect(() => {
     if (quote?.printHours) {
-        if (quote.printHours < 1) {
+        if (quote.printHours < 1 && quote.printHours > 0) {
             setTimeUnit("minutes");
             form.setValue("printTime", quote.printHours * 60);
         } else {
             setTimeUnit("hours");
             form.setValue("printTime", quote.printHours);
         }
+    } else {
+        setTimeUnit("minutes");
     }
   }, [quote, form.setValue]);
 
@@ -115,6 +119,21 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     machines,
     settings
   )
+
+  const materialSummary = useMemo(() => {
+    const totalGrams = watchedValues.parts?.reduce((acc, part) => acc + (part.materialGrams || 0), 0) || 0;
+    
+    const totalCost = watchedValues.parts?.reduce((acc, part) => {
+      const material = materials.find(m => m.id === part.materialId);
+      if (material && part.materialGrams > 0) {
+        return acc + (part.materialGrams / 1000) * material.cost;
+      }
+      return acc;
+    }, 0) || 0;
+
+    return { totalGrams, totalCost };
+  }, [watchedValues.parts, materials]);
+
 
   const onSubmit = (data: QuoteFormValues) => {
     const finalPrintHours = timeUnit === 'hours' ? data.printTime : (data.printTime || 0) / 60;
@@ -151,6 +170,14 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       variant: "destructive"
     })
   }
+  
+  const handleAiFill = () => {
+    toast({
+        title: "Funcionalidad no disponible",
+        description: "El autocompletado con IA se implementará en el futuro.",
+        variant: "destructive"
+    });
+  }
 
   return (
     <Form {...form}>
@@ -160,7 +187,12 @@ export function QuoteForm({ quote }: QuoteFormProps) {
             {/* Basic Info Card */}
             <Card>
               <CardHeader>
-                <CardTitle>{quote ? "Editar Presupuesto" : "Nuevo Presupuesto"}</CardTitle>
+                <div className="flex justify-between items-start">
+                    <CardTitle>{quote ? "Editar Presupuesto" : "Nuevo Presupuesto"}</CardTitle>
+                     <Button type="button" variant="outline" size="sm" onClick={handleAiFill}>
+                        <Bot className="mr-2"/> Autocompletar con IA
+                    </Button>
+                </div>
               </CardHeader>
               <CardContent className="grid gap-6">
                 <FormField
@@ -239,7 +271,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                         )}
                         />
                          <RadioGroup
-                            defaultValue={timeUnit}
+                            value={timeUnit}
                             onValueChange={setTimeUnit}
                             className="flex items-center space-x-2"
                         >
@@ -316,6 +348,16 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                         </div>
                     ))}
                     <FormMessage>{form.formState.errors.parts?.root?.message}</FormMessage>
+
+                    {materialSummary.totalGrams > 0 && (
+                        <Alert variant="default" className="mt-4">
+                            <AlertDescription className="flex justify-between items-center text-sm">
+                                <span>Total Gramos: <strong>{materialSummary.totalGrams.toFixed(2)} g</strong></span>
+                                <span>Costo de Material: <strong>{formatCurrency(materialSummary.totalCost, "USD", 'es-UY', true)}</strong></span>
+                            </AlertDescription>
+                        </Alert>
+                    )}
+
                     <Button
                         type="button"
                         variant="outline"
@@ -409,3 +451,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
