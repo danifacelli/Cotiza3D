@@ -15,8 +15,11 @@ export const DEFAULT_SETTINGS: Settings = {
 };
 
 export const DEFAULT_MATERIALS: Material[] = [
-  { id: 'pla_default', name: 'PLA Estándar', type: 'PLA', cost: 20 },
-  { id: 'petg_default', name: 'PETG Estándar', type: 'PETG', cost: 25 },
+  { id: 'pla_default', name: 'PLA Estándar Blanco', type: 'PLA', cost: 20 },
+  { id: 'petg_default', name: 'PETG Estándar Negro', type: 'PETG', cost: 25 },
+  { id: 'abs_default', name: 'ABS Gris', type: 'ABS', cost: 22 },
+  { id: 'tpu_default', name: 'TPU Flexible Rojo', type: 'TPU/TPE', cost: 35 },
+  { id: 'nylon_default', name: 'Nylon Natural', type: 'Nylon', cost: 40 },
 ];
 
 export const DEFAULT_MACHINES: Machine[] = [
