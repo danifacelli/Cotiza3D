@@ -50,7 +50,8 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
   })
   
   const machineName = form.watch("name");
-  const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(machineName || "")}+consumo+de+energia+watts`;
+  const powerConsumptionSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(machineName || "")}+consumo+de+energia+watts`;
+  const depreciationSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(`calcular depreciación impresora 3d ${machineName || ""}`)}`;
 
 
   return (
@@ -84,6 +85,14 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
               <FormDescription>
                 Costo asociado al desgaste y mantenimiento de la máquina por cada hora de uso.
               </FormDescription>
+               {machineName && (
+                 <Button variant="link" size="sm" asChild className="p-0 h-auto mt-2 text-xs">
+                    <Link href={depreciationSearchUrl} target="_blank">
+                        <Search className="mr-1" />
+                        Buscar cómo calcular la depreciación en Google
+                    </Link>
+                </Button>
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -102,7 +111,7 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
               </FormDescription>
                {machineName && (
                  <Button variant="link" size="sm" asChild className="p-0 h-auto mt-2 text-xs">
-                    <Link href={googleSearchUrl} target="_blank">
+                    <Link href={powerConsumptionSearchUrl} target="_blank">
                         <Search className="mr-1" />
                         Buscar consumo de "{machineName}" en Google
                     </Link>
