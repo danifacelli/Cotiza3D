@@ -91,18 +91,23 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   })
   
   useEffect(() => {
+    // Wait until materials are loaded from localStorage
     if (isMaterialsHydrated && !quote && materials.length > 0) {
-      form.reset({
-        name: "",
-        clientName: "",
-        machineId: "",
-        extraCosts: [],
-        notes: "",
-        printHours: 0,
-        printMinutes: 0,
-        printSeconds: 0,
-        parts: [{ id: generateId(), materialId: materials[0].id, materialGrams: 0 }],
-      });
+        // We are creating a new quote, materials are available, and there's no quote data.
+        form.reset({
+          // Keep other default values and only update parts
+          ...form.getValues(),
+          parts: [{ id: generateId(), materialId: materials[0].id, materialGrams: 0 }],
+          // Reset other fields for a clean new form
+          name: "",
+          clientName: "",
+          machineId: "",
+          extraCosts: [],
+          notes: "",
+          printHours: 0,
+          printMinutes: 0,
+          printSeconds: 0,
+        });
     }
   }, [isMaterialsHydrated, quote, materials, form]);
   
@@ -134,7 +139,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   })
 
   const watchedValues = form.watch()
-  const printHoursDecimal = (watchedValues.printHours || 0) + ((watchedValues.printMinutes || 0) / 60) + ((watchedValues.printSeconds || 0) / 3600);
+  const printHoursDecimal = (Number(watchedValues.printHours) || 0) + ((Number(watchedValues.printMinutes) || 0) / 60) + ((Number(watchedValues.printSeconds) || 0) / 3600);
   
   const costBreakdown: CostBreakdown | null = calculateCosts(
     { ...watchedValues, printHours: printHoursDecimal, parts: watchedValues.parts },
@@ -487,3 +492,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
