@@ -55,17 +55,17 @@ export const FILAMENT_TYPES = [
   { 
     value: 'Wood', 
     label: 'Compuesto: Madera',
-    description: 'PLA con fibras de madera: aspecto y olor similar a madera.'
+    description: 'PLA con fibras de madera que le dan un aspecto y olor similar a la madera.'
   },
   { 
     value: 'CarbonFiber', 
     label: 'Compuesto: Fibra de Carbono',
-    description: 'Más rigidez y resistencia, pero abrasivo para la boquilla.'
+    description: 'Añade más rigidez y resistencia al material base (ej. PLA o PETG), pero es abrasivo para la boquilla.'
   },
   { 
     value: 'Metal', 
     label: 'Compuesto: Metal',
-    description: 'Aspecto y peso metálico, pero frágiles (PLA+bronce, PLA+aluminio, etc.).'
+    description: 'Mezcla de PLA con polvo de metal (bronce, aluminio) para un aspecto y peso metálico, aunque suelen ser más frágiles.'
   },
   { value: 'Other', label: 'Otro', description: 'Cualquier otro tipo de filamento no listado.' },
 ];
