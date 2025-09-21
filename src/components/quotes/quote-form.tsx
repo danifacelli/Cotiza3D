@@ -29,7 +29,6 @@ import { useToast } from "@/hooks/use-toast"
 import { calculateCosts, CostBreakdown } from "@/lib/calculations"
 import { CostSummary } from "@/components/quotes/cost-summary"
 import { useState, useEffect, useMemo } from "react"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { formatCurrency } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -44,7 +43,9 @@ const QuoteSchema = z.object({
   clientName: z.string().optional(),
   parts: z.array(PartSchema).min(1, "Debes añadir al menos un material."),
   machineId: z.string().min(1, "Debes seleccionar una máquina."),
-  printTime: z.coerce.number().min(0.1, "El tiempo debe ser mayor a 0."),
+  printHours: z.coerce.number().optional(),
+  printMinutes: z.coerce.number().optional(),
+  printSeconds: z.coerce.number().optional(),
   extraCosts: z.array(
     z.object({
       id: z.string(),
@@ -53,7 +54,11 @@ const QuoteSchema = z.object({
     })
   ).optional(),
   notes: z.string().optional(),
-})
+}).refine(data => (data.printHours || 0) + (data.printMinutes || 0) + (data.printSeconds || 0) > 0, {
+  message: "El tiempo de impresión total debe ser mayor a 0.",
+  path: ["printHours"], // You can point to any of the time fields
+});
+
 
 type QuoteFormValues = z.infer<typeof QuoteSchema>
 
@@ -69,8 +74,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const [machines, _, isMachinesHydrated] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES)
   const [materials, __, isMaterialsHydrated] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS)
   const [settings] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
-  
-  const [timeUnit, setTimeUnit] = useState("minutes");
 
   const form = useForm<QuoteFormValues>({
     resolver: zodResolver(QuoteSchema),
@@ -79,42 +82,32 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       clientName: quote?.clientName || "",
       parts: quote?.parts?.length ? quote.parts : [{ id: generateId(), materialId: "", materialGrams: 0 }],
       machineId: quote?.machineId || "",
-      printTime: quote?.printHours || 0,
       extraCosts: quote?.extraCosts || [],
       notes: quote?.notes || "",
     },
   })
   
-  const defaultFormValues = useMemo(() => ({
-      name: quote?.name || "",
-      clientName: quote?.clientName || "",
-      parts: quote?.parts?.length 
-        ? quote.parts 
-        : [{ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 }],
-      machineId: quote?.machineId || "",
-      printTime: quote?.printHours || 0,
-      extraCosts: quote?.extraCosts || [],
-      notes: quote?.notes || "",
-  }), [quote, materials]);
-
   useEffect(() => {
-    if (isMaterialsHydrated) {
-        form.reset(defaultFormValues);
+    if (isMaterialsHydrated && !quote && materials.length > 0) {
+      form.reset({
+        ...form.getValues(),
+        parts: [{ id: generateId(), materialId: materials[0].id, materialGrams: 0 }]
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMaterialsHydrated, form.reset]);
+  }, [isMaterialsHydrated, materials, quote, form.reset]);
   
   useEffect(() => {
     if (quote?.printHours) {
-        if (quote.printHours < 1 && quote.printHours > 0) {
-            setTimeUnit("minutes");
-            form.setValue("printTime", quote.printHours * 60);
-        } else {
-            setTimeUnit("hours");
-            form.setValue("printTime", quote.printHours);
-        }
-    } else {
-        setTimeUnit("minutes");
+        const totalHours = quote.printHours;
+        const hours = Math.floor(totalHours);
+        const remainingMinutes = (totalHours - hours) * 60;
+        const minutes = Math.floor(remainingMinutes);
+        const seconds = Math.round((remainingMinutes - minutes) * 60);
+
+        form.setValue("printHours", hours);
+        form.setValue("printMinutes", minutes);
+        form.setValue("printSeconds", seconds);
     }
   }, [quote, form.setValue]);
   
@@ -130,10 +123,10 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   })
 
   const watchedValues = form.watch()
-  const printHours = timeUnit === 'hours' ? watchedValues.printTime : (watchedValues.printTime || 0) / 60;
+  const printHoursDecimal = (watchedValues.printHours || 0) + ((watchedValues.printMinutes || 0) / 60) + ((watchedValues.printSeconds || 0) / 3600);
   
   const costBreakdown: CostBreakdown | null = calculateCosts(
-    { ...watchedValues, printHours, parts: watchedValues.parts },
+    { ...watchedValues, printHours: printHoursDecimal, parts: watchedValues.parts },
     materials,
     machines,
     settings
@@ -155,7 +148,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
 
 
   const onSubmit = (data: QuoteFormValues) => {
-    const finalPrintHours = timeUnit === 'hours' ? data.printTime : (data.printTime || 0) / 60;
+    const finalPrintHours = (data.printHours || 0) + ((data.printMinutes || 0) / 60) + ((data.printSeconds || 0) / 3600);
 
     const quoteToSave: Quote = {
       id: quote?.id || generateId(),
@@ -264,35 +257,46 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 />
                 
                 <div className="space-y-2">
-                    <FormLabel>Tiempo de Impresión</FormLabel>
-                    <div className="flex gap-2">
-                        <FormField
-                        control={form.control}
-                        name="printTime"
-                        render={({ field }) => (
-                            <FormItem className="flex-grow">
-                            <FormControl>
-                                <Input type="number" step="0.1" placeholder={timeUnit === 'hours' ? "Ej: 8.5" : "Ej: 510"} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                         <RadioGroup
-                            value={timeUnit}
-                            onValueChange={setTimeUnit}
-                            className="flex items-center space-x-2"
-                        >
-                            <div className="flex items-center space-x-1">
-                                <RadioGroupItem value="hours" id="hours" />
-                                <FormLabel htmlFor="hours" className="font-normal cursor-pointer">Horas</FormLabel>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                                <RadioGroupItem value="minutes" id="minutes" />
-                                <FormLabel htmlFor="minutes" className="font-normal cursor-pointer">Minutos</FormLabel>
-                            </div>
-                        </RadioGroup>
-                    </div>
+                  <FormLabel>Tiempo de Impresión</FormLabel>
+                  <div className="grid grid-cols-3 gap-2">
+                    <FormField
+                      control={form.control}
+                      name="printHours"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs text-muted-foreground">Horas</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber || 0)} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="printMinutes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs text-muted-foreground">Minutos</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber || 0)} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="printSeconds"
+                      render={({ field }) => (
+                        <FormItem>
+                           <FormLabel className="text-xs text-muted-foreground">Segundos</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber || 0)} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormMessage>{form.formState.errors.printHours?.message}</FormMessage>
                 </div>
               </CardContent>
             </Card>
@@ -361,7 +365,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                         <Alert variant="default" className="mt-4">
                             <AlertDescription className="flex justify-between items-center text-sm">
                                 <span>Total Gramos: <strong>{materialSummary.totalGrams.toFixed(2)} g</strong></span>
-                                <span>Costo de Material: <strong>{formatCurrency(materialSummary.totalCost, "USD", 'es-UY', true)}</strong></span>
+                                <span>Costo de Material: <strong>{formatCurrency(materialSummary.totalCost, "USD")}</strong></span>
                             </AlertDescription>
                         </Alert>
                     )}
@@ -459,3 +463,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    

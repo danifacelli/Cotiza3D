@@ -5,23 +5,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatCurrency(amount: number, currencyCode: string = 'USD', locale: string = 'en-US', useCode: boolean = false) {
+export function formatCurrency(amount: number, currencyCode: string = 'USD') {
   const options: Intl.NumberFormatOptions = {
     style: 'currency',
     currency: currencyCode,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   };
-
-  if (useCode) {
-    options.currencyDisplay = 'code';
-  } else {
-    // When not using code, force the symbol for USD to be $ instead of locale-specific
-    if (currencyCode === 'USD') {
-        return new Intl.NumberFormat('en-US', options).format(amount);
-    }
-  }
-
-
-  return new Intl.NumberFormat(locale, options).format(amount);
+  
+  return new Intl.NumberFormat('en-US', options).format(amount);
 }
+
+    
