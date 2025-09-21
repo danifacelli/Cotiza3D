@@ -77,7 +77,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     defaultValues: {
       name: quote?.name || "",
       clientName: quote?.clientName || "",
-      parts: quote?.parts?.length ? quote.parts : [{ id: generateId(), materialId: "", materialGrams: 0 }],
+      parts: quote?.parts?.length ? quote.parts : [{ id: generateId(), materialId: materials[0]?.id || "", materialGrams: 0 }],
       machineId: quote?.machineId || "",
       printTime: quote?.printHours || 0,
       extraCosts: quote?.extraCosts || [],
