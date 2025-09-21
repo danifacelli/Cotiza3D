@@ -15,7 +15,7 @@ export interface Machine {
 }
 
 export interface Settings {
-  exchangeRate: number; // USD to UYU
+  exchangeRate: number; // Currency to Pesos
   laborCostPerHour: number; // in USD
   energyCostPerKwh: number; // in USD
   profitMargin: number; // percentage

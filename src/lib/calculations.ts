@@ -13,7 +13,7 @@ export interface CostBreakdown {
   subtotalWithProfit: number;
   ivaAmount: number;
   total: number;
-  totalUYU: number;
+  totalPesos: number;
 }
 
 export function calculateCosts(
@@ -59,6 +59,6 @@ export function calculateCosts(
     subtotalWithProfit,
     ivaAmount,
     total,
-    totalUYU: total * settings.exchangeRate,
+    totalPesos: total * settings.exchangeRate,
   };
 }

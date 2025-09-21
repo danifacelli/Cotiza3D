@@ -108,12 +108,12 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                     name="exchangeRate"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Tipo de Cambio (a UYU)</FormLabel>
+                        <FormLabel>Tipo de Cambio (a Pesos)</FormLabel>
                         <FormControl>
                         <Input type="number" step="0.01" {...field} />
                         </FormControl>
                         <FormDescription>
-                         1 {defaultValues.currencyCode} = {field.value} UYU
+                         1 {defaultValues.currencyCode} = {field.value} Pesos
                         </FormDescription>
                         <FormMessage />
                     </FormItem>
