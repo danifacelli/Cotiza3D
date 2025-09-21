@@ -6,7 +6,7 @@ import { useLocalStorage } from "@/hooks/use-local-storage"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
 import { DEFAULT_MACHINES, generateId } from "@/lib/defaults"
 import { Button } from "@/components/ui/button"
-import { PlusCircle } from "lucide-react"
+import { PlusCircle, Trash2 } from "lucide-react"
 import type { Machine } from "@/lib/types"
 import { MachineForm } from "@/components/machines/machine-form"
 import { MachinesGrid } from "@/components/machines/machines-grid"
@@ -18,6 +18,17 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
 
 export default function MachinesPage() {
@@ -44,6 +55,14 @@ export default function MachinesPage() {
     toast({
       title: "Máquina eliminada",
       description: "La máquina ha sido eliminada correctamente.",
+    })
+  }
+  
+  const handleDeleteAllMachines = () => {
+    setMachines([])
+    toast({
+      title: "Todas las máquinas han sido eliminadas",
+      description: "Tu lista de máquinas está ahora vacía.",
     })
   }
 
@@ -78,27 +97,54 @@ export default function MachinesPage() {
             <h1 className="text-2xl font-bold tracking-tight">Máquinas</h1>
             <p className="text-muted-foreground">Administra tus impresoras 3D.</p>
         </div>
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={handleNewMachine}>
-              <PlusCircle className="mr-2" />
-              Nueva Máquina
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>{selectedMachine ? "Editar Máquina" : "Nueva Máquina"}</DialogTitle>
-              <DialogDescription>
-                {selectedMachine ? "Modifica los detalles de tu impresora." : "Añade una nueva impresora a tu taller."}
-              </DialogDescription>
-            </DialogHeader>
-            <MachineForm
-              onSubmit={handleSaveMachine}
-              defaultValues={selectedMachine}
-              onCancel={() => setIsFormOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-2">
+            {isHydrated && machines.length > 0 && (
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive-outline">
+                            <Trash2 className="mr-2" />
+                            Eliminar Todo
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente todas
+                            tus máquinas.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteAllMachines} className="bg-destructive hover:bg-destructive/90">
+                            Sí, eliminar todo
+                        </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            )}
+            <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <DialogTrigger asChild>
+                <Button onClick={handleNewMachine}>
+                <PlusCircle className="mr-2" />
+                Nueva Máquina
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                <DialogTitle>{selectedMachine ? "Editar Máquina" : "Nueva Máquina"}</DialogTitle>
+                <DialogDescription>
+                    {selectedMachine ? "Modifica los detalles de tu impresora." : "Añade una nueva impresora a tu taller."}
+                </DialogDescription>
+                </DialogHeader>
+                <MachineForm
+                onSubmit={handleSaveMachine}
+                defaultValues={selectedMachine}
+                onCancel={() => setIsFormOpen(false)}
+                />
+            </DialogContent>
+            </Dialog>
+        </div>
       </div>
 
       <MachinesGrid
