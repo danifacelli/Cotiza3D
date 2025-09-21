@@ -100,14 +100,14 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   }, [quote, form.setValue]);
   
   useEffect(() => {
-    // Set default material only on new quote form after materials are hydrated
     if (!quote && isMaterialsHydrated && materials.length > 0) {
-        const currentParts = form.getValues('parts');
-        if (currentParts.length === 1 && !currentParts[0].materialId) {
-            form.setValue('parts.0.materialId', materials[0].id);
-        }
+      const parts = form.getValues('parts');
+      if (parts.length === 1 && !parts[0].materialId) {
+        form.setValue('parts.0.materialId', materials[0].id, { shouldValidate: true });
+      }
     }
-  }, [isMaterialsHydrated, materials, quote, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMaterialsHydrated]);
 
 
   const { fields: partFields, append: appendPart, remove: removePart } = useFieldArray({
@@ -461,3 +461,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
