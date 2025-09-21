@@ -123,7 +123,7 @@ export function MaterialForm({ onSubmit, onCancel, defaultValues }: MaterialForm
           name="cost"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Costo por kg ({settings.currencySymbol})</FormLabel>
+              <FormLabel>Costo por kg ({settings.currencyCode})</FormLabel>
               <FormControl>
                 <Input type="number" step="0.01" {...field} />
               </FormControl>
