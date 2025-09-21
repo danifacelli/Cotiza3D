@@ -92,21 +92,21 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   
   useEffect(() => {
     if (isMaterialsHydrated && !quote && materials.length > 0) {
-       form.reset({
-        ...form.getValues(),
-        name: quote?.name || "",
-        clientName: quote?.clientName || "",
-        machineId: quote?.machineId || "",
-        extraCosts: quote?.extraCosts || [],
-        notes: quote?.notes || "",
+      form.reset({
+        name: "",
+        clientName: "",
+        machineId: "",
+        extraCosts: [],
+        notes: "",
         printHours: 0,
         printMinutes: 0,
         printSeconds: 0,
         parts: [{ id: generateId(), materialId: materials[0].id, materialGrams: 0 }],
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMaterialsHydrated, materials, quote]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMaterialsHydrated, quote]);
+  
   
   useEffect(() => {
     if (quote?.printHours) {
@@ -362,7 +362,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                                 <FormItem>
                                 <FormLabel>Gramos</FormLabel>
                                 <FormControl>
-                                    <Input type="number" step="0.1" placeholder="Ej: 150" {...field} className="w-28"/>
+                                    <Input type="number" step="0.1" placeholder="Ej: 150" {...field} className="w-28" onFocus={(e) => e.target.select()} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -474,3 +474,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
