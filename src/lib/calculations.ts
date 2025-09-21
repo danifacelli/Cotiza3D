@@ -38,15 +38,13 @@ export function calculateCosts(
   let materialCost = 0;
   for (const part of quote.parts) {
       const material = materials.find(m => m.id === part.materialId);
-      if (!material || !part.materialGrams || part.materialGrams <= 0) {
-          // If any part is incomplete, we can't calculate the total
-          return null;
+      if (material && part.materialGrams && part.materialGrams > 0) {
+        materialCost += (part.materialGrams / 1000) * material.cost;
       }
-      materialCost += (part.materialGrams / 1000) * material.cost;
   }
 
 
-  const machineEnergyCost = (machine.powerConsumption / 1000) * quote.printHours * settings.energyCostPerKwh;
+  const machineEnergyCost = machine.costPerHour * quote.printHours;
   const machineDepreciationCost = machine.costPerHour * quote.printHours;
   const laborCost = settings.laborCostPerHour * quote.printHours;
   
