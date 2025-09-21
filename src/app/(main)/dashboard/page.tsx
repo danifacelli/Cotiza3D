@@ -15,16 +15,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Logo } from "@/components/icons/logo"
 
 export default function Dashboard() {
   return (
     <div className="flex flex-1 flex-col gap-4 md:gap-8">
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-2">
         <Card className="bg-primary/5 dark:bg-primary/10 border-primary/20">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-2xl font-bold">
-              Bienvenido a Cotiza3D
-            </CardTitle>
+          <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+            <div className="space-y-2">
+              <CardTitle className="text-2xl font-bold">
+                Bienvenido a Cotiza3D
+              </CardTitle>
+            </div>
+             <div className="rounded-lg bg-primary p-3 text-primary-foreground">
+                <Logo className="h-6 w-6" />
+             </div>
           </CardHeader>
           <CardContent>
             <div className="text-muted-foreground">
