@@ -19,6 +19,14 @@ import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Logo } from "@/components/icons/logo"
 
+const navLinks = [
+    { href: "/dashboard", icon: Home, label: "Dashboard", className: "text-muted-foreground hover:text-foreground" },
+    { href: "/quotes", icon: FileText, label: "Presupuestos", className: "text-muted-foreground hover:text-foreground" },
+    { href: "/materials", icon: Layers, label: "Insumos", className: "text-muted-foreground hover:text-foreground" },
+    { href: "/machines", icon: Printer, label: "Máquinas", className: "text-muted-foreground hover:text-foreground" },
+    { href: "/settings", icon: Settings, label: "Configuración", className: "text-muted-foreground hover:text-foreground" },
+]
+
 export function AppHeader() {
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -38,41 +46,16 @@ export function AppHeader() {
               <Logo className="h-5 w-5 transition-all group-hover:scale-110" />
               <span className="sr-only">Cotiza3D</span>
             </Link>
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-            >
-              <Home className="h-5 w-5" />
-              Dashboard
-            </Link>
-            <Link
-              href="/quotes"
-              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-            >
-              <FileText className="h-5 w-5" />
-              Presupuestos
-            </Link>
-            <Link
-              href="/materials"
-              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-            >
-              <Layers className="h-5 w-5" />
-              Insumos
-            </Link>
-            <Link
-              href="/machines"
-              className="flex items-center gap-4 px-2.5 text-foreground"
-            >
-              <Printer className="h-5 w-5" />
-              Máquinas
-            </Link>
-            <Link
-              href="/settings"
-              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-            >
-              <Settings className="h-5 w-5" />
-              Configuración
-            </Link>
+            {navLinks.map(({ href, icon: Icon, label, className }) => (
+                 <Link
+                    key={href}
+                    href={href}
+                    className={`flex items-center gap-4 px-2.5 ${className}`}
+                >
+                    <Icon className="h-5 w-5" />
+                    {label}
+                </Link>
+            ))}
           </nav>
         </SheetContent>
       </Sheet>
