@@ -176,7 +176,7 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                 />
             </div>
         </div>
-        <Button type="submit" className="bg-accent hover:bg-accent/90">Guardar Cambios</Button>
+        <Button type="submit">Guardar Cambios</Button>
       </form>
     </Form>
   )
