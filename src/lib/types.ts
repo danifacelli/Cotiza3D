@@ -12,11 +12,11 @@ export interface Machine {
   name: string;
   costPerHour: number; // in USD
   powerConsumption: number; // in Watts
+  energyCostPerKwh: number; // in USD
 }
 
 export interface Settings {
   laborCostPerHour: number; // in USD
-  energyCostPerKwh: number; // in USD
   profitMargin: number; // percentage
   iva: number; // percentage
   companyName: string;

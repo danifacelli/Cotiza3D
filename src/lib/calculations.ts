@@ -1,5 +1,8 @@
 
 import type { Quote, Material, Machine, Settings } from './types';
+import { useLocalStorage } from '@/hooks/use-local-storage';
+import { LOCAL_STORAGE_KEYS } from './constants';
+import { DEFAULT_SETTINGS } from './defaults';
 
 export interface CostBreakdown {
   materialCost: number;
@@ -19,7 +22,8 @@ export function calculateCosts(
   quote: Partial<Pick<Quote, 'materialId' | 'materialGrams' | 'machineId' | 'printHours' | 'extraCosts'>>,
   materials: Material[],
   machines: Machine[],
-  settings: Settings
+  settings: Settings,
+  globalSettings: Settings
 ): CostBreakdown | null {
   const material = materials.find(m => m.id === quote.materialId);
   const machine = machines.find(m => m.id === quote.machineId);
@@ -31,7 +35,7 @@ export function calculateCosts(
   // Material cost is based on the cost per KG stored in the material object
   const materialCost = (quote.materialGrams / 1000) * material.cost;
   
-  const machineEnergyCost = (machine.powerConsumption / 1000) * quote.printHours * settings.energyCostPerKwh;
+  const machineEnergyCost = (machine.powerConsumption / 1000) * quote.printHours * machine.energyCostPerKwh;
   const machineDepreciationCost = machine.costPerHour * quote.printHours;
   const laborCost = settings.laborCostPerHour * quote.printHours;
   
