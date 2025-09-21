@@ -104,8 +104,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         parts: [{ id: generateId(), materialId: materials[0].id, materialGrams: 0 }],
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMaterialsHydrated, quote, materials]);
+  }, [isMaterialsHydrated, quote, materials, form]);
   
   
   useEffect(() => {
@@ -120,6 +119,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         form.setValue("printMinutes", minutes);
         form.setValue("printSeconds", seconds);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quote, form.setValue]);
   
 
@@ -160,6 +160,10 @@ export function QuoteForm({ quote }: QuoteFormProps) {
 
     return { totalGrams, totalCost };
   }, [watchedValues.parts, materials]);
+  
+  const selectedMachine = useMemo(() => {
+    return machines.find(m => m.id === watchedValues.machineId);
+  }, [machines, watchedValues.machineId]);
 
 
   const onSubmit = (data: QuoteFormValues) => {
@@ -266,6 +270,11 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                           ))}
                         </SelectContent>
                       </Select>
+                      {selectedMachine && (
+                        <FormDescription>
+                          Depreciación: {formatCurrency(selectedMachine.costPerHour, "USD")} / hora.
+                        </FormDescription>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}

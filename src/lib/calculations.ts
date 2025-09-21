@@ -31,7 +31,7 @@ export function calculateCosts(
   
   const machine = machines.find(m => m.id === quote.machineId);
 
-  if (!machine || !quote.printHours || !quote.parts || quote.parts.length === 0) {
+  if (!machine || !quote.printHours || !quote.parts) {
     return null;
   }
   
@@ -43,8 +43,8 @@ export function calculateCosts(
       }
   }
 
-
-  const machineEnergyCost = machine.costPerHour * quote.printHours;
+  // Energy cost: (Power in kW * hours) * cost per kWh
+  const machineEnergyCost = (machine.powerConsumption / 1000) * quote.printHours * settings.energyCostPerKwh;
   const machineDepreciationCost = machine.costPerHour * quote.printHours;
   const laborCost = settings.laborCostPerHour * quote.printHours;
   
