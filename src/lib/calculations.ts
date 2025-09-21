@@ -1,5 +1,5 @@
 
-import type { Quote, Material, Machine, Settings } from './types';
+import type { Quote, Material, Machine, Settings, QuotePart } from './types';
 
 export interface CostBreakdown {
   materialCost: number;
@@ -15,23 +15,38 @@ export interface CostBreakdown {
   total: number;
 }
 
+interface CalculationInput {
+    parts?: Partial<QuotePart>[];
+    machineId?: string;
+    printHours?: number;
+    extraCosts?: Quote['extraCosts'];
+}
+
 export function calculateCosts(
-  quote: Partial<Pick<Quote, 'materialId' | 'materialGrams' | 'machineId' | 'printHours' | 'extraCosts'>>,
+  quote: CalculationInput,
   materials: Material[],
   machines: Machine[],
   settings: Settings
 ): CostBreakdown | null {
-  const material = materials.find(m => m.id === quote.materialId);
+  
   const machine = machines.find(m => m.id === quote.machineId);
 
-  if (!material || !machine || !quote.materialGrams || !quote.printHours) {
+  if (!machine || !quote.printHours || !quote.parts || quote.parts.length === 0) {
     return null;
   }
-
-  // Material cost is based on the cost per KG stored in the material object
-  const materialCost = (quote.materialGrams / 1000) * material.cost;
   
-  const machineEnergyCost = (machine.powerConsumption / 1000) * quote.printHours * machine.energyCostPerKwh;
+  let materialCost = 0;
+  for (const part of quote.parts) {
+      const material = materials.find(m => m.id === part.materialId);
+      if (!material || !part.materialGrams || part.materialGrams <= 0) {
+          // If any part is incomplete, we can't calculate the total
+          return null;
+      }
+      materialCost += (part.materialGrams / 1000) * material.cost;
+  }
+
+
+  const machineEnergyCost = (machine.powerConsumption / 1000) * quote.printHours * settings.energyCostPerKwh;
   const machineDepreciationCost = machine.costPerHour * quote.printHours;
   const laborCost = settings.laborCostPerHour * quote.printHours;
   
@@ -60,5 +75,3 @@ export function calculateCosts(
     total,
   };
 }
-
-    

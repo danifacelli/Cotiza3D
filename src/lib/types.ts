@@ -12,7 +12,6 @@ export interface Machine {
   name: string;
   costPerHour: number; // in USD
   powerConsumption: number; // in Watts
-  energyCostPerKwh: number; // in USD
 }
 
 export interface Settings {
@@ -21,12 +20,19 @@ export interface Settings {
   iva: number; // percentage
   companyName: string;
   companyContact: string;
+  energyCostPerKwh: number;
 }
 
 export interface ExtraCost {
   id: string;
   description: string;
   amount: number;
+}
+
+export interface QuotePart {
+  id: string;
+  materialId: string;
+  materialGrams: number;
 }
 
 export interface Quote {
@@ -36,8 +42,7 @@ export interface Quote {
   status: 'draft' | 'finalized';
   createdAt: string; // ISO date string
 
-  materialId: string;
-  materialGrams: number;
+  parts: QuotePart[];
   
   machineId: string;
   printHours: number;

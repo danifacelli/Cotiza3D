@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS: Settings = {
   iva: 22,
   companyName: 'Cotiza3D',
   companyContact: 'tuemail@ejemplo.com',
+  energyCostPerKwh: 0.2,
 };
 
 export const DEFAULT_MATERIALS: Material[] = [
@@ -15,8 +16,8 @@ export const DEFAULT_MATERIALS: Material[] = [
 ];
 
 export const DEFAULT_MACHINES: Machine[] = [
-  { id: 'ender3_default', name: 'Creality Ender 3', costPerHour: 0.5, powerConsumption: 150, energyCostPerKwh: 0.2 },
-  { id: 'prusa_mk3', name: 'Prusa i3 MK3S+', costPerHour: 0.8, powerConsumption: 200, energyCostPerKwh: 0.2 },
+  { id: 'ender3_default', name: 'Creality Ender 3', costPerHour: 0.5, powerConsumption: 150 },
+  { id: 'prusa_mk3', name: 'Prusa i3 MK3S+', costPerHour: 0.8, powerConsumption: 200 },
 ];
 
 export const DEFAULT_QUOTES: Quote[] = [];

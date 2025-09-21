@@ -7,7 +7,7 @@ import * as z from "zod"
 import { useRouter } from "next/navigation"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
-import type { Quote, Machine, Material, Settings, ExtraCost } from "@/lib/types"
+import type { Quote, Machine, Material, Settings, ExtraCost, QuotePart } from "@/lib/types"
 import { DEFAULT_MACHINES, DEFAULT_MATERIALS, DEFAULT_SETTINGS, generateId } from "@/lib/defaults"
 import { Button } from "@/components/ui/button"
 import {
@@ -31,11 +31,16 @@ import { CostSummary } from "@/components/quotes/cost-summary"
 import { useState, useEffect } from "react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
+const PartSchema = z.object({
+  id: z.string(),
+  materialId: z.string().min(1, "Debes seleccionar un material."),
+  materialGrams: z.coerce.number().min(0.1, "Los gramos deben ser mayor a 0."),
+})
+
 const QuoteSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
   clientName: z.string().optional(),
-  materialId: z.string().min(1, "Debes seleccionar un material."),
-  materialGrams: z.coerce.number().min(0.1, "Los gramos deben ser mayor a 0."),
+  parts: z.array(PartSchema).min(1, "Debes añadir al menos un material."),
   machineId: z.string().min(1, "Debes seleccionar una máquina."),
   printTime: z.coerce.number().min(0.1, "El tiempo debe ser mayor a 0."),
   extraCosts: z.array(
@@ -48,7 +53,7 @@ const QuoteSchema = z.object({
   notes: z.string().optional(),
 })
 
-type QuoteFormValues = z.infer<typeof QuoteSchema> & { printHours?: number }
+type QuoteFormValues = z.infer<typeof QuoteSchema>
 
 interface QuoteFormProps {
   quote?: Quote
@@ -70,8 +75,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     defaultValues: {
       name: quote?.name || "",
       clientName: quote?.clientName || "",
-      materialId: quote?.materialId || "",
-      materialGrams: quote?.materialGrams || 0,
+      parts: quote?.parts?.length ? quote.parts : [{ id: generateId(), materialId: "", materialGrams: 0 }],
       machineId: quote?.machineId || "",
       printTime: quote?.printHours || 0,
       extraCosts: quote?.extraCosts || [],
@@ -92,7 +96,12 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   }, [quote, form.setValue]);
 
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields: partFields, append: appendPart, remove: removePart } = useFieldArray({
+    control: form.control,
+    name: "parts",
+  })
+
+  const { fields: extraCostFields, append: appendExtraCost, remove: removeExtraCost } = useFieldArray({
     control: form.control,
     name: "extraCosts",
   })
@@ -101,7 +110,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const printHours = timeUnit === 'hours' ? watchedValues.printTime : (watchedValues.printTime || 0) / 60;
   
   const costBreakdown: CostBreakdown | null = calculateCosts(
-    { ...watchedValues, printHours },
+    { ...watchedValues, printHours, parts: watchedValues.parts },
     materials,
     machines,
     settings
@@ -116,8 +125,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       createdAt: quote?.createdAt || new Date().toISOString(),
       name: data.name,
       clientName: data.clientName || "",
-      materialId: data.materialId,
-      materialGrams: data.materialGrams,
+      parts: data.parts,
       machineId: data.machineId,
       printHours: finalPrintHours,
       extraCosts: data.extraCosts || [],
@@ -214,43 +222,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="materialId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Material</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona un material" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {materials.map((m) => (
-                            <SelectItem key={m.id} value={m.id}>
-                              {m.name} ({m.type})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="materialGrams"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Gramos de Material</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.1" placeholder="Ej: 150" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                
                 <div className="space-y-2">
                     <FormLabel>Tiempo de Impresión</FormLabel>
                     <div className="flex gap-2">
@@ -284,6 +256,76 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Materials Card */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Materiales</CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-6">
+                     {partFields.map((field, index) => (
+                        <div key={field.id} className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-4 items-start p-4 border rounded-md relative">
+                             <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute top-2 right-2 h-7 w-7 text-destructive hover:bg-destructive/10"
+                                onClick={() => removePart(index)}
+                                disabled={partFields.length <= 1}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+
+                            <FormField
+                            control={form.control}
+                            name={`parts.${index}.materialId`}
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Material</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecciona un material" />
+                                    </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                    {materials.map((m) => (
+                                        <SelectItem key={m.id} value={m.id}>
+                                        {m.name} ({m.type})
+                                        </SelectItem>
+                                    ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                            <FormField
+                            control={form.control}
+                            name={`parts.${index}.materialGrams`}
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Gramos</FormLabel>
+                                <FormControl>
+                                    <Input type="number" step="0.1" placeholder="Ej: 150" {...field} className="w-28"/>
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                        </div>
+                    ))}
+                    <FormMessage>{form.formState.errors.parts?.root?.message}</FormMessage>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => appendPart({ id: generateId(), materialId: "", materialGrams: 0 })}
+                    >
+                        <PlusCircle className="mr-2" /> Añadir Material
+                    </Button>
+                </CardContent>
+            </Card>
 
             {/* Extra Costs & Notes Card */}
             <Card>
@@ -294,7 +336,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 <div>
                   <FormLabel>Costos Adicionales</FormLabel>
                   <div className="space-y-4 mt-2">
-                    {fields.map((field, index) => (
+                    {extraCostFields.map((field, index) => (
                       <div key={field.id} className="flex items-center gap-2">
                         <FormField
                           control={form.control}
@@ -310,7 +352,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                             <Input type="number" step="0.01" {...field} placeholder="Monto (USD)" />
                           )}
                         />
-                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => removeExtraCost(index)}>
                           <Trash2 className="text-destructive" />
                         </Button>
                       </div>
@@ -321,7 +363,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                     variant="outline"
                     size="sm"
                     className="mt-4"
-                    onClick={() => append({ id: generateId(), description: "", amount: 0 })}
+                    onClick={() => appendExtraCost({ id: generateId(), description: "", amount: 0 })}
                   >
                     <PlusCircle className="mr-2" /> Añadir Costo
                   </Button>
@@ -367,5 +409,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    

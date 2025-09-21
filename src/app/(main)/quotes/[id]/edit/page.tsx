@@ -8,13 +8,38 @@ import { QuoteForm } from "@/components/quotes/quote-form";
 import { useParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 
 export default function EditQuotePage() {
     const params = useParams();
     const { id } = params;
     const [quotes, _, isHydrated] = useLocalStorage<Quote[]>(LOCAL_STORAGE_KEYS.QUOTES, []);
-    
-    const quote = quotes.find(q => q.id === id);
+    const [quote, setQuote] = useState<Quote | undefined>(undefined);
+
+    useEffect(() => {
+        if (isHydrated) {
+            const foundQuote = quotes.find(q => q.id === id);
+            
+            // Backwards compatibility for old quotes without 'parts'
+            if (foundQuote && !foundQuote.parts && (foundQuote as any).materialId) {
+                const legacyQuote = foundQuote as any;
+                const updatedQuote: Quote = {
+                    ...foundQuote,
+                    parts: [{
+                        id: 'default-part',
+                        materialId: legacyQuote.materialId,
+                        materialGrams: legacyQuote.materialGrams,
+                    }],
+                };
+                delete (updatedQuote as any).materialId;
+                delete (updatedQuote as any).materialGrams;
+                setQuote(updatedQuote);
+            } else {
+                setQuote(foundQuote);
+            }
+        }
+    }, [id, quotes, isHydrated]);
+
 
     if (!isHydrated) {
         return (
