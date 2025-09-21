@@ -4,6 +4,7 @@ export interface Material {
   name: string;
   type: string;
   cost: number; // Cost per kg in currency from settings
+  description?: string;
 }
 
 export interface Machine {

@@ -3,7 +3,7 @@
 
 import { useState } from "react"
 import { useLocalStorage } from "@/hooks/use-local-storage"
-import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
+import { LOCAL_STORAGE_KEYS, FILAMENT_TYPES } from "@/lib/constants"
 import { DEFAULT_MATERIALS } from "@/lib/defaults"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -73,6 +73,14 @@ export default function MaterialsPage() {
     setSelectedMaterial(null)
   }
 
+  const materialsWithDescriptions = materials.map(material => {
+    const typeInfo = FILAMENT_TYPES.find(ft => ft.value === material.type);
+    return {
+      ...material,
+      description: typeInfo ? typeInfo.description : 'Descripción no disponible.',
+    };
+  });
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -109,7 +117,7 @@ export default function MaterialsPage() {
         </CardHeader>
         <CardContent>
           <MaterialsTable
-            materials={materials}
+            materials={materialsWithDescriptions}
             onEdit={handleEditMaterial}
             onDelete={handleDeleteMaterial}
             isHydrated={isHydrated}

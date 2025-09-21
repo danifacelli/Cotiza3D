@@ -27,7 +27,7 @@ import { DEFAULT_SETTINGS } from "@/lib/defaults"
 import type { Settings } from "@/lib/types"
 
 interface MaterialsTableProps {
-  materials: Material[]
+  materials: (Material & { description?: string })[]
   onEdit: (material: Material) => void
   onDelete: (id: string) => void
   isHydrated: boolean
@@ -39,9 +39,9 @@ export function MaterialsTable({ materials, onEdit, onDelete, isHydrated }: Mate
   if (!isHydrated) {
     return (
       <div className="space-y-2">
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-16 w-full" />
       </div>
     )
   }
@@ -61,14 +61,19 @@ export function MaterialsTable({ materials, onEdit, onDelete, isHydrated }: Mate
           {materials.length > 0 ? (
             materials.map((material) => (
               <TableRow key={material.id}>
-                <TableCell className="font-medium">{material.name}</TableCell>
-                <TableCell>
+                <TableCell className="font-medium align-top">
+                  <div>{material.name}</div>
+                  <div className="text-xs text-muted-foreground mt-1 max-w-xs xl:max-w-md">
+                    {material.description}
+                  </div>
+                </TableCell>
+                <TableCell className="align-top">
                   <Badge variant="secondary">{material.type}</Badge>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right align-top">
                   {formatCurrency(material.cost, settings.currencyCode)}
                 </TableCell>
-                <TableCell>
+                <TableCell className="align-top">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0">
