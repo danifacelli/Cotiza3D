@@ -1,6 +1,7 @@
 
 "use client"
 
+import { useState, useEffect } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -45,6 +46,7 @@ interface MaterialFormProps {
 
 export function MaterialForm({ onSubmit, onCancel, defaultValues }: MaterialFormProps) {
   const [settings] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
+  const [selectedTypeDescription, setSelectedTypeDescription] = useState<string | undefined>("");
 
   const form = useForm<MaterialFormValues>({
     resolver: zodResolver(MaterialSchema),
@@ -54,6 +56,19 @@ export function MaterialForm({ onSubmit, onCancel, defaultValues }: MaterialForm
       cost: defaultValues?.cost || 0,
     },
   })
+
+  useEffect(() => {
+    if (defaultValues?.type) {
+      const initialType = FILAMENT_TYPES.find(t => t.value === defaultValues.type);
+      setSelectedTypeDescription(initialType?.description);
+    }
+  }, [defaultValues]);
+
+  const handleTypeChange = (value: string) => {
+    const selectedType = FILAMENT_TYPES.find(t => t.value === value);
+    setSelectedTypeDescription(selectedType?.description);
+    form.setValue("type", value);
+  }
 
   return (
     <Form {...form}>
@@ -80,7 +95,7 @@ export function MaterialForm({ onSubmit, onCancel, defaultValues }: MaterialForm
           render={({ field }) => (
             <FormItem>
               <FormLabel>Tipo de Filamento</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={handleTypeChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona un tipo" />
@@ -94,6 +109,11 @@ export function MaterialForm({ onSubmit, onCancel, defaultValues }: MaterialForm
                   ))}
                 </SelectContent>
               </Select>
+               {selectedTypeDescription && (
+                <FormDescription className="pt-2 text-foreground/80">
+                  {selectedTypeDescription}
+                </FormDescription>
+              )}
               <FormMessage />
             </FormItem>
           )}
