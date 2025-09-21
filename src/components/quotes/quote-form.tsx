@@ -85,6 +85,25 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     },
   })
   
+  const defaultFormValues = useMemo(() => ({
+      name: quote?.name || "",
+      clientName: quote?.clientName || "",
+      parts: quote?.parts?.length 
+        ? quote.parts 
+        : [{ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 }],
+      machineId: quote?.machineId || "",
+      printTime: quote?.printHours || 0,
+      extraCosts: quote?.extraCosts || [],
+      notes: quote?.notes || "",
+  }), [quote, materials]);
+
+  useEffect(() => {
+    if (isMaterialsHydrated) {
+        form.reset(defaultFormValues);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMaterialsHydrated, form.reset]);
+  
   useEffect(() => {
     if (quote?.printHours) {
         if (quote.printHours < 1 && quote.printHours > 0) {
@@ -99,16 +118,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     }
   }, [quote, form.setValue]);
   
-   useEffect(() => {
-    if (!quote && isMaterialsHydrated && materials.length > 0) {
-      const parts = form.getValues('parts');
-      if (parts.length === 1 && !parts[0].materialId) {
-        form.setValue('parts.0.materialId', materials[0].id, { shouldValidate: true });
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMaterialsHydrated, materials, quote]);
-
 
   const { fields: partFields, append: appendPart, remove: removePart } = useFieldArray({
     control: form.control,
@@ -361,7 +370,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => appendPart({ id: generateId(), materialId: "", materialGrams: 0 })}
+                        onClick={() => appendPart({ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 })}
                     >
                         <PlusCircle className="mr-2" /> Añadir Material
                     </Button>
@@ -450,7 +459,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    
-
-    
