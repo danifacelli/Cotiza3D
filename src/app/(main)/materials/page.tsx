@@ -7,7 +7,7 @@ import { LOCAL_STORAGE_KEYS, FILAMENT_TYPES } from "@/lib/constants"
 import { DEFAULT_MATERIALS } from "@/lib/defaults"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { PlusCircle } from "lucide-react"
+import { PlusCircle, Trash2 } from "lucide-react"
 import type { Material } from "@/lib/types"
 import { MaterialForm } from "@/components/materials/material-form"
 import { MaterialsGrid } from "@/components/materials/materials-grid"
@@ -19,6 +19,17 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { generateId } from "@/lib/defaults"
 
@@ -46,6 +57,14 @@ export default function MaterialsPage() {
     toast({
       title: "Material eliminado",
       description: "El material ha sido eliminado correctamente.",
+    })
+  }
+  
+  const handleDeleteAllMaterials = () => {
+    setMaterials([])
+    toast({
+      title: "Todos los materiales han sido eliminados",
+      description: "Tu lista de insumos está ahora vacía.",
     })
   }
 
@@ -88,27 +107,54 @@ export default function MaterialsPage() {
             <h1 className="text-2xl font-bold tracking-tight">Insumos</h1>
             <p className="text-muted-foreground">Administra tus filamentos de impresión.</p>
         </div>
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={handleNewMaterial}>
-              <PlusCircle className="mr-2" />
-              Nuevo Material
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>{selectedMaterial ? "Editar Material" : "Nuevo Material"}</DialogTitle>
-              <DialogDescription>
-                {selectedMaterial ? "Modifica los detalles de tu material." : "Añade un nuevo filamento a tu inventario."}
-              </DialogDescription>
-            </DialogHeader>
-            <MaterialForm
-              onSubmit={handleSaveMaterial}
-              defaultValues={selectedMaterial}
-              onCancel={() => setIsFormOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-2">
+            {isHydrated && materials.length > 0 && (
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive-outline">
+                            <Trash2 className="mr-2" />
+                            Eliminar Todo
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente todos
+                            tus materiales.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteAllMaterials} className="bg-destructive hover:bg-destructive/90">
+                            Sí, eliminar todo
+                        </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            )}
+            <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <DialogTrigger asChild>
+                <Button onClick={handleNewMaterial}>
+                <PlusCircle className="mr-2" />
+                Nuevo Material
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                <DialogTitle>{selectedMaterial ? "Editar Material" : "Nuevo Material"}</DialogTitle>
+                <DialogDescription>
+                    {selectedMaterial ? "Modifica los detalles de tu material." : "Añade un nuevo filamento a tu inventario."}
+                </DialogDescription>
+                </DialogHeader>
+                <MaterialForm
+                onSubmit={handleSaveMaterial}
+                defaultValues={selectedMaterial}
+                onCancel={() => setIsFormOpen(false)}
+                />
+            </DialogContent>
+            </Dialog>
+        </div>
       </div>
 
       <MaterialsGrid
