@@ -3,12 +3,12 @@ import type { Settings, Material, Machine, Quote } from './types';
 import { nanoid } from 'nanoid';
 
 export const DEFAULT_SETTINGS: Settings = {
-  laborCostPerHour: 10,
-  profitMargin: 50,
-  iva: 22,
   companyName: 'Cotiza3D',
   companyContact: 'tuemail@ejemplo.com',
-  energyCostPerKwh: 0.2,
+  laborCostPerHour: 10,
+  energyCostPerKwh: 0.2, // Default energy cost
+  profitMargin: 50,
+  iva: 22,
 };
 
 export const DEFAULT_MATERIALS: Material[] = [

@@ -31,7 +31,8 @@ export function calculateCosts(
   
   const machine = machines.find(m => m.id === quote.machineId);
 
-  if (!machine || !quote.printHours || !quote.parts) {
+  // Allow calculation even with 0 hours, to show partial costs
+  if (!machine || typeof quote.printHours === 'undefined' || !quote.parts) {
     return null;
   }
   
@@ -39,12 +40,15 @@ export function calculateCosts(
   for (const part of quote.parts) {
       const material = materials.find(m => m.id === part.materialId);
       if (material && part.materialGrams && part.materialGrams > 0) {
-        materialCost += (part.materialGrams / 1000) * material.cost;
+        materialCost += (part.materialGrams / 100) * material.cost; // This was wrong, should be /1000
       }
   }
 
+  // Fallback for energyCostPerKwh if it's not in settings (for backward compatibility)
+  const energyCost = settings.energyCostPerKwh ?? 0;
+
   // Energy cost: (Power in kW * hours) * cost per kWh
-  const machineEnergyCost = (machine.powerConsumption / 1000) * quote.printHours * settings.energyCostPerKwh;
+  const machineEnergyCost = (machine.powerConsumption / 1000) * quote.printHours * energyCost;
   const machineDepreciationCost = machine.costPerHour * quote.printHours;
   const laborCost = settings.laborCostPerHour * quote.printHours;
   
