@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Trash2, PlusCircle, FileDown, Copy, Bot } from "lucide-react"
+import { Trash2, PlusCircle, FileDown } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { calculateCosts, CostBreakdown } from "@/lib/calculations"
 import { CostSummary } from "@/components/quotes/cost-summary"
@@ -99,7 +99,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     }
   }, [quote, form.setValue]);
   
-  useEffect(() => {
+   useEffect(() => {
     if (!quote && isMaterialsHydrated && materials.length > 0) {
       const parts = form.getValues('parts');
       if (parts.length === 1 && !parts[0].materialId) {
@@ -107,7 +107,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMaterialsHydrated]);
+  }, [isMaterialsHydrated, materials, quote]);
 
 
   const { fields: partFields, append: appendPart, remove: removePart } = useFieldArray({
@@ -180,14 +180,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       variant: "destructive"
     })
   }
-  
-  const handleAiFill = () => {
-    toast({
-        title: "Funcionalidad no disponible",
-        description: "El autocompletado con IA se implementará en el futuro.",
-        variant: "destructive"
-    });
-  }
 
   return (
     <Form {...form}>
@@ -199,9 +191,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
               <CardHeader>
                 <div className="flex justify-between items-start">
                     <CardTitle>{quote ? "Editar Presupuesto" : "Nuevo Presupuesto"}</CardTitle>
-                     <Button type="button" variant="outline" size="sm" onClick={handleAiFill}>
-                        <Bot className="mr-2"/> Autocompletar con IA
-                    </Button>
                 </div>
               </CardHeader>
               <CardContent className="grid gap-6">
@@ -461,5 +450,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
 
     
