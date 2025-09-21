@@ -35,7 +35,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 const PartSchema = z.object({
   id: z.string(),
   materialId: z.string().min(1, "Debes seleccionar un material."),
-  materialGrams: z.coerce.number().min(0.1, "Los gramos deben ser mayor a 0."),
+  materialGrams: z.coerce.number().min(0, "Los gramos deben ser un número positivo."),
 })
 
 const QuoteSchema = z.object({
@@ -105,7 +105,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMaterialsHydrated, quote]);
+  }, [isMaterialsHydrated, quote, materials]);
   
   
   useEffect(() => {
@@ -144,12 +144,16 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   )
 
   const materialSummary = useMemo(() => {
-    const totalGrams = watchedValues.parts?.reduce((acc, part) => acc + (part.materialGrams || 0), 0) || 0;
+    const totalGrams = watchedValues.parts?.reduce((acc, part) => {
+        const parsedGrams = parseFloat(part.materialGrams as any);
+        return acc + (isNaN(parsedGrams) ? 0 : parsedGrams);
+    }, 0) || 0;
     
     const totalCost = watchedValues.parts?.reduce((acc, part) => {
       const material = materials.find(m => m.id === part.materialId);
-      if (material && part.materialGrams > 0) {
-        return acc + (part.materialGrams / 1000) * material.cost;
+      const parsedGrams = parseFloat(part.materialGrams as any);
+      if (material && !isNaN(parsedGrams) && parsedGrams > 0) {
+        return acc + (parsedGrams / 1000) * material.cost;
       }
       return acc;
     }, 0) || 0;
@@ -474,5 +478,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    
