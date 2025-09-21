@@ -28,6 +28,8 @@ import { Trash2, PlusCircle, FileDown, Copy } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { calculateCosts, CostBreakdown } from "@/lib/calculations"
 import { CostSummary } from "@/components/quotes/cost-summary"
+import { useState, useEffect } from "react"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 const QuoteSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
@@ -35,7 +37,7 @@ const QuoteSchema = z.object({
   materialId: z.string().min(1, "Debes seleccionar un material."),
   materialGrams: z.coerce.number().min(0.1, "Los gramos deben ser mayor a 0."),
   machineId: z.string().min(1, "Debes seleccionar una máquina."),
-  printHours: z.coerce.number().min(0.1, "Las horas deben ser mayor a 0."),
+  printTime: z.coerce.number().min(0.1, "El tiempo debe ser mayor a 0."),
   extraCosts: z.array(
     z.object({
       id: z.string(),
@@ -46,7 +48,7 @@ const QuoteSchema = z.object({
   notes: z.string().optional(),
 })
 
-type QuoteFormValues = z.infer<typeof QuoteSchema>
+type QuoteFormValues = z.infer<typeof QuoteSchema> & { printHours?: number }
 
 interface QuoteFormProps {
   quote?: Quote
@@ -60,6 +62,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const [machines] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES)
   const [materials] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS)
   const [settings] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
+  
+  const [timeUnit, setTimeUnit] = useState("hours");
 
   const form = useForm<QuoteFormValues>({
     resolver: zodResolver(QuoteSchema),
@@ -69,11 +73,24 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       materialId: quote?.materialId || "",
       materialGrams: quote?.materialGrams || 0,
       machineId: quote?.machineId || "",
-      printHours: quote?.printHours || 0,
+      printTime: quote?.printHours || 0,
       extraCosts: quote?.extraCosts || [],
       notes: quote?.notes || "",
     },
   })
+  
+  useEffect(() => {
+    if (quote?.printHours) {
+        if (quote.printHours < 1) {
+            setTimeUnit("minutes");
+            form.setValue("printTime", quote.printHours * 60);
+        } else {
+            setTimeUnit("hours");
+            form.setValue("printTime", quote.printHours);
+        }
+    }
+  }, [quote, form.setValue]);
+
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -81,22 +98,30 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   })
 
   const watchedValues = form.watch()
+  const printHours = timeUnit === 'hours' ? watchedValues.printTime : (watchedValues.printTime || 0) / 60;
+  
   const costBreakdown: CostBreakdown | null = calculateCosts(
-    watchedValues,
+    { ...watchedValues, printHours },
     materials,
     machines,
-    settings,
     settings
   )
 
   const onSubmit = (data: QuoteFormValues) => {
+    const finalPrintHours = timeUnit === 'hours' ? data.printTime : (data.printTime || 0) / 60;
+
     const quoteToSave: Quote = {
       id: quote?.id || generateId(),
       status: quote?.status || "draft",
       createdAt: quote?.createdAt || new Date().toISOString(),
-      ...data,
-      // Make sure extraCosts is always an array
+      name: data.name,
+      clientName: data.clientName || "",
+      materialId: data.materialId,
+      materialGrams: data.materialGrams,
+      machineId: data.machineId,
+      printHours: finalPrintHours,
       extraCosts: data.extraCosts || [],
+      notes: data.notes || "",
     }
 
     if (quote) {
@@ -226,19 +251,37 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="printHours"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Horas de Impresión</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.1" placeholder="Ej: 8.5" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="space-y-2">
+                    <FormLabel>Tiempo de Impresión</FormLabel>
+                    <div className="flex gap-2">
+                        <FormField
+                        control={form.control}
+                        name="printTime"
+                        render={({ field }) => (
+                            <FormItem className="flex-grow">
+                            <FormControl>
+                                <Input type="number" step="0.1" placeholder={timeUnit === 'hours' ? "Ej: 8.5" : "Ej: 510"} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                         <RadioGroup
+                            defaultValue={timeUnit}
+                            onValueChange={setTimeUnit}
+                            className="flex items-center space-x-2"
+                        >
+                            <div className="flex items-center space-x-1">
+                                <RadioGroupItem value="hours" id="hours" />
+                                <FormLabel htmlFor="hours" className="font-normal cursor-pointer">Horas</FormLabel>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                                <RadioGroupItem value="minutes" id="minutes" />
+                                <FormLabel htmlFor="minutes" className="font-normal cursor-pointer">Minutos</FormLabel>
+                            </div>
+                        </RadioGroup>
+                    </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -324,3 +367,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    

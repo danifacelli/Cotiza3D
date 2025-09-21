@@ -1,8 +1,5 @@
 
 import type { Quote, Material, Machine, Settings } from './types';
-import { useLocalStorage } from '@/hooks/use-local-storage';
-import { LOCAL_STORAGE_KEYS } from './constants';
-import { DEFAULT_SETTINGS } from './defaults';
 
 export interface CostBreakdown {
   materialCost: number;
@@ -22,8 +19,7 @@ export function calculateCosts(
   quote: Partial<Pick<Quote, 'materialId' | 'materialGrams' | 'machineId' | 'printHours' | 'extraCosts'>>,
   materials: Material[],
   machines: Machine[],
-  settings: Settings,
-  globalSettings: Settings
+  settings: Settings
 ): CostBreakdown | null {
   const material = materials.find(m => m.id === quote.materialId);
   const machine = machines.find(m => m.id === quote.machineId);
@@ -64,3 +60,5 @@ export function calculateCosts(
     total,
   };
 }
+
+    
