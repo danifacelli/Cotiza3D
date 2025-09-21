@@ -66,8 +66,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const { toast } = useToast()
 
   const [quotes, setQuotes] = useLocalStorage<Quote[]>(LOCAL_STORAGE_KEYS.QUOTES, [])
-  const [machines] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES)
-  const [materials] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS)
+  const [machines, _, isMachinesHydrated] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES)
+  const [materials, __, isMaterialsHydrated] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS)
   const [settings] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
   
   const [timeUnit, setTimeUnit] = useState("minutes");
@@ -77,7 +77,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     defaultValues: {
       name: quote?.name || "",
       clientName: quote?.clientName || "",
-      parts: quote?.parts?.length ? quote.parts : [{ id: generateId(), materialId: materials[0]?.id || "", materialGrams: 0 }],
+      parts: quote?.parts?.length ? quote.parts : [{ id: generateId(), materialId: "", materialGrams: 0 }],
       machineId: quote?.machineId || "",
       printTime: quote?.printHours || 0,
       extraCosts: quote?.extraCosts || [],
@@ -98,6 +98,16 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         setTimeUnit("minutes");
     }
   }, [quote, form.setValue]);
+  
+  useEffect(() => {
+    // Set default material only on new quote form after materials are hydrated
+    if (!quote && isMaterialsHydrated && materials.length > 0) {
+        const currentParts = form.getValues('parts');
+        if (currentParts.length === 1 && !currentParts[0].materialId) {
+            form.setValue('parts.0.materialId', materials[0].id);
+        }
+    }
+  }, [isMaterialsHydrated, materials, quote, form]);
 
 
   const { fields: partFields, append: appendPart, remove: removePart } = useFieldArray({
@@ -314,7 +324,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>Material</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Selecciona un material" />
@@ -451,5 +461,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    
