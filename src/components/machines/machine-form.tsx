@@ -20,6 +20,8 @@ import { useLocalStorage } from "@/hooks/use-local-storage"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
 import type { Settings } from "@/lib/types"
 import { DEFAULT_SETTINGS } from "@/lib/defaults"
+import { Search } from "lucide-react"
+import Link from "next/link"
 
 const MachineSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
@@ -46,6 +48,10 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
       powerConsumption: defaultValues?.powerConsumption || 0,
     },
   })
+  
+  const machineName = form.watch("name");
+  const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(machineName || "")}+consumo+de+energia+watts`;
+
 
   return (
     <Form {...form}>
@@ -94,6 +100,14 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
                <FormDescription>
                 Potencia promedio que consume la impresora durante la operación.
               </FormDescription>
+               {machineName && (
+                 <Button variant="link" size="sm" asChild className="p-0 h-auto mt-2 text-xs">
+                    <Link href={googleSearchUrl} target="_blank">
+                        <Search className="mr-1" />
+                        Buscar consumo de "{machineName}" en Google
+                    </Link>
+                </Button>
+              )}
               <FormMessage />
             </FormItem>
           )}
