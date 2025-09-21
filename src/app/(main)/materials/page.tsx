@@ -118,7 +118,7 @@ export default function MaterialsPage() {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                        <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+                        <AlertDialogTitle>¿Estás absolutely seguro?</AlertDialogTitle>
                         <AlertDialogDescription>
                             Esta acción no se puede deshacer. Esto eliminará permanentemente todos
                             tus materiales.
@@ -126,8 +126,8 @@ export default function MaterialsPage() {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteAllMaterials} className="bg-destructive hover:bg-destructive/90">
-                            Sí, eliminar todo
+                        <AlertDialogAction onClick={handleDeleteAllMaterials} asChild>
+                           <Button variant="destructive">Sí, eliminar todo</Button>
                         </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

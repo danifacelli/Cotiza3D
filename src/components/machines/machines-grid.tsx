@@ -39,40 +39,40 @@ interface MachinesGridProps {
 function MachineCardActions({ machine, onEdit, onDelete }: { machine: Machine, onEdit: () => void; onDelete: () => void }) {
   return (
     <AlertDialog>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <MoreHorizontal className="h-4 w-4" />
-            <span className="sr-only">Más acciones</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={onEdit}>
-            <Pencil className="mr-2 h-4 w-4" />
-            <span>Editar</span>
-          </DropdownMenuItem>
-           <AlertDialogTrigger asChild>
-            <DropdownMenuItem className="text-destructive focus:text-destructive">
-              <Trash2 className="mr-2 h-4 w-4" />
-              <span>Eliminar</span>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+                <span className="sr-only">Más acciones</span>
+            </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onEdit}>
+                <Pencil className="mr-2 h-4 w-4" />
+                <span>Editar</span>
             </DropdownMenuItem>
-          </AlertDialogTrigger>
-        </DropdownMenuContent>
-      </DropdownMenu>
-       <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>¿Estás seguro que deseas eliminar?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Esta acción no se puede deshacer. Esto eliminará permanentemente la máquina <strong>{machine.name}</strong>.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={onDelete} className="bg-destructive hover:bg-destructive/90">
-            Sí, eliminar
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
+            <AlertDialogTrigger asChild>
+                <DropdownMenuItem className="text-destructive focus:text-destructive">
+                <Trash2 className="mr-2 h-4 w-4" />
+                <span>Eliminar</span>
+                </DropdownMenuItem>
+            </AlertDialogTrigger>
+            </DropdownMenuContent>
+        </DropdownMenu>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro que deseas eliminar?</AlertDialogTitle>
+            <AlertDialogDescription>
+                Esta acción no se puede deshacer. Esto eliminará permanentemente la máquina <strong>{machine.name}</strong>.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction asChild>
+                <Button variant="destructive" onClick={onDelete}>Sí, eliminar</Button>
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
     </AlertDialog>
   )
 }

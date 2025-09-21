@@ -116,8 +116,8 @@ export default function MachinesPage() {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteAllMachines} className="bg-destructive hover:bg-destructive/90">
-                            Sí, eliminar todo
+                        <AlertDialogAction onClick={handleDeleteAllMachines} asChild>
+                            <Button variant="destructive">Sí, eliminar todo</Button>
                         </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
