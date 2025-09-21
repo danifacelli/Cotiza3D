@@ -106,7 +106,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMaterialsHydrated, materials.length, quote]);
+  }, [isMaterialsHydrated, materials, quote]);
   
   useEffect(() => {
     if (quote?.printHours) {
@@ -277,7 +277,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                         <FormItem>
                           <FormLabel className="text-xs text-muted-foreground">Horas</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
+                            <Input type="number" placeholder="0" {...field} onFocus={(e) => e.target.select()} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
                           </FormControl>
                         </FormItem>
                       )}
@@ -289,7 +289,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                         <FormItem>
                           <FormLabel className="text-xs text-muted-foreground">Minutos</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
+                            <Input type="number" placeholder="0" {...field} onFocus={(e) => e.target.select()} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
                           </FormControl>
                         </FormItem>
                       )}
@@ -301,7 +301,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                         <FormItem>
                            <FormLabel className="text-xs text-muted-foreground">Segundos</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
+                            <Input type="number" placeholder="0" {...field} onFocus={(e) => e.target.select()} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
                           </FormControl>
                         </FormItem>
                       )}
