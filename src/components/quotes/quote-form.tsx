@@ -68,7 +68,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const [materials] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS)
   const [settings] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
   
-  const [timeUnit, setTimeUnit] = useState("hours");
+  const [timeUnit, setTimeUnit] = useState("minutes");
 
   const form = useForm<QuoteFormValues>({
     resolver: zodResolver(QuoteSchema),
