@@ -7,10 +7,10 @@ import { LOCAL_STORAGE_KEYS, FILAMENT_TYPES } from "@/lib/constants"
 import { DEFAULT_MATERIALS } from "@/lib/defaults"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { PlusCircle, MoreHorizontal } from "lucide-react"
+import { PlusCircle } from "lucide-react"
 import type { Material } from "@/lib/types"
 import { MaterialForm } from "@/components/materials/material-form"
-import { MaterialsTable } from "@/components/materials/materials-table"
+import { MaterialsGrid } from "@/components/materials/materials-grid"
 import {
   Dialog,
   DialogContent,
@@ -82,9 +82,12 @@ export default function MaterialsPage() {
   });
 
   return (
-    <>
+    <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Insumos</h1>
+        <div>
+            <h1 className="text-2xl font-bold tracking-tight">Insumos</h1>
+            <p className="text-muted-foreground">Administra tus filamentos de impresión.</p>
+        </div>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
             <Button onClick={handleNewMaterial}>
@@ -108,22 +111,12 @@ export default function MaterialsPage() {
         </Dialog>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Materiales</CardTitle>
-          <CardDescription>
-            Aquí puedes ver y administrar todos tus filamentos de impresión.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <MaterialsTable
-            materials={materialsWithDescriptions}
-            onEdit={handleEditMaterial}
-            onDelete={handleDeleteMaterial}
-            isHydrated={isHydrated}
-          />
-        </CardContent>
-      </Card>
-    </>
+      <MaterialsGrid
+        materials={materialsWithDescriptions}
+        onEdit={handleEditMaterial}
+        onDelete={handleDeleteMaterial}
+        isHydrated={isHydrated}
+      />
+    </div>
   )
 }
