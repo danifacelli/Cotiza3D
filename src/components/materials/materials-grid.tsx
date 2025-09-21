@@ -42,40 +42,40 @@ interface MaterialsGridProps {
 function MaterialCardActions({ material, onEdit, onDelete }: { material: Material, onEdit: () => void; onDelete: () => void }) {
   return (
     <AlertDialog>
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Más acciones</span>
-            </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={onEdit}>
-                <Pencil className="mr-2 h-4 w-4" />
-                <span>Editar</span>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <MoreHorizontal className="h-4 w-4" />
+            <span className="sr-only">Más acciones</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={onEdit}>
+            <Pencil className="mr-2 h-4 w-4" />
+            <span>Editar</span>
+          </DropdownMenuItem>
+          <AlertDialogTrigger asChild>
+            <DropdownMenuItem className="text-destructive focus:text-destructive">
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span>Eliminar</span>
             </DropdownMenuItem>
-            <AlertDialogTrigger asChild>
-                <DropdownMenuItem className="text-destructive focus:text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                <span>Eliminar</span>
-                </DropdownMenuItem>
-            </AlertDialogTrigger>
-            </DropdownMenuContent>
-        </DropdownMenu>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-                <AlertDialogTitle>¿Estás seguro que deseas eliminar?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    Esta acción no se puede deshacer. Esto eliminará permanentemente el material <strong>{material.name}</strong>.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction asChild>
-                    <Button variant="destructive" onClick={onDelete}>Sí, eliminar</Button>
-                </AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
+          </AlertDialogTrigger>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>¿Estás seguro que deseas eliminar?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta acción no se puede deshacer. Esto eliminará permanentemente el material <strong>{material.name}</strong>.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction asChild>
+            <Button variant="destructive" onClick={onDelete}>Sí, eliminar</Button>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
     </AlertDialog>
   )
 }
@@ -137,7 +137,7 @@ export function MaterialsGrid({ materials, onEdit, onDelete, isHydrated }: Mater
           </CardContent>
           <CardFooter>
              <div className="text-lg font-semibold">
-                {formatCurrency(material.cost, settings.currencyCode)}
+                {formatCurrency(material.cost, settings.currencyCode, 'es-UY', true)}
                  <span className="text-xs text-muted-foreground font-normal"> / kg</span>
             </div>
           </CardFooter>

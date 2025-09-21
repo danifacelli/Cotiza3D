@@ -71,7 +71,7 @@ export function MaterialsTable({ materials, onEdit, onDelete, isHydrated }: Mate
                   <Badge variant="secondary">{material.type}</Badge>
                 </TableCell>
                 <TableCell className="text-right align-top">
-                  {formatCurrency(material.cost, settings.currencyCode)}
+                  {formatCurrency(material.cost, settings.currencyCode, 'es-UY', true)}
                 </TableCell>
                 <TableCell className="align-top">
                   <DropdownMenu>
