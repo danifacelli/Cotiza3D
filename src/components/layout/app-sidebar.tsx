@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -8,15 +9,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Home, Package, Settings, FileText, Cpu } from "lucide-react"
+import { Home, Layers, Settings, FileText, Printer } from "lucide-react"
 import { Logo } from "@/components/icons/logo"
 import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Dashboard" },
   { href: "/quotes", icon: FileText, label: "Presupuestos" },
-  { href: "/materials", icon: Package, label: "Insumos" },
-  { href: "/machines", icon: Cpu, label: "Máquinas" },
+  { href: "/materials", icon: Layers, label: "Insumos" },
+  { href: "/machines", icon: Printer, label: "Máquinas" },
 ];
 
 export function AppSidebar() {

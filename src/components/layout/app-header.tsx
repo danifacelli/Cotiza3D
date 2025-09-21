@@ -1,12 +1,13 @@
+
 "use client"
 import Link from "next/link"
 import {
   Home,
-  Package,
+  Layers,
   PanelLeft,
   Settings,
   FileText,
-  Cpu,
+  Printer,
 } from "lucide-react"
 
 import {
@@ -55,14 +56,14 @@ export function AppHeader() {
               href="/materials"
               className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             >
-              <Package className="h-5 w-5" />
+              <Layers className="h-5 w-5" />
               Insumos
             </Link>
             <Link
               href="/machines"
               className="flex items-center gap-4 px-2.5 text-foreground"
             >
-              <Cpu className="h-5 w-5" />
+              <Printer className="h-5 w-5" />
               Máquinas
             </Link>
             <Link

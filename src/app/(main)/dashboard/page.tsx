@@ -1,9 +1,10 @@
+
 import Link from "next/link"
 import {
   ArrowUpRight,
-  Cpu,
+  Printer,
   FileText,
-  Package,
+  Layers,
   Settings,
 } from "lucide-react"
 
@@ -51,7 +52,7 @@ export default function Dashboard() {
                  <Link href="/materials">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Insumos</CardTitle>
-                        <Package className="h-4 w-4 text-muted-foreground" />
+                        <Layers className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-xs text-muted-foreground">
@@ -64,7 +65,7 @@ export default function Dashboard() {
                 <Link href="/machines">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Máquinas</CardTitle>
-                        <Cpu className="h-4 w-4 text-muted-foreground" />
+                        <Printer className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-xs text-muted-foreground">
