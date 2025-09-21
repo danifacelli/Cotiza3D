@@ -25,10 +25,6 @@ import {
 } from "@/components/ui/select"
 import type { Material } from "@/lib/types"
 import { FILAMENT_TYPES } from "@/lib/constants"
-import { useLocalStorage } from "@/hooks/use-local-storage"
-import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
-import type { Settings } from "@/lib/types"
-import { DEFAULT_SETTINGS } from "@/lib/defaults"
 
 const MaterialSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
@@ -45,7 +41,6 @@ interface MaterialFormProps {
 }
 
 export function MaterialForm({ onSubmit, onCancel, defaultValues }: MaterialFormProps) {
-  const [settings] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
   const [selectedTypeDescription, setSelectedTypeDescription] = useState<string | undefined>("");
 
   const form = useForm<MaterialFormValues>({
@@ -123,12 +118,12 @@ export function MaterialForm({ onSubmit, onCancel, defaultValues }: MaterialForm
           name="cost"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Costo por kg ({settings.currencyCode})</FormLabel>
+              <FormLabel>Costo por kg (USD)</FormLabel>
               <FormControl>
                 <Input type="number" step="0.01" {...field} />
               </FormControl>
                <FormDescription>
-                El precio que pagaste por un rollo de 1kg de este material.
+                El precio equivalente a 1kg. Si tu rollo es de 750g y costó $15, calcula: (15 / 750) * 1000 = 20. Ingresa 20.
               </FormDescription>
               <FormMessage />
             </FormItem>
