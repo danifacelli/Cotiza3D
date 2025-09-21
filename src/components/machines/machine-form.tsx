@@ -71,7 +71,7 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
           name="costPerHour"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Costo de Depreciación por Hora ({settings.currencySymbol})</FormLabel>
+              <FormLabel>Costo de Depreciación por Hora ({settings.currencyCode})</FormLabel>
               <FormControl>
                 <Input type="number" step="0.01" {...field} />
               </FormControl>
