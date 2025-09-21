@@ -26,7 +26,7 @@ export function AppSidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
       <TooltipProvider>
-        <nav className="flex flex-1 flex-col items-center gap-4 px-2 sm:py-5">
+        <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
           {navItems.map((item) => (
             <Tooltip key={item.href}>
               <TooltipTrigger asChild>
