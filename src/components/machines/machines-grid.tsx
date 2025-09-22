@@ -133,11 +133,11 @@ export function MachinesGrid({ machines, onEdit, onDelete, isHydrated }: Machine
                 <div className="grid gap-1">
                     <div className="flex items-center gap-2">
                         <Sun className="w-4 h-4" />
-                        <span>{machine.powerConsumptionDay} kWh (Día)</span>
+                        <span>{machine.powerConsumptionDay} Watts (Día)</span>
                     </div>
                      <div className="flex items-center gap-2">
                         <Moon className="w-4 h-4" />
-                        <span>{machine.powerConsumptionNight} kWh (Noche)</span>
+                        <span>{machine.powerConsumptionNight} Watts (Noche)</span>
                     </div>
                 </div>
             </div>
