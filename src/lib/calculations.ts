@@ -40,7 +40,7 @@ export function calculateCosts(
   logs.push(`Settings: ${JSON.stringify(settings)}`);
 
   if (!machine || printHours <= 0 || !settings) {
-    logs.push(`[ERROR] Prerrequisitos no cumplidos. Máquina: ${!!machine}, Horas: ${printHours}, Config: ${!!settings}`);
+    logs.push(`[AVISO] Prerrequisitos no cumplidos para cálculo completo.`);
     return { breakdown: null, logs };
   }
   
@@ -59,9 +59,9 @@ export function calculateCosts(
   const machineDepreciationCost = machine.costPerHour * printHours;
   logs.push(`Costo de depreciación: ${machineDepreciationCost}`);
   
-  const powerInWatts = printTimeOfDay === 'day' ? machine.powerConsumptionDay : machine.powerConsumptionNight;
-  const energyPrice = printTimeOfDay === 'day' ? machine.energyCostPerKwhDay : machine.energyCostPerKwhNight;
-  const powerInKw = (powerInWatts || 0) / 1000;
+  const powerInWatts = printTimeOfDay === 'day' ? (machine.powerConsumptionDay || 0) : (machine.powerConsumptionNight || 0);
+  const energyPrice = printTimeOfDay === 'day' ? (machine.energyCostPerKwhDay || 0) : (machine.energyCostPerKwhNight || 0);
+  const powerInKw = powerInWatts / 1000;
 
   logs.push(`Potencia en Watts: ${powerInWatts}`);
   logs.push(`Potencia en kW: ${powerInKw}`);
