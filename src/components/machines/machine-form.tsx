@@ -24,6 +24,8 @@ const MachineSchema = z.object({
   costPerHour: z.coerce.number().min(0, "El costo debe ser un número positivo."),
   powerConsumptionDay: z.coerce.number().int("El consumo debe ser un número entero.").min(0, "El consumo debe ser un número positivo."),
   powerConsumptionNight: z.coerce.number().int("El consumo debe ser un número entero.").min(0, "El consumo debe ser un número positivo."),
+  energyCostPerKwhDay: z.coerce.number().min(0, "El costo debe ser un número positivo."),
+  energyCostPerKwhNight: z.coerce.number().min(0, "El costo debe ser un número positivo."),
 })
 
 type MachineFormValues = z.infer<typeof MachineSchema>
@@ -42,6 +44,8 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
       costPerHour: defaultValues?.costPerHour || 0,
       powerConsumptionDay: defaultValues?.powerConsumptionDay || 0,
       powerConsumptionNight: defaultValues?.powerConsumptionNight || 0,
+      energyCostPerKwhDay: defaultValues?.energyCostPerKwhDay || 0.2,
+      energyCostPerKwhNight: defaultValues?.energyCostPerKwhNight || 0.1,
     },
   })
   
@@ -93,6 +97,7 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
             </FormItem>
           )}
         />
+        
         <div className="grid grid-cols-2 gap-4">
             <FormField
                 control={form.control}
@@ -132,6 +137,38 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
                 </Link>
             </Button>
             )}
+        </FormDescription>
+
+         <div className="grid grid-cols-2 gap-4">
+            <FormField
+                control={form.control}
+                name="energyCostPerKwhDay"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Costo Energía Día (USD/kWh)</FormLabel>
+                    <FormControl>
+                    <Input type="number" step="0.01" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+            <FormField
+                control={form.control}
+                name="energyCostPerKwhNight"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Costo Energía Noche (USD/kWh)</FormLabel>
+                    <FormControl>
+                    <Input type="number" step="0.01" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+        </div>
+        <FormDescription>
+            El costo de la electricidad por Kilowatt-hora según el horario.
         </FormDescription>
 
         <div className="flex justify-end gap-2">

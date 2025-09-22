@@ -13,6 +13,8 @@ export interface Machine {
   costPerHour: number; // in USD
   powerConsumptionDay: number; // in Watts
   powerConsumptionNight: number; // in Watts
+  energyCostPerKwhDay: number; // in USD
+  energyCostPerKwhNight: number; // in USD
 }
 
 export interface Settings {
@@ -21,8 +23,6 @@ export interface Settings {
   companyName: string;
   companyContact: string;
   currencyDecimalPlaces: number;
-  energyCostPerKwhDay: number;
-  energyCostPerKwhNight: number;
 }
 
 export interface ExtraCost {

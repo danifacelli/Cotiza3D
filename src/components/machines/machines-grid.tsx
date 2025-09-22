@@ -122,22 +122,25 @@ export function MachinesGrid({ machines, onEdit, onDelete, isHydrated }: Machine
                 onDelete={() => onDelete(machine.id)}
             />
           </CardHeader>
-          <CardContent className="flex-grow space-y-3">
+          <CardContent className="flex-grow space-y-4">
              <div className="flex items-center text-sm">
                 <DollarSign className="w-4 h-4 mr-3 text-muted-foreground" />
-                <span className="font-semibold mr-2">Depreciación / hora:</span>
-                <span>{formatCurrency(machine.costPerHour, 'USD', settings.currencyDecimalPlaces)}</span>
+                <span className="font-semibold mr-2">Depreciación:</span>
+                <span>{formatCurrency(machine.costPerHour, 'USD', settings.currencyDecimalPlaces)} / hora</span>
             </div>
             <div className="flex items-start text-sm">
                 <Zap className="w-4 h-4 mr-3 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <div className="grid gap-1">
-                    <div className="flex items-center gap-2">
-                        <Sun className="w-4 h-4" />
-                        <span>{machine.powerConsumptionDay} Watts (Día)</span>
-                    </div>
-                     <div className="flex items-center gap-2">
-                        <Moon className="w-4 h-4" />
-                        <span>{machine.powerConsumptionNight} Watts (Noche)</span>
+                <div className="grid gap-2">
+                    <div>
+                        <div className="font-semibold mb-1">Consumo Eléctrico</div>
+                        <div className="flex items-center gap-2 text-xs">
+                            <Sun className="w-4 h-4" />
+                            <span>{machine.powerConsumptionDay} W - {formatCurrency(machine.energyCostPerKwhDay, 'USD', settings.currencyDecimalPlaces)}/kWh</span>
+                        </div>
+                         <div className="flex items-center gap-2 text-xs">
+                            <Moon className="w-4 h-4" />
+                            <span>{machine.powerConsumptionNight} W - {formatCurrency(machine.energyCostPerKwhNight, 'USD', settings.currencyDecimalPlaces)}/kWh</span>
+                        </div>
                     </div>
                 </div>
             </div>
