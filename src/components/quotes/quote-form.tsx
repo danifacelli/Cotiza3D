@@ -107,11 +107,15 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         const updatedMachines = machines.map(machine => {
             const hasEnergyCostDay = 'energyCostPerKwhDay' in machine;
             const hasEnergyCostNight = 'energyCostPerKwhNight' in machine;
+            const hasPowerDay = 'powerConsumptionDay' in machine;
+            const hasPowerNight = 'powerConsumptionNight' in machine;
 
-            if (!hasEnergyCostDay || !hasEnergyCostNight) {
+            if (!hasEnergyCostDay || !hasEnergyCostNight || !hasPowerDay || !hasPowerNight) {
                 machinesUpdated = true;
                 return {
                     ...machine,
+                    powerConsumptionDay: hasPowerDay ? machine.powerConsumptionDay : 0,
+                    powerConsumptionNight: hasPowerNight ? machine.powerConsumptionNight : 0,
                     energyCostPerKwhDay: hasEnergyCostDay ? machine.energyCostPerKwhDay : 0,
                     energyCostPerKwhNight: hasEnergyCostNight ? machine.energyCostPerKwhNight : 0,
                 };
@@ -129,17 +133,13 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const stableSetValue = useCallback(setValue, [setValue]);
 
   useEffect(() => {
-    // Wait until materials are loaded from localStorage
-    if (isMaterialsHydrated && !quote && materials.length > 0) {
-        // We are creating a new quote, materials are available, and there's no quote data.
+    if (isMaterialsHydrated && !quote && materials.length > 0 && isMachinesHydrated) {
         form.reset({
-          // Keep other default values and only update parts
           ...form.getValues(),
           parts: [{ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 }],
-          // Reset other fields for a clean new form
+          machineId: machines.length > 0 ? machines[0].id : "",
           name: "",
           clientName: "",
-          machineId: machines.length > 0 ? machines[0].id : "",
           printTimeOfDay: "day",
           extraCosts: [],
           notes: "",
@@ -150,7 +150,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           laborMinutes: 0,
         });
     }
-  }, [isMaterialsHydrated, isMachinesHydrated, quote, materials, machines, form]);
+  }, [isMaterialsHydrated, isMachinesHydrated, quote, materials, machines, stableSetValue]);
   
   
   useEffect(() => {
@@ -192,7 +192,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   useEffect(() => {
     const isReady =
       watchedValues.machineId &&
-      printHoursDecimal > 0 &&
       isMachinesHydrated &&
       isMaterialsHydrated &&
       isSettingsHydrated;
@@ -221,7 +220,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     machines,
     isMachinesHydrated,
     isMaterialsHydrated,
-    isSettingsHydrated
+    isSettingsHydrated,
   ]);
 
 
@@ -286,6 +285,20 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       variant: "destructive"
     })
   }
+  
+  const energyInfo = useMemo(() => {
+    if (!selectedMachine) return null;
+    
+    const isDay = watchedValues.printTimeOfDay === 'day';
+    const cost = isDay ? selectedMachine.energyCostPerKwhDay : selectedMachine.energyCostPerKwhNight;
+    const consumption = isDay ? selectedMachine.powerConsumptionDay : selectedMachine.powerConsumptionNight;
+
+    return {
+        cost: formatCurrency(cost || 0, "USD", settings.currencyDecimalPlaces),
+        consumption: consumption || 0
+    }
+  }, [selectedMachine, watchedValues.printTimeOfDay, settings.currencyDecimalPlaces]);
+
 
   return (
     <Form {...form}>
@@ -384,6 +397,11 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                                     <SelectItem value="night">Nocturno</SelectItem>
                                 </SelectContent>
                             </Select>
+                             {energyInfo && (
+                                <FormDescription>
+                                  Costo Energía: {energyInfo.cost} / kWh ({energyInfo.consumption}W)
+                                </FormDescription>
+                            )}
                             <FormMessage />
                             </FormItem>
                         )}
@@ -633,5 +651,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    
