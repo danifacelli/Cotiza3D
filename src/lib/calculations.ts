@@ -40,7 +40,7 @@ export function calculateCosts(
   for (const part of quote.parts) {
       const material = materials.find(m => m.id === part.materialId);
       if (material && part.materialGrams && part.materialGrams > 0) {
-        materialCost += (part.materialGrams / 100) * material.cost; // This was wrong, should be /1000
+        materialCost += (part.materialGrams / 1000) * material.cost;
       }
   }
 
