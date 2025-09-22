@@ -100,28 +100,30 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     },
   })
   
-  const { setValue } = form;
+  const { setValue, reset, getValues } = form;
 
   // Effect to add missing fields to legacy items in local storage
   useEffect(() => {
     if (isMachinesHydrated) {
         let machinesUpdated = false;
         const updatedMachines = machines.map(machine => {
-            const needsPowerConsumptionUpdate = !('powerConsumption' in machine);
-            const needsEnergyCostUpdate = !('energyCostPerKwhDay' in machine);
+            const needsUpdate = !('powerConsumption' in machine);
 
-            if (needsPowerConsumptionUpdate || needsEnergyCostUpdate) {
+            if (needsUpdate) {
                 machinesUpdated = true;
-                const updatedMachine = { ...machine };
-                if (needsPowerConsumptionUpdate) {
-                  (updatedMachine as any).powerConsumption = 0;
-                  delete (updatedMachine as any).powerConsumptionDay;
-                  delete (updatedMachine as any).powerConsumptionNight;
+                const updatedMachine = { ...machine } as any;
+                if (!('powerConsumption' in updatedMachine)) {
+                  updatedMachine.powerConsumption = 0;
                 }
-                if (needsEnergyCostUpdate) {
-                  (updatedMachine as any).energyCostPerKwhDay = 0;
-                  (updatedMachine as any).energyCostPerKwhNight = 0;
+                if (!('energyCostPerKwhDay' in updatedMachine)) {
+                  updatedMachine.energyCostPerKwhDay = 0;
                 }
+                if (!('energyCostPerKwhNight' in updatedMachine)) {
+                  updatedMachine.energyCostPerKwhNight = 0;
+                }
+                delete updatedMachine.powerConsumptionDay;
+                delete updatedMachine.powerConsumptionNight;
+
                 return updatedMachine;
             }
             return machine;
@@ -131,15 +133,15 @@ export function QuoteForm({ quote }: QuoteFormProps) {
             setMachines(updatedMachines);
         }
     }
-}, [isMachinesHydrated, machines, setMachines]);
+  }, [isMachinesHydrated, machines, setMachines]);
 
   
   const stableSetValue = useCallback(setValue, [setValue]);
 
   useEffect(() => {
     if (isMaterialsHydrated && !quote && materials.length > 0 && isMachinesHydrated && machines.length > 0) {
-        form.reset({
-          ...form.getValues(),
+        reset({
+          ...getValues(),
           parts: [{ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 }],
           machineId: machines.length > 0 ? machines[0].id : "",
           name: "",
@@ -155,7 +157,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           laborMinutes: 0,
         });
     }
-  }, [isMaterialsHydrated, isMachinesHydrated, quote, materials, machines, form.reset]);
+  }, [isMaterialsHydrated, isMachinesHydrated, quote, materials, machines, reset, getValues]);
   
   
   useEffect(() => {
@@ -216,7 +218,11 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   }, [
     printHoursDecimal,
     laborHoursDecimal,
-    watchedValues,
+    watchedValues.machineId,
+    watchedValues.parts,
+    watchedValues.tariffType,
+    watchedValues.peakHours,
+    watchedValues.extraCosts,
     settings,
     materials,
     machines,
@@ -236,7 +242,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       const material = materials.find(m => m.id === part.materialId);
       const parsedGrams = parseFloat(part.materialGrams as any);
       if (material && !isNaN(parsedGrams) && parsedGrams > 0) {
-        return acc + (grams / 1000) * material.cost;
+        return acc + (parsedGrams / 1000) * material.cost;
       }
       return acc;
     }, 0) || 0;
@@ -588,7 +594,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                         <Alert variant="default" className="mt-4">
                             <AlertDescription className="flex justify-between items-center text-sm">
                                 <span>Total Gramos: <strong>{materialSummary.totalGrams.toFixed(2)} g</strong></span>
-                                <span>Costo de Material: <strong>{formatCurrency(materialSummary.totalCost, "USD", settings.currencyDecimalPlaces)}</strong></span>
+                                {calculationResult.breakdown && <span>Costo de Material: <strong>{formatCurrency(calculationResult.breakdown.materialCost, "USD", settings.currencyDecimalPlaces)}</strong></span>}
                             </AlertDescription>
                         </Alert>
                     )}
@@ -689,7 +695,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    
-
-    
