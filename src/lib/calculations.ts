@@ -48,8 +48,8 @@ export function calculateCosts(
 
   const machineDepreciationCost = machine.costPerHour * printHours;
   
-  // Power consumption is in Watts, we need to convert to kW by dividing by 1000
-  const powerInKw = (printTimeOfDay === 'day' ? machine.powerConsumptionDay : machine.powerConsumptionNight) / 1000;
+  const powerInWatts = printTimeOfDay === 'day' ? machine.powerConsumptionDay : machine.powerConsumptionNight;
+  const powerInKw = powerInWatts / 1000;
   const energyPrice = printTimeOfDay === 'day' ? settings.energyCostPerKwhDay : settings.energyCostPerKwhNight;
   const energyCost = powerInKw * printHours * energyPrice;
   
