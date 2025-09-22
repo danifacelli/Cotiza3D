@@ -121,7 +121,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMaterialsHydrated, quote, materials]);
+  }, [isMaterialsHydrated, quote, materials, form.reset]);
   
   
   useEffect(() => {
@@ -174,13 +174,25 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     }
     
     const result = calculateCosts(
-      { ...watchedValues, printHours: printHoursDecimal, laborHours: laborHoursDecimal, parts: watchedValues.parts },
+      { ...watchedValues, printHours: printHoursDecimal, laborHours: laborHoursDecimal },
       materials,
       machines,
       settings
     );
     setCalculationResult(result);
-  }, [watchedValues, printHoursDecimal, laborHoursDecimal, materials, machines, settings, isMachinesHydrated, isMaterialsHydrated]);
+  }, [
+    printHoursDecimal,
+    laborHoursDecimal,
+    watchedValues.machineId,
+    watchedValues.parts,
+    watchedValues.printTimeOfDay,
+    watchedValues.extraCosts,
+    settings,
+    materials,
+    machines,
+    isMachinesHydrated,
+    isMaterialsHydrated
+  ]);
 
 
   const materialSummary = useMemo(() => {
