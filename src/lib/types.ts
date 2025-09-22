@@ -19,8 +19,6 @@ export interface Settings {
   profitMargin: number; // percentage
   companyName: string;
   companyContact: string;
-  energyCostPerKwhDay: number;
-  energyCostPerKwhNight: number;
 }
 
 export interface ExtraCost {
@@ -46,7 +44,6 @@ export interface Quote {
   
   machineId: string;
   printHours: number;
-  printTimeOfDay: 'day' | 'night';
 
   extraCosts: ExtraCost[];
   notes: string;

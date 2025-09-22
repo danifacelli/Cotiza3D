@@ -6,8 +6,6 @@ export const DEFAULT_SETTINGS: Settings = {
   companyName: 'Cotiza3D',
   companyContact: 'tuemail@ejemplo.com',
   laborCostPerHour: 10,
-  energyCostPerKwhDay: 0.2,
-  energyCostPerKwhNight: 0.1,
   profitMargin: 50,
 };
 

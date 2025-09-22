@@ -43,7 +43,6 @@ const QuoteSchema = z.object({
   clientName: z.string().optional(),
   parts: z.array(PartSchema).min(1, "Debes añadir al menos un material."),
   machineId: z.string().min(1, "Debes seleccionar una máquina."),
-  printTimeOfDay: z.enum(["day", "night"]),
   printHours: z.coerce.number().optional(),
   printMinutes: z.coerce.number().optional(),
   printSeconds: z.coerce.number().optional(),
@@ -83,7 +82,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       clientName: quote?.clientName || "",
       parts: quote?.parts?.length ? quote.parts : [{ id: generateId(), materialId: "", materialGrams: 0 }],
       machineId: quote?.machineId || "",
-      printTimeOfDay: quote?.printTimeOfDay || "day",
       extraCosts: quote?.extraCosts || [],
       notes: quote?.notes || "",
       printHours: quote?.printHours ? Math.floor(quote.printHours) : 0,
@@ -104,7 +102,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           name: "",
           clientName: "",
           machineId: "",
-          printTimeOfDay: "day",
           extraCosts: [],
           notes: "",
           printHours: 0,
@@ -185,7 +182,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       clientName: data.clientName || "",
       parts: data.parts,
       machineId: data.machineId,
-      printTimeOfDay: data.printTimeOfDay,
       printHours: finalPrintHours,
       extraCosts: data.extraCosts || [],
       notes: data.notes || "",
@@ -286,27 +282,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                                 </FormDescription>
                             )}
                             <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                        <FormField
-                        control={form.control}
-                        name="printTimeOfDay"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Horario de Impresión</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecciona un horario" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    <SelectItem value="day">Diurno</SelectItem>
-                                    <SelectItem value="night">Nocturno</SelectItem>
-                                </SelectContent>
-                                </Select>
-                                <FormMessage />
                             </FormItem>
                         )}
                         />
