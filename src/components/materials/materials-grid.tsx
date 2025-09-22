@@ -130,7 +130,7 @@ export function MaterialsGrid({ materials, onEdit, onDelete, isHydrated }: Mater
           </CardContent>
           <CardFooter>
              <div className="text-lg font-semibold">
-                {formatCurrency(material.cost, 'USD', 'es-UY', true)}
+                {formatCurrency(material.cost, 'USD')}
                  <span className="text-xs text-muted-foreground font-normal"> / kg</span>
             </div>
           </CardFooter>
