@@ -20,22 +20,28 @@ export default function EditQuotePage() {
         if (isHydrated) {
             const foundQuote = quotes.find(q => q.id === id);
             
-            // Backwards compatibility for old quotes without 'parts'
-            if (foundQuote && !foundQuote.parts && (foundQuote as any).materialId) {
-                const legacyQuote = foundQuote as any;
-                const updatedQuote: Quote = {
-                    ...foundQuote,
-                    parts: [{
+            // Backwards compatibility for old quotes
+            if (foundQuote) {
+                const updatedQuote: Quote = { ...foundQuote };
+
+                // Handle legacy quotes without 'parts'
+                if (!updatedQuote.parts && (updatedQuote as any).materialId) {
+                    const legacyQuote = updatedQuote as any;
+                    updatedQuote.parts = [{
                         id: 'default-part',
                         materialId: legacyQuote.materialId,
                         materialGrams: legacyQuote.materialGrams,
-                    }],
-                };
-                delete (updatedQuote as any).materialId;
-                delete (updatedQuote as any).materialGrams;
+                    }];
+                    delete (updatedQuote as any).materialId;
+                    delete (updatedQuote as any).materialGrams;
+                }
+
+                // Handle legacy quotes without 'laborHours'
+                if (updatedQuote.laborHours === undefined) {
+                    updatedQuote.laborHours = updatedQuote.printHours;
+                }
+                
                 setQuote(updatedQuote);
-            } else {
-                setQuote(foundQuote);
             }
         }
     }, [id, quotes, isHydrated]);

@@ -46,7 +46,8 @@ export interface Quote {
   
   machineId: string;
   printHours: number;
-  printTimeOfDay: 'day' | 'night';
+  
+  laborHours: number;
 
   extraCosts: ExtraCost[];
   notes: string;

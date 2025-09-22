@@ -4,7 +4,6 @@ import type { Quote, Material, Machine, Settings, QuotePart } from './types';
 export interface CostBreakdown {
   materialCost: number;
   machineDepreciationCost: number;
-  energyCost: number;
   laborCost: number;
   subtotal: number;
   totalExtraCosts: number;
@@ -13,9 +12,10 @@ export interface CostBreakdown {
   total: number;
 }
 
-interface CalculationInput extends Partial<Omit<Quote, 'printHours' | 'parts'>> {
+interface CalculationInput extends Partial<Omit<Quote, 'printHours' | 'laborHours' | 'parts'>> {
     parts?: Partial<QuotePart>[];
     printHours?: number;
+    laborHours?: number;
 }
 
 export function calculateCosts(
@@ -27,6 +27,7 @@ export function calculateCosts(
   
   const machine = machines.find(m => m.id === quote.machineId);
   const printHours = quote.printHours || 0;
+  const laborHours = quote.laborHours || 0;
 
   if (!machine || printHours <= 0) {
     return null;
@@ -45,11 +46,9 @@ export function calculateCosts(
 
   const machineDepreciationCost = machine.costPerHour * printHours;
   
-  const energyCost = 0; // Energy cost is removed from calculations
-
-  const laborCost = (settings.laborCostPerHour || 0) * printHours;
+  const laborCost = (settings.laborCostPerHour || 0) * laborHours;
   
-  const subtotal = materialCost + machineDepreciationCost + energyCost + laborCost;
+  const subtotal = materialCost + machineDepreciationCost + laborCost;
   
   const totalExtraCosts = (quote.extraCosts || []).reduce((acc, cost) => acc + (cost.amount || 0), 0);
   const subtotalWithExtras = subtotal + totalExtraCosts;
@@ -61,7 +60,6 @@ export function calculateCosts(
   return {
     materialCost,
     machineDepreciationCost,
-    energyCost,
     laborCost,
     subtotal,
     totalExtraCosts,

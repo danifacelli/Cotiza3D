@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Trash2, PlusCircle, FileDown } from "lucide-react"
+import { Trash2, PlusCircle, FileDown, Info } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { calculateCosts, CostBreakdown } from "@/lib/calculations"
 import { CostSummary } from "@/components/quotes/cost-summary"
@@ -46,7 +46,8 @@ const QuoteSchema = z.object({
   printHours: z.coerce.number().optional(),
   printMinutes: z.coerce.number().optional(),
   printSeconds: z.coerce.number().optional(),
-  printTimeOfDay: z.enum(['day', 'night']),
+  laborHours: z.coerce.number().optional(),
+  laborMinutes: z.coerce.number().optional(),
   extraCosts: z.array(
     z.object({
       id: z.string(),
@@ -83,12 +84,13 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       clientName: quote?.clientName || "",
       parts: quote?.parts?.length ? quote.parts : [{ id: generateId(), materialId: "", materialGrams: 0 }],
       machineId: quote?.machineId || "",
-      printTimeOfDay: quote?.printTimeOfDay || "day",
       extraCosts: quote?.extraCosts || [],
       notes: quote?.notes || "",
       printHours: quote?.printHours ? Math.floor(quote.printHours) : 0,
       printMinutes: quote?.printHours ? Math.floor((quote.printHours * 60) % 60) : 0,
       printSeconds: quote?.printHours ? Math.round((quote.printHours * 3600) % 60) : 0,
+      laborHours: quote?.laborHours ? Math.floor(quote.laborHours) : 0,
+      laborMinutes: quote?.laborHours ? Math.floor((quote.laborHours * 60) % 60) : 0,
     },
   })
   
@@ -104,12 +106,13 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           name: "",
           clientName: "",
           machineId: "",
-          printTimeOfDay: "day",
           extraCosts: [],
           notes: "",
           printHours: 0,
           printMinutes: 0,
           printSeconds: 0,
+          laborHours: 0,
+          laborMinutes: 0,
         });
     }
   }, [isMaterialsHydrated, quote, materials, form]);
@@ -127,6 +130,13 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         form.setValue("printMinutes", minutes);
         form.setValue("printSeconds", seconds);
     }
+    if (quote?.laborHours) {
+        const totalHours = quote.laborHours;
+        const hours = Math.floor(totalHours);
+        const minutes = Math.floor((totalHours - hours) * 60);
+        form.setValue("laborHours", hours);
+        form.setValue("laborMinutes", minutes);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quote, form.setValue]);
   
@@ -143,9 +153,10 @@ export function QuoteForm({ quote }: QuoteFormProps) {
 
   const watchedValues = form.watch()
   const printHoursDecimal = (Number(watchedValues.printHours) || 0) + ((Number(watchedValues.printMinutes) || 0) / 60) + ((Number(watchedValues.printSeconds) || 0) / 3600);
+  const laborHoursDecimal = (Number(watchedValues.laborHours) || 0) + ((Number(watchedValues.laborMinutes) || 0) / 60);
   
   const costBreakdown: CostBreakdown | null = calculateCosts(
-    { ...watchedValues, printHours: printHoursDecimal, parts: watchedValues.parts },
+    { ...watchedValues, printHours: printHoursDecimal, laborHours: laborHoursDecimal, parts: watchedValues.parts },
     materials,
     machines,
     settings
@@ -176,6 +187,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
 
   const onSubmit = (data: QuoteFormValues) => {
     const finalPrintHours = (data.printHours || 0) + ((data.printMinutes || 0) / 60) + ((data.printSeconds || 0) / 3600);
+    const finalLaborHours = (data.laborHours || 0) + ((data.laborMinutes || 0) / 60);
 
     const quoteToSave: Quote = {
       id: quote?.id || generateId(),
@@ -186,7 +198,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       parts: data.parts,
       machineId: data.machineId,
       printHours: finalPrintHours,
-      printTimeOfDay: data.printTimeOfDay,
+      laborHours: finalLaborHours,
       extraCosts: data.extraCosts || [],
       notes: data.notes || "",
     }
@@ -256,10 +268,10 @@ export function QuoteForm({ quote }: QuoteFormProps) {
             {/* Print Details Card */}
             <Card>
               <CardHeader>
-                <CardTitle>Detalles de Impresión</CardTitle>
+                <CardTitle>Detalles de Impresión y Mano de Obra</CardTitle>
               </CardHeader>
               <CardContent className="grid sm:grid-cols-2 gap-6">
-                 <div className="sm:col-span-2 grid sm:grid-cols-1 gap-6">
+                 <div className="sm:col-span-2">
                      <FormField
                         control={form.control}
                         name="machineId"
@@ -291,7 +303,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                         />
                  </div>
                 
-                <div className="space-y-2 sm:col-span-2">
+                <div className="space-y-2">
                   <FormLabel>Tiempo de Impresión</FormLabel>
                   <div className="grid grid-cols-3 gap-2">
                     <FormField
@@ -332,6 +344,41 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                     />
                   </div>
                   <FormMessage>{form.formState.errors.printHours?.message}</FormMessage>
+                </div>
+
+                <div className="space-y-2">
+                  <FormLabel>Tiempo de Mano de Obra</FormLabel>
+                   <div className="grid grid-cols-2 gap-2">
+                    <FormField
+                      control={form.control}
+                      name="laborHours"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs text-muted-foreground">Horas</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="0" {...field} onFocus={(e) => e.target.select()} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="laborMinutes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs text-muted-foreground">Minutos</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="0" {...field} onFocus={(e) => e.target.select()} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                   <FormDescription className="flex items-center gap-1.5 text-xs">
+                        <Info className="w-3.5 h-3.5"/>
+                        <span>Tiempo de preparación, limpieza, etc.</span>
+                    </FormDescription>
+                  <FormMessage>{form.formState.errors.laborHours?.message}</FormMessage>
                 </div>
               </CardContent>
             </Card>
