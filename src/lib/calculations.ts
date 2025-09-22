@@ -49,7 +49,7 @@ export function calculateCosts(
   const machineDepreciationCost = machine.costPerHour * printHours;
   
   const powerInWatts = printTimeOfDay === 'day' ? machine.powerConsumptionDay : machine.powerConsumptionNight;
-  const powerInKw = powerInWatts / 1000;
+  const powerInKw = (powerInWatts || 0) / 1000;
   const energyPrice = printTimeOfDay === 'day' ? settings.energyCostPerKwhDay : settings.energyCostPerKwhNight;
   const energyCost = powerInKw * printHours * energyPrice;
   
