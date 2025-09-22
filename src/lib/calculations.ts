@@ -4,12 +4,12 @@ import type { Quote, Material, Machine, Settings, QuotePart } from './types';
 export interface CostBreakdown {
   materialCost: number;
   machineDepreciationCost: number;
+  energyCost: number;
   laborCost: number;
   subtotal: number;
   totalExtraCosts: number;
   subtotalWithExtras: number;
   profitAmount: number;
-  subtotalWithProfit: number;
   total: number;
 }
 
@@ -27,6 +27,7 @@ export function calculateCosts(
   
   const machine = machines.find(m => m.id === quote.machineId);
   const printHours = quote.printHours || 0;
+  const timeOfDay = quote.printTimeOfDay || 'day';
 
   if (!machine) {
     return null;
@@ -43,9 +44,14 @@ export function calculateCosts(
   }
 
   const machineDepreciationCost = machine.costPerHour * printHours;
+  
+  const powerConsumption = timeOfDay === 'day' ? machine.powerConsumptionDay : machine.powerConsumptionNight;
+  const energyCostPerKwh = timeOfDay === 'day' ? (settings.energyCostPerKwhDay || 0) : (settings.energyCostPerKwhNight || 0);
+  const energyCost = (powerConsumption / 1000) * printHours * energyCostPerKwh;
+
   const laborCost = settings.laborCostPerHour * printHours;
   
-  const subtotal = materialCost + machineDepreciationCost + laborCost;
+  const subtotal = materialCost + machineDepreciationCost + energyCost + laborCost;
   
   const totalExtraCosts = (quote.extraCosts || []).reduce((acc, cost) => acc + cost.amount, 0);
   const subtotalWithExtras = subtotal + totalExtraCosts;
@@ -58,12 +64,12 @@ export function calculateCosts(
   return {
     materialCost,
     machineDepreciationCost,
+    energyCost,
     laborCost,
     subtotal,
     totalExtraCosts,
     subtotalWithExtras,
     profitAmount,
-    subtotalWithProfit,
     total,
   };
 }

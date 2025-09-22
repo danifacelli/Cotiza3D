@@ -46,6 +46,7 @@ const QuoteSchema = z.object({
   printHours: z.coerce.number().optional(),
   printMinutes: z.coerce.number().optional(),
   printSeconds: z.coerce.number().optional(),
+  printTimeOfDay: z.enum(['day', 'night']),
   extraCosts: z.array(
     z.object({
       id: z.string(),
@@ -82,6 +83,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       clientName: quote?.clientName || "",
       parts: quote?.parts?.length ? quote.parts : [{ id: generateId(), materialId: "", materialGrams: 0 }],
       machineId: quote?.machineId || "",
+      printTimeOfDay: quote?.printTimeOfDay || "day",
       extraCosts: quote?.extraCosts || [],
       notes: quote?.notes || "",
       printHours: quote?.printHours ? Math.floor(quote.printHours) : 0,
@@ -102,6 +104,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           name: "",
           clientName: "",
           machineId: "",
+          printTimeOfDay: "day",
           extraCosts: [],
           notes: "",
           printHours: 0,
@@ -183,6 +186,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       parts: data.parts,
       machineId: data.machineId,
       printHours: finalPrintHours,
+      printTimeOfDay: data.printTimeOfDay,
       extraCosts: data.extraCosts || [],
       notes: data.notes || "",
     }
@@ -281,6 +285,30 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                                 Depreciación: {formatCurrency(selectedMachine.costPerHour, "USD")} / hora.
                                 </FormDescription>
                             )}
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                    <FormField
+                        control={form.control}
+                        name="printTimeOfDay"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Horario de Impresión</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona un horario" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="day">Diurno</SelectItem>
+                                    <SelectItem value="night">Nocturno</SelectItem>
+                                </SelectContent>
+                            </Select>
+                             <FormDescription>
+                                Afecta el costo de energía.
+                                </FormDescription>
                             <FormMessage />
                             </FormItem>
                         )}

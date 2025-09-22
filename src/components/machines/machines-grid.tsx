@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { MoreHorizontal, Pencil, Trash2, Zap, DollarSign } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, Zap, DollarSign, Sun, Moon } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency } from "@/lib/utils"
 
@@ -124,9 +124,14 @@ export function MachinesGrid({ machines, onEdit, onDelete, isHydrated }: Machine
                 <span>{formatCurrency(machine.costPerHour, 'USD')}</span>
             </div>
             <div className="flex items-center text-sm">
-                <Zap className="w-4 h-4 mr-3 text-muted-foreground" />
-                <span className="font-semibold mr-2">Consumo:</span>
-                <span>{machine.powerConsumption} W</span>
+                <Sun className="w-4 h-4 mr-3 text-muted-foreground" />
+                <span className="font-semibold mr-2">Consumo Día:</span>
+                <span>{machine.powerConsumptionDay} W</span>
+            </div>
+             <div className="flex items-center text-sm">
+                <Moon className="w-4 h-4 mr-3 text-muted-foreground" />
+                <span className="font-semibold mr-2">Consumo Noche:</span>
+                <span>{machine.powerConsumptionNight} W</span>
             </div>
           </CardContent>
         </Card>
