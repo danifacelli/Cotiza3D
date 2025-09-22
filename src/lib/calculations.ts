@@ -59,7 +59,7 @@ export function calculateCosts(
   const machineDepreciationCost = machine.costPerHour * printHours;
   logs.push(`Costo de depreciación: ${machineDepreciationCost}`);
   
-  const powerInWatts = printTimeOfDay === 'day' ? (machine.powerConsumptionDay || 0) : (machine.powerConsumptionNight || 0);
+  const powerInWatts = machine.powerConsumption || 0;
   const energyPrice = printTimeOfDay === 'day' ? (machine.energyCostPerKwhDay || 0) : (machine.energyCostPerKwhNight || 0);
   const powerInKw = powerInWatts / 1000;
 

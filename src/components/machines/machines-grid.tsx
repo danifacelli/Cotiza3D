@@ -133,13 +133,17 @@ export function MachinesGrid({ machines, onEdit, onDelete, isHydrated }: Machine
                 <div className="grid gap-2">
                     <div>
                         <div className="font-semibold mb-1">Consumo Eléctrico</div>
-                        <div className="flex items-center gap-2 text-xs">
+                         <div className="text-sm">
+                            <span className="font-semibold mr-2">Potencia:</span>
+                            <span>{machine.powerConsumption} W</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs mt-2">
                             <Sun className="w-4 h-4" />
-                            <span>{machine.powerConsumptionDay} W - {formatCurrency(machine.energyCostPerKwhDay, 'USD', settings.currencyDecimalPlaces)}/kWh</span>
+                            <span>{formatCurrency(machine.energyCostPerKwhDay, 'USD', settings.currencyDecimalPlaces)}/kWh</span>
                         </div>
                          <div className="flex items-center gap-2 text-xs">
                             <Moon className="w-4 h-4" />
-                            <span>{machine.powerConsumptionNight} W - {formatCurrency(machine.energyCostPerKwhNight, 'USD', settings.currencyDecimalPlaces)}/kWh</span>
+                            <span>{formatCurrency(machine.energyCostPerKwhNight, 'USD', settings.currencyDecimalPlaces)}/kWh</span>
                         </div>
                     </div>
                 </div>

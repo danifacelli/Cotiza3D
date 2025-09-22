@@ -107,18 +107,22 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         const updatedMachines = machines.map(machine => {
             const hasEnergyCostDay = 'energyCostPerKwhDay' in machine;
             const hasEnergyCostNight = 'energyCostPerKwhNight' in machine;
-            const hasPowerDay = 'powerConsumptionDay' in machine;
-            const hasPowerNight = 'powerConsumptionNight' in machine;
+            const hasPower = 'powerConsumption' in machine;
 
-            if (!hasEnergyCostDay || !hasEnergyCostNight || !hasPowerDay || !hasPowerNight) {
+            if (!hasEnergyCostDay || !hasEnergyCostNight || !hasPower) {
                 machinesUpdated = true;
-                return {
-                    ...machine,
-                    powerConsumptionDay: hasPowerDay ? machine.powerConsumptionDay : 0,
-                    powerConsumptionNight: hasPowerNight ? machine.powerConsumptionNight : 0,
-                    energyCostPerKwhDay: hasEnergyCostDay ? machine.energyCostPerKwhDay : 0,
-                    energyCostPerKwhNight: hasEnergyCostNight ? machine.energyCostPerKwhNight : 0,
-                };
+                const updatedMachine = { ...machine };
+
+                if (!hasPower) {
+                    updatedMachine.powerConsumption = (machine as any).powerConsumptionDay || 0;
+                    delete (updatedMachine as any).powerConsumptionDay;
+                    delete (updatedMachine as any).powerConsumptionNight;
+                }
+                
+                if (!hasEnergyCostDay) updatedMachine.energyCostPerKwhDay = 0;
+                if (!hasEnergyCostNight) updatedMachine.energyCostPerKwhNight = 0;
+
+                return updatedMachine;
             }
             return machine;
         });
@@ -133,7 +137,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const stableSetValue = useCallback(setValue, [setValue]);
 
   useEffect(() => {
-    if (isMaterialsHydrated && !quote && materials.length > 0 && isMachinesHydrated) {
+    if (isMaterialsHydrated && !quote && materials.length > 0 && isMachinesHydrated && machines.length > 0) {
         form.reset({
           ...form.getValues(),
           parts: [{ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 }],
@@ -150,7 +154,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           laborMinutes: 0,
         });
     }
-  }, [isMaterialsHydrated, isMachinesHydrated, quote, materials, machines, stableSetValue]);
+  }, [isMaterialsHydrated, isMachinesHydrated, quote, materials, machines]);
   
   
   useEffect(() => {
@@ -291,7 +295,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     
     const isDay = watchedValues.printTimeOfDay === 'day';
     const cost = isDay ? selectedMachine.energyCostPerKwhDay : selectedMachine.energyCostPerKwhNight;
-    const consumption = isDay ? selectedMachine.powerConsumptionDay : selectedMachine.powerConsumptionNight;
+    const consumption = selectedMachine.powerConsumption;
 
     return {
         cost: formatCurrency(cost || 0, "USD", settings.currencyDecimalPlaces),
@@ -399,7 +403,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                             </Select>
                              {energyInfo && (
                                 <FormDescription>
-                                  Costo Energía: {energyInfo.cost} / kWh ({energyInfo.consumption}W)
+                                  Costo: {energyInfo.cost} / kWh ({energyInfo.consumption}W)
                                 </FormDescription>
                             )}
                             <FormMessage />
