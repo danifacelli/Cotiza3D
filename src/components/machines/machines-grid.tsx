@@ -120,7 +120,7 @@ export function MachinesGrid({ machines, onEdit, onDelete, isHydrated }: Machine
           <CardContent className="flex-grow space-y-3">
              <div className="flex items-center text-sm">
                 <DollarSign className="w-4 h-4 mr-3 text-muted-foreground" />
-                <span className="font-semibold mr-2">Costo / hora:</span>
+                <span className="font-semibold mr-2">Depreciación / hora:</span>
                 <span>{formatCurrency(machine.costPerHour, 'USD')}</span>
             </div>
             <div className="flex items-start text-sm">
@@ -128,11 +128,11 @@ export function MachinesGrid({ machines, onEdit, onDelete, isHydrated }: Machine
                 <div className="grid gap-1">
                     <div className="flex items-center gap-2">
                         <Sun className="w-4 h-4" />
-                        <span>{machine.powerConsumptionDay} W (Día)</span>
+                        <span>{machine.powerConsumptionDay} kWh (Día)</span>
                     </div>
                      <div className="flex items-center gap-2">
                         <Moon className="w-4 h-4" />
-                        <span>{machine.powerConsumptionNight} W (Noche)</span>
+                        <span>{machine.powerConsumptionNight} kWh (Noche)</span>
                     </div>
                 </div>
             </div>
