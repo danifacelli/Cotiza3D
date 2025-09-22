@@ -158,12 +158,24 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const printHoursDecimal = (Number(watchedValues.printHours) || 0) + ((Number(watchedValues.printMinutes) || 0) / 60) + ((Number(watchedValues.printSeconds) || 0) / 3600);
   const laborHoursDecimal = (Number(watchedValues.laborHours) || 0) + ((Number(watchedValues.laborMinutes) || 0) / 60);
   
-  const costBreakdown: CostBreakdown | null = calculateCosts(
-    { ...watchedValues, printHours: printHoursDecimal, laborHours: laborHoursDecimal, parts: watchedValues.parts },
-    materials,
-    machines,
-    settings
-  )
+  const costBreakdown: CostBreakdown | null = useMemo(() => {
+    const isReady =
+      watchedValues.machineId &&
+      printHoursDecimal > 0 &&
+      isMachinesHydrated &&
+      isMaterialsHydrated;
+
+    if (!isReady) {
+      return null;
+    }
+    
+    return calculateCosts(
+      { ...watchedValues, printHours: printHoursDecimal, laborHours: laborHoursDecimal, parts: watchedValues.parts },
+      materials,
+      machines,
+      settings
+    );
+  }, [watchedValues, printHoursDecimal, laborHoursDecimal, materials, machines, settings, isMachinesHydrated, isMaterialsHydrated]);
 
   const materialSummary = useMemo(() => {
     const totalGrams = watchedValues.parts?.reduce((acc, part) => {
