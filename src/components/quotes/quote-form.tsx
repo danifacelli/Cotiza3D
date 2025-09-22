@@ -107,15 +107,21 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     if (isMachinesHydrated) {
         let machinesUpdated = false;
         const updatedMachines = machines.map(machine => {
-            const needsUpdate = !('powerConsumption' in machine);
-            if (needsUpdate) {
+            const needsPowerConsumptionUpdate = !('powerConsumption' in machine);
+            const needsEnergyCostUpdate = !('energyCostPerKwhDay' in machine);
+
+            if (needsPowerConsumptionUpdate || needsEnergyCostUpdate) {
                 machinesUpdated = true;
-                const updatedMachine = { ...machine, powerConsumption: 0 };
-                // Remove old fields if they exist
-                delete (updatedMachine as any).powerConsumptionDay;
-                delete (updatedMachine as any).powerConsumptionNight;
-                delete (updatedMachine as any).energyCostPerKwhDay;
-                delete (updatedMachine as any).energyCostPerKwhNight;
+                const updatedMachine = { ...machine };
+                if (needsPowerConsumptionUpdate) {
+                  (updatedMachine as any).powerConsumption = 0;
+                  delete (updatedMachine as any).powerConsumptionDay;
+                  delete (updatedMachine as any).powerConsumptionNight;
+                }
+                if (needsEnergyCostUpdate) {
+                  (updatedMachine as any).energyCostPerKwhDay = 0;
+                  (updatedMachine as any).energyCostPerKwhNight = 0;
+                }
                 return updatedMachine;
             }
             return machine;
@@ -125,7 +131,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
             setMachines(updatedMachines);
         }
     }
-  }, [isMachinesHydrated, machines, setMachines]);
+}, [isMachinesHydrated, machines, setMachines]);
 
   
   const stableSetValue = useCallback(setValue, [setValue]);
@@ -210,11 +216,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   }, [
     printHoursDecimal,
     laborHoursDecimal,
-    watchedValues.machineId,
-    watchedValues.parts,
-    watchedValues.tariffType,
-    watchedValues.peakHours,
-    watchedValues.extraCosts,
+    watchedValues,
     settings,
     materials,
     machines,
@@ -287,17 +289,29 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     })
   }
   
-  const energyInfo = useMemo(() => {
-    if (!selectedMachine) return null;
-    
-    const cost = watchedValues.tariffType === 'peak' ? settings.peakEnergyCostKwh : settings.offPeakEnergyCostKwh;
-    const consumption = selectedMachine.powerConsumption;
+  const energyTariffDescription = useMemo(() => {
+    if (!settings) return null;
 
-    return {
-        cost: formatCurrency(cost || 0, "USD", 3),
-        consumption: consumption || 0
+    const { 
+      peakTariffStartTime, 
+      peakTariffEndTime, 
+      peakEnergyCostKwh, 
+      offPeakEnergyCostKwh 
+    } = settings;
+
+    const tariffType = watchedValues.tariffType;
+
+    switch (tariffType) {
+      case 'peak':
+        return `Punta (${peakTariffStartTime} - ${peakTariffEndTime}): ${formatCurrency(peakEnergyCostKwh, "USD", 3)}/kWh.`;
+      case 'off-peak':
+        return `Fuera de Punta: ${formatCurrency(offPeakEnergyCostKwh, "USD", 3)}/kWh.`;
+      case 'mixed':
+         return `Punta (${peakTariffStartTime} - ${peakTariffEndTime}): ${formatCurrency(peakEnergyCostKwh, "USD", 3)}/kWh. Resto: ${formatCurrency(offPeakEnergyCostKwh, "USD", 3)}/kWh.`;
+      default:
+        return null;
     }
-  }, [selectedMachine, watchedValues.tariffType, settings]);
+  }, [watchedValues.tariffType, settings]);
 
 
   return (
@@ -398,9 +412,9 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                                     <SelectItem value="mixed">Mixto</SelectItem>
                                 </SelectContent>
                             </Select>
-                             {energyInfo && (
+                             {energyTariffDescription && (
                                 <FormDescription>
-                                  Punta ({settings.peakTariffStartTime} - {settings.peakTariffEndTime}): {formatCurrency(settings.peakEnergyCostKwh, "USD", 3)}/kWh. Resto: {formatCurrency(settings.offPeakEnergyCostKwh, "USD", 3)}/kWh.
+                                  {energyTariffDescription}
                                 </FormDescription>
                             )}
                             <FormMessage />
@@ -675,5 +689,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
 
     
