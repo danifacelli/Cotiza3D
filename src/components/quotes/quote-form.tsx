@@ -101,18 +101,18 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   })
   
   const { setValue, reset, getValues } = form;
-
+  
   // Effect to add missing fields to legacy items in local storage
   useEffect(() => {
     if (isMachinesHydrated) {
         let machinesUpdated = false;
         const updatedMachines = machines.map(machine => {
-            const needsUpdate = !('powerConsumption' in machine);
+            const needsUpdate = !('powerConsumption' in machine) || !('energyCostPerKwhDay' in machine);
 
             if (needsUpdate) {
                 machinesUpdated = true;
                 const updatedMachine = { ...machine } as any;
-                if (!('powerConsumption' in updatedMachine)) {
+                 if (!('powerConsumption' in updatedMachine)) {
                   updatedMachine.powerConsumption = 0;
                 }
                 if (!('energyCostPerKwhDay' in updatedMachine)) {
@@ -121,6 +121,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 if (!('energyCostPerKwhNight' in updatedMachine)) {
                   updatedMachine.energyCostPerKwhNight = 0;
                 }
+                
                 delete updatedMachine.powerConsumptionDay;
                 delete updatedMachine.powerConsumptionNight;
 
@@ -137,49 +138,51 @@ export function QuoteForm({ quote }: QuoteFormProps) {
 
   
   const stableSetValue = useCallback(setValue, [setValue]);
+  const stableGetValues = useCallback(getValues, [getValues]);
+  const stableReset = useCallback(reset, [reset]);
 
   useEffect(() => {
-    if (isMaterialsHydrated && !quote && materials.length > 0 && isMachinesHydrated && machines.length > 0) {
-        reset({
-          ...getValues(),
-          parts: [{ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 }],
-          machineId: machines.length > 0 ? machines[0].id : "",
-          name: "",
-          clientName: "",
-          tariffType: "off-peak",
-          peakHours: 0,
-          extraCosts: [],
-          notes: "",
-          printHours: 0,
-          printMinutes: 0,
-          printSeconds: 0,
-          laborHours: 0,
-          laborMinutes: 0,
-        });
-    }
-  }, [isMaterialsHydrated, isMachinesHydrated, quote, materials, machines, reset, getValues]);
-  
-  
-  useEffect(() => {
-    if (quote?.printHours) {
-        const totalHours = quote.printHours;
-        const hours = Math.floor(totalHours);
-        const remainingMinutes = (totalHours - hours) * 60;
-        const minutes = Math.floor(remainingMinutes);
-        const seconds = Math.round((remainingMinutes - minutes) * 60);
+    // This effect handles the initial form population for both 'new' and 'edit' modes.
+    if (quote) {
+      // EDIT MODE
+      const totalPrintHours = quote.printHours || 0;
+      const printHours = Math.floor(totalPrintHours);
+      const printMinutes = Math.floor((totalPrintHours - printHours) * 60);
+      const printSeconds = Math.round(((totalPrintHours - printHours) * 60 - printMinutes) * 60);
 
-        stableSetValue("printHours", hours);
-        stableSetValue("printMinutes", minutes);
-        stableSetValue("printSeconds", seconds);
+      const totalLaborHours = quote.laborHours || 0;
+      const laborHours = Math.floor(totalLaborHours);
+      const laborMinutes = Math.round((totalLaborHours - laborHours) * 60);
+
+      stableReset({
+        ...quote,
+        printHours,
+        printMinutes,
+        printSeconds,
+        laborHours,
+        laborMinutes,
+        extraCosts: quote.extraCosts || [],
+      });
+    } else if (isMaterialsHydrated && materials.length > 0 && isMachinesHydrated && machines.length > 0) {
+      // NEW MODE - set defaults only when creating a new quote
+      stableReset({
+        ...stableGetValues(),
+        parts: [{ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 }],
+        machineId: machines.length > 0 ? machines[0].id : "",
+        name: "",
+        clientName: "",
+        tariffType: "off-peak",
+        peakHours: 0,
+        extraCosts: [],
+        notes: "",
+        printHours: 0,
+        printMinutes: 0,
+        printSeconds: 0,
+        laborHours: 0,
+        laborMinutes: 0,
+      });
     }
-    if (quote?.laborHours) {
-        const totalHours = quote.laborHours;
-        const hours = Math.floor(totalHours);
-        const minutes = Math.floor((totalHours - hours) * 60);
-        stableSetValue("laborHours", hours);
-        stableSetValue("laborMinutes", minutes);
-    }
-  }, [quote, stableSetValue]);
+  }, [quote, isMaterialsHydrated, isMachinesHydrated, materials, machines, stableReset, stableGetValues]);
   
 
   const { fields: partFields, append: appendPart, remove: removePart } = useFieldArray({
@@ -218,11 +221,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   }, [
     printHoursDecimal,
     laborHoursDecimal,
-    watchedValues.machineId,
-    watchedValues.parts,
-    watchedValues.tariffType,
-    watchedValues.peakHours,
-    watchedValues.extraCosts,
+    watchedValues, // Watch the entire object for simplicity
     settings,
     materials,
     machines,
@@ -695,3 +694,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
