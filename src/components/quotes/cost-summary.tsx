@@ -2,7 +2,7 @@
 "use client"
 
 import type { CostBreakdown } from "@/lib/calculations"
-import type { Settings } from "@/lib/types"
+import type { Settings, Machine, Quote } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -12,18 +12,23 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 interface CostSummaryProps {
   breakdown: CostBreakdown | null
   settings: Settings
+  machine: Machine | undefined
+  quoteInput: Partial<Quote>
   actions?: React.ReactNode
   logs?: string[]
 }
 
-const SummaryRow = ({ label, value, className = "" }: { label: string, value: string, className?: string }) => (
-  <div className={`flex justify-between items-center text-sm ${className}`}>
-    <span className="text-muted-foreground">{label}</span>
-    <span className="font-medium">{value}</span>
+const SummaryRow = ({ label, value, className = "", description }: { label: string, value: string, className?: string, description?: string }) => (
+  <div className={`flex justify-between items-start text-sm ${className}`}>
+    <div className="text-muted-foreground">
+        <p>{label}</p>
+        {description && <p className="text-xs text-muted-foreground/80">{description}</p>}
+    </div>
+    <span className="font-medium text-right">{value}</span>
   </div>
 )
 
-export function CostSummary({ breakdown, settings, actions, logs }: CostSummaryProps) {
+export function CostSummary({ breakdown, settings, machine, quoteInput, actions, logs }: CostSummaryProps) {
   if (!breakdown) {
     return (
       <Card>
@@ -43,6 +48,14 @@ export function CostSummary({ breakdown, settings, actions, logs }: CostSummaryP
   
   const decimalPlaces = settings.currencyDecimalPlaces;
 
+  const getEnergyCostDetails = () => {
+    if (!machine || !quoteInput.printHours) return "";
+    const isDay = quoteInput.printTimeOfDay === 'day';
+    const energyPrice = isDay ? machine.energyCostPerKwhDay : machine.energyCostPerKwhNight;
+    const powerInKw = machine.powerConsumption / 1000;
+    return `(${(powerInKw).toFixed(3)}kW * ${quoteInput.printHours.toFixed(2)}h * ${formatCurrency(energyPrice, "USD", 3)})`;
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -57,6 +70,7 @@ export function CostSummary({ breakdown, settings, actions, logs }: CostSummaryP
         <SummaryRow
           label="Costo de Energía"
           value={formatCurrency(breakdown.energyCost, "USD", decimalPlaces)}
+          description={getEnergyCostDetails()}
         />
         <SummaryRow
           label="Depreciación Máquina"

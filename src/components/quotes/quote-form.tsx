@@ -111,18 +111,13 @@ export function QuoteForm({ quote }: QuoteFormProps) {
 
             if (!hasEnergyCostDay || !hasEnergyCostNight || !hasPower) {
                 machinesUpdated = true;
-                const updatedMachine = { ...machine };
+                const updatedMachine: Partial<Machine> = { ...machine };
 
-                if (!hasPower) {
-                    updatedMachine.powerConsumption = (machine as any).powerConsumptionDay || 0;
-                    delete (updatedMachine as any).powerConsumptionDay;
-                    delete (updatedMachine as any).powerConsumptionNight;
-                }
-                
+                if (!hasPower) updatedMachine.powerConsumption = 0;
                 if (!hasEnergyCostDay) updatedMachine.energyCostPerKwhDay = 0;
                 if (!hasEnergyCostNight) updatedMachine.energyCostPerKwhNight = 0;
 
-                return updatedMachine;
+                return updatedMachine as Machine;
             }
             return machine;
         });
@@ -154,7 +149,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           laborMinutes: 0,
         });
     }
-  }, [isMaterialsHydrated, isMachinesHydrated, quote, materials, machines]);
+  }, [isMaterialsHydrated, isMachinesHydrated, quote, materials, machines, form]);
   
   
   useEffect(() => {
@@ -636,6 +631,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
             <CostSummary
                 breakdown={calculationResult.breakdown}
                 settings={settings}
+                machine={selectedMachine}
+                quoteInput={{...watchedValues, printHours: printHoursDecimal}}
                 logs={calculationResult.logs}
                 actions={
                   <>
