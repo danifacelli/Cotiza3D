@@ -40,6 +40,8 @@ export function CostSummary({ breakdown, settings, actions }: CostSummaryProps) 
       </Card>
     )
   }
+  
+  const decimalPlaces = settings.currencyDecimalPlaces;
 
   return (
     <Card>
@@ -50,29 +52,29 @@ export function CostSummary({ breakdown, settings, actions }: CostSummaryProps) 
       <CardContent className="space-y-4">
         <SummaryRow
           label="Costo de Material"
-          value={formatCurrency(breakdown.materialCost, "USD")}
+          value={formatCurrency(breakdown.materialCost, "USD", decimalPlaces)}
         />
         <SummaryRow
           label="Depreciación Máquina"
-          value={formatCurrency(breakdown.machineDepreciationCost, "USD")}
+          value={formatCurrency(breakdown.machineDepreciationCost, "USD", decimalPlaces)}
         />
         <SummaryRow
           label="Mano de Obra"
-          value={formatCurrency(breakdown.laborCost, "USD")}
+          value={formatCurrency(breakdown.laborCost, "USD", decimalPlaces)}
         />
         
         <Separator />
         
         <SummaryRow
           label="Subtotal Costos Fijos"
-          value={formatCurrency(breakdown.subtotal, "USD")}
+          value={formatCurrency(breakdown.subtotal, "USD", decimalPlaces)}
           className="font-semibold"
         />
 
         {breakdown.totalExtraCosts > 0 && (
             <SummaryRow
                 label="Costos Adicionales"
-                value={formatCurrency(breakdown.totalExtraCosts, "USD")}
+                value={formatCurrency(breakdown.totalExtraCosts, "USD", decimalPlaces)}
             />
         )}
         
@@ -80,12 +82,12 @@ export function CostSummary({ breakdown, settings, actions }: CostSummaryProps) 
 
         <SummaryRow
           label={`Ganancia (${settings.profitMargin}%)`}
-          value={formatCurrency(breakdown.profitAmount, "USD")}
+          value={formatCurrency(breakdown.profitAmount, "USD", decimalPlaces)}
         />
 
         <div className="flex justify-between items-center text-xl font-bold pt-4">
           <span>Total</span>
-          <span>{formatCurrency(breakdown.total, "USD")}</span>
+          <span>{formatCurrency(breakdown.total, "USD", decimalPlaces)}</span>
         </div>
       </CardContent>
       {actions && (

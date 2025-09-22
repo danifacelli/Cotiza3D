@@ -282,7 +282,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                             </Select>
                             {selectedMachine && (
                                 <FormDescription>
-                                Depreciación: {formatCurrency(selectedMachine.costPerHour, "USD")} / hora.
+                                Depreciación: {formatCurrency(selectedMachine.costPerHour, "USD", settings.currencyDecimalPlaces)} / hora.
                                 </FormDescription>
                             )}
                             <FormMessage />
@@ -400,7 +400,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                         <Alert variant="default" className="mt-4">
                             <AlertDescription className="flex justify-between items-center text-sm">
                                 <span>Total Gramos: <strong>{materialSummary.totalGrams.toFixed(2)} g</strong></span>
-                                <span>Costo de Material: <strong>{formatCurrency(materialSummary.totalCost, "USD")}</strong></span>
+                                <span>Costo de Material: <strong>{formatCurrency(materialSummary.totalCost, "USD", settings.currencyDecimalPlaces)}</strong></span>
                             </AlertDescription>
                         </Alert>
                     )}

@@ -22,6 +22,7 @@ export const SettingsSchema = z.object({
   companyContact: z.string().email("Debe ser un email válido"),
   laborCostPerHour: z.coerce.number().min(0, "Debe ser un número positivo"),
   profitMargin: z.coerce.number().min(0, "Debe ser un número positivo"),
+  currencyDecimalPlaces: z.coerce.number().min(0).max(4, "Puede ser entre 0 y 4"),
 })
 
 interface SettingsFormProps {
@@ -96,6 +97,25 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                       <FormControl>
                         <Input type="number" step="1" {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            </div>
+             <div className="space-y-4">
+                <h3 className="text-lg font-medium">Regional</h3>
+                 <FormField
+                  control={form.control}
+                  name="currencyDecimalPlaces"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Precisión Decimal Moneda</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="0" max="4" step="1" {...field} />
+                      </FormControl>
+                       <FormDescription>
+                        El número de decimales a mostrar para los precios (0-4).
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

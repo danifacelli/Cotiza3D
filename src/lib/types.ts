@@ -11,8 +11,8 @@ export interface Machine {
   id: string;
   name: string;
   costPerHour: number; // in USD
-  powerConsumptionDay: number; // in Watts
-  powerConsumptionNight: number; // in Watts
+  powerConsumptionDay: number; // in kWh
+  powerConsumptionNight: number; // in kWh
 }
 
 export interface Settings {
@@ -20,6 +20,7 @@ export interface Settings {
   profitMargin: number; // percentage
   companyName: string;
   companyContact: string;
+  currencyDecimalPlaces: number;
 }
 
 export interface ExtraCost {

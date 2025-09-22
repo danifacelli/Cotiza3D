@@ -24,6 +24,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { MoreHorizontal, Pencil, Trash2, Zap, DollarSign, Sun, Moon } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency } from "@/lib/utils"
+import { useLocalStorage } from "@/hooks/use-local-storage"
+import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
+import { DEFAULT_SETTINGS } from "@/lib/defaults"
+import type { Settings } from "@/lib/types"
 
 interface MachinesGridProps {
   machines: Machine[]
@@ -74,6 +78,7 @@ function MachineCardActions({ machine, onEdit, onDelete }: { machine: Machine, o
 }
 
 export function MachinesGrid({ machines, onEdit, onDelete, isHydrated }: MachinesGridProps) {
+  const [settings] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
 
   if (!isHydrated) {
     return (
@@ -121,7 +126,7 @@ export function MachinesGrid({ machines, onEdit, onDelete, isHydrated }: Machine
              <div className="flex items-center text-sm">
                 <DollarSign className="w-4 h-4 mr-3 text-muted-foreground" />
                 <span className="font-semibold mr-2">Depreciación / hora:</span>
-                <span>{formatCurrency(machine.costPerHour, 'USD')}</span>
+                <span>{formatCurrency(machine.costPerHour, 'USD', settings.currencyDecimalPlaces)}</span>
             </div>
             <div className="flex items-start text-sm">
                 <Zap className="w-4 h-4 mr-3 text-muted-foreground flex-shrink-0 mt-0.5" />

@@ -6,17 +6,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatCurrency(amount: number, currencyCode: string = 'USD') {
+export function formatCurrency(amount: number, currencyCode: string = 'USD', decimalPlaces: number = 2) {
   const options: Intl.NumberFormatOptions = {
     style: 'currency',
     currency: currencyCode,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4,
+    minimumFractionDigits: decimalPlaces,
+    maximumFractionDigits: decimalPlaces,
     currencyDisplay: 'code' // This will display 'USD' instead of '$'
   };
   
   // Replace the default currency code with an empty string to avoid "USD USD"
   return new Intl.NumberFormat('en-US', options).format(amount).replace(currencyCode, '').trim() + ` ${currencyCode}`;
 }
-
-    
