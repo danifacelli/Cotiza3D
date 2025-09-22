@@ -1,3 +1,4 @@
+
 "use client"
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants";
@@ -20,27 +21,8 @@ export default function SettingsPage() {
         });
     };
 
-    if (!isHydrated) {
-        return (
-            <div>
-                <Card>
-                    <CardHeader>
-                        <Skeleton className="h-8 w-48" />
-                        <Skeleton className="h-4 w-64" />
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                    </CardContent>
-                </Card>
-            </div>
-        )
-    }
-
-    return (
-        <Card>
+    const renderForm = () => (
+         <Card>
             <CardHeader>
                 <CardTitle>Configuración</CardTitle>
                 <CardDescription>
@@ -54,5 +36,26 @@ export default function SettingsPage() {
                 />
             </CardContent>
         </Card>
+    );
+
+    const renderSkeleton = () => (
+        <Card>
+            <CardHeader>
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-4 w-64" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+            </CardContent>
+        </Card>
+    );
+
+    return (
+        <div>
+            {isHydrated ? renderForm() : renderSkeleton()}
+        </div>
     );
 }

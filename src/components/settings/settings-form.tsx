@@ -22,7 +22,7 @@ export const SettingsSchema = z.object({
   companyContact: z.string().email("Debe ser un email válido"),
   laborCostPerHour: z.coerce.number().min(0, "Debe ser un número positivo"),
   profitMargin: z.coerce.number().min(0, "Debe ser un número positivo"),
-  currencyDecimalPlaces: z.coerce.number().min(0).max(4, "Puede ser entre 0 y 4"),
+  currencyDecimalPlaces: z.coerce.number().min(0, "Puede ser entre 0 y 4").max(4),
 })
 
 interface SettingsFormProps {
@@ -33,7 +33,14 @@ interface SettingsFormProps {
 export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
   const form = useForm<Settings>({
     resolver: zodResolver(SettingsSchema),
-    defaultValues,
+    defaultValues: {
+      ...defaultValues,
+      companyName: defaultValues?.companyName ?? '',
+      companyContact: defaultValues?.companyContact ?? '',
+      laborCostPerHour: defaultValues?.laborCostPerHour ?? 0,
+      profitMargin: defaultValues?.profitMargin ?? 0,
+      currencyDecimalPlaces: defaultValues?.currencyDecimalPlaces ?? 2,
+    }
   })
 
   function onSubmit(data: Settings) {
