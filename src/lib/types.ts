@@ -17,7 +17,6 @@ export interface Machine {
 export interface Settings {
   laborCostPerHour: number; // in USD
   profitMargin: number; // percentage
-  iva: number; // percentage
   companyName: string;
   companyContact: string;
   energyCostPerKwhDay: number;

@@ -9,7 +9,6 @@ export const DEFAULT_SETTINGS: Settings = {
   energyCostPerKwhDay: 0.2,
   energyCostPerKwhNight: 0.1,
   profitMargin: 50,
-  iva: 22,
 };
 
 export const DEFAULT_MATERIALS: Material[] = [

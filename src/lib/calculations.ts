@@ -11,7 +11,6 @@ export interface CostBreakdown {
   subtotalWithExtras: number;
   profitAmount: number;
   subtotalWithProfit: number;
-  ivaAmount: number;
   total: number;
 }
 
@@ -62,8 +61,7 @@ export function calculateCosts(
   const profitAmount = subtotalWithExtras * (settings.profitMargin / 100);
   const subtotalWithProfit = subtotalWithExtras + profitAmount;
   
-  const ivaAmount = subtotalWithProfit * (settings.iva / 100);
-  const total = subtotalWithProfit + ivaAmount;
+  const total = subtotalWithProfit;
 
   return {
     materialCost,
@@ -75,7 +73,6 @@ export function calculateCosts(
     subtotalWithExtras,
     profitAmount,
     subtotalWithProfit,
-    ivaAmount,
     total,
   };
 }

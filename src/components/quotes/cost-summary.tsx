@@ -86,21 +86,10 @@ export function CostSummary({ breakdown, settings, actions }: CostSummaryProps) 
           label={`Ganancia (${settings.profitMargin}%)`}
           value={formatCurrency(breakdown.profitAmount, "USD")}
         />
-        <SummaryRow
-          label="Subtotal + Ganancia"
-          value={formatCurrency(breakdown.subtotalWithProfit, "USD")}
-          className="font-semibold"
-        />
-        <SummaryRow
-          label={`IVA (${settings.iva}%)`}
-          value={formatCurrency(breakdown.ivaAmount, "USD")}
-        />
-        
-        <Separator />
 
-        <div className="flex justify-between items-center text-xl font-bold">
+        <div className="flex justify-between items-center text-xl font-bold pt-4">
           <span>Total</span>
-          <span>{formatCurrency(breakdown.total, "USD", 'es-UY', true)}</span>
+          <span>{formatCurrency(breakdown.total, "USD")}</span>
         </div>
       </CardContent>
       {actions && (

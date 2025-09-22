@@ -23,7 +23,6 @@ export const SettingsSchema = z.object({
   energyCostPerKwhDay: z.coerce.number().min(0, "Debe ser un número positivo"),
   energyCostPerKwhNight: z.coerce.number().min(0, "Debe ser un número positivo"),
   profitMargin: z.coerce.number().min(0, "Debe ser un número positivo"),
-  iva: z.coerce.number().min(0, "Debe ser un número positivo"),
 })
 
 interface SettingsFormProps {
@@ -121,19 +120,6 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Margen de Ganancia (%)</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="1" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="iva"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Impuesto (IVA %)</FormLabel>
                       <FormControl>
                         <Input type="number" step="1" {...field} />
                       </FormControl>
