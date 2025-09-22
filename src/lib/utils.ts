@@ -12,9 +12,11 @@ export function formatCurrency(amount: number, currencyCode: string = 'USD') {
     currency: currencyCode,
     minimumFractionDigits: 2,
     maximumFractionDigits: 4,
+    currencyDisplay: 'code' // This will display 'USD' instead of '$'
   };
   
-  return new Intl.NumberFormat('en-US', options).format(amount);
+  // Replace the default currency code with an empty string to avoid "USD USD"
+  return new Intl.NumberFormat('en-US', options).format(amount).replace(currencyCode, '').trim() + ` ${currencyCode}`;
 }
 
     
