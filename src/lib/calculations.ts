@@ -25,13 +25,23 @@ export function calculateCosts(
   machines: Machine[],
   settings: Settings
 ): CostBreakdown | null {
+  console.log("--- CALCULATE COSTS ---");
+  console.log("Input Quote:", quote);
+  console.log("Materials:", materials);
+  console.log("Machines:", machines);
+  console.log("Settings:", settings);
   
   const machine = machines.find(m => m.id === quote.machineId);
   const printHours = quote.printHours || 0;
   const laborHours = quote.laborHours || 0;
   const printTimeOfDay = quote.printTimeOfDay || 'day';
 
+  console.log("Found Machine:", machine);
+  console.log("Print Hours:", printHours);
+  console.log("Print Time of Day:", printTimeOfDay);
+
   if (!machine || printHours <= 0 || !settings) {
+    console.error("Calculation prerequisites not met. Machine:", machine, "Print Hours:", printHours, "Settings:", settings);
     return null;
   }
   
@@ -51,7 +61,13 @@ export function calculateCosts(
   const powerInWatts = printTimeOfDay === 'day' ? machine.powerConsumptionDay : machine.powerConsumptionNight;
   const powerInKw = (powerInWatts || 0) / 1000;
   const energyPrice = printTimeOfDay === 'day' ? settings.energyCostPerKwhDay : settings.energyCostPerKwhNight;
+
+  console.log("Power in Watts:", powerInWatts);
+  console.log("Power in kW:", powerInKw);
+  console.log("Energy Price per kWh:", energyPrice);
+
   const energyCost = powerInKw * printHours * energyPrice;
+  console.log("Calculated Energy Cost:", energyCost);
   
   const laborCost = (settings.laborCostPerHour || 0) * laborHours;
   
@@ -64,7 +80,7 @@ export function calculateCosts(
   
   const total = subtotalWithExtras + profitAmount;
 
-  return {
+  const breakdown = {
     materialCost,
     machineDepreciationCost,
     energyCost,
@@ -75,4 +91,9 @@ export function calculateCosts(
     profitAmount,
     total,
   };
+
+  console.log("Final Breakdown:", breakdown);
+  console.log("--- END CALCULATE COSTS ---");
+
+  return breakdown;
 }
