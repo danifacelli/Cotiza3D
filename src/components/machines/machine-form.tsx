@@ -22,7 +22,8 @@ import Link from "next/link"
 const MachineSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
   costPerHour: z.coerce.number().min(0, "El costo debe ser un número positivo."),
-  powerConsumption: z.coerce.number().min(0, "El consumo debe ser un número positivo."),
+  powerConsumptionDay: z.coerce.number().min(0, "El consumo debe ser un número positivo."),
+  powerConsumptionNight: z.coerce.number().min(0, "El consumo debe ser un número positivo."),
 })
 
 type MachineFormValues = z.infer<typeof MachineSchema>
@@ -39,7 +40,8 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
     defaultValues: {
       name: defaultValues?.name || "",
       costPerHour: defaultValues?.costPerHour || 0,
-      powerConsumption: defaultValues?.powerConsumption || 0,
+      powerConsumptionDay: defaultValues?.powerConsumptionDay || 0,
+      powerConsumptionNight: defaultValues?.powerConsumptionNight || 0,
     },
   })
   
@@ -91,30 +93,46 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
             </FormItem>
           )}
         />
-        <FormField
-            control={form.control}
-            name="powerConsumption"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Consumo de Energía (Watts)</FormLabel>
-                <FormControl>
-                  <Input type="number" step="1" {...field} />
-                </FormControl>
-                 <FormDescription>
-                    Potencia promedio que consume la impresora durante la operación.
-                    {machineName && (
-                    <Button variant="link" size="sm" asChild className="p-0 h-auto mt-2 text-xs d-block">
-                        <Link href={powerConsumptionSearchUrl} target="_blank">
-                            <Search className="mr-1" />
-                            Buscar consumo de "{machineName}" en Google
-                        </Link>
-                    </Button>
-                    )}
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
+        <div className="grid grid-cols-2 gap-4">
+            <FormField
+                control={form.control}
+                name="powerConsumptionDay"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Consumo Día (Watts)</FormLabel>
+                    <FormControl>
+                    <Input type="number" step="1" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+            <FormField
+                control={form.control}
+                name="powerConsumptionNight"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Consumo Noche (Watts)</FormLabel>
+                    <FormControl>
+                    <Input type="number" step="1" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+        </div>
+        
+        <FormDescription>
+            Potencia promedio que consume la impresora durante la operación.
+            {machineName && (
+            <Button variant="link" size="sm" asChild className="p-0 h-auto mt-2 text-xs d-block">
+                <Link href={powerConsumptionSearchUrl} target="_blank">
+                    <Search className="mr-1" />
+                    Buscar consumo de "{machineName}" en Google
+                </Link>
+            </Button>
             )}
-          />
+        </FormDescription>
 
         <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>

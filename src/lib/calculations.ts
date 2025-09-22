@@ -29,7 +29,7 @@ export function calculateCosts(
   const printHours = quote.printHours || 0;
   const timeOfDay = quote.printTimeOfDay || 'day';
 
-  if (!machine) {
+  if (!machine || printHours <= 0) {
     return null;
   }
   
@@ -37,26 +37,27 @@ export function calculateCosts(
   if (quote.parts) {
     for (const part of quote.parts) {
         const material = materials.find(m => m.id === part.materialId);
-        if (material && part.materialGrams && part.materialGrams > 0) {
-          materialCost += (part.materialGrams / 1000) * material.cost;
+        const grams = Number(part.materialGrams) || 0;
+        if (material && grams > 0) {
+          materialCost += (grams / 1000) * material.cost;
         }
     }
   }
 
   const machineDepreciationCost = machine.costPerHour * printHours;
   
-  const powerConsumption = machine.powerConsumption;
+  const powerConsumption = timeOfDay === 'day' ? machine.powerConsumptionDay : machine.powerConsumptionNight;
   const energyCostPerKwh = timeOfDay === 'day' ? (settings.energyCostPerKwhDay || 0) : (settings.energyCostPerKwhNight || 0);
   const energyCost = (powerConsumption / 1000) * printHours * energyCostPerKwh;
 
-  const laborCost = settings.laborCostPerHour * printHours;
+  const laborCost = (settings.laborCostPerHour || 0) * printHours;
   
   const subtotal = materialCost + machineDepreciationCost + energyCost + laborCost;
   
-  const totalExtraCosts = (quote.extraCosts || []).reduce((acc, cost) => acc + cost.amount, 0);
+  const totalExtraCosts = (quote.extraCosts || []).reduce((acc, cost) => acc + (cost.amount || 0), 0);
   const subtotalWithExtras = subtotal + totalExtraCosts;
 
-  const profitAmount = subtotalWithExtras * (settings.profitMargin / 100);
+  const profitAmount = subtotalWithExtras * ((settings.profitMargin || 0) / 100);
   
   const total = subtotalWithExtras + profitAmount;
 

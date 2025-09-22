@@ -123,10 +123,18 @@ export function MachinesGrid({ machines, onEdit, onDelete, isHydrated }: Machine
                 <span className="font-semibold mr-2">Costo / hora:</span>
                 <span>{formatCurrency(machine.costPerHour, 'USD')}</span>
             </div>
-            <div className="flex items-center text-sm">
-                <Zap className="w-4 h-4 mr-3 text-muted-foreground" />
-                <span className="font-semibold mr-2">Consumo:</span>
-                <span>{machine.powerConsumption} W</span>
+            <div className="flex items-start text-sm">
+                <Zap className="w-4 h-4 mr-3 text-muted-foreground flex-shrink-0 mt-0.5" />
+                <div className="grid gap-1">
+                    <div className="flex items-center gap-2">
+                        <Sun className="w-4 h-4" />
+                        <span>{machine.powerConsumptionDay} W (Día)</span>
+                    </div>
+                     <div className="flex items-center gap-2">
+                        <Moon className="w-4 h-4" />
+                        <span>{machine.powerConsumptionNight} W (Noche)</span>
+                    </div>
+                </div>
             </div>
           </CardContent>
         </Card>
