@@ -76,7 +76,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const [quotes, setQuotes] = useLocalStorage<Quote[]>(LOCAL_STORAGE_KEYS.QUOTES, [])
   const [machines, _, isMachinesHydrated] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES)
   const [materials, __, isMaterialsHydrated] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS)
-  const [settings] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
+  const [settings, setSettings, isSettingsHydrated] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
   
   const [calculationResult, setCalculationResult] = useState<{ breakdown: CostBreakdown | null; logs: string[] }>({ breakdown: null, logs: [] });
 
@@ -121,7 +121,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMaterialsHydrated, quote, materials, form.reset]);
+  }, [isMaterialsHydrated, quote, materials]);
   
   
   useEffect(() => {
@@ -166,7 +166,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       watchedValues.machineId &&
       printHoursDecimal > 0 &&
       isMachinesHydrated &&
-      isMaterialsHydrated;
+      isMaterialsHydrated &&
+      isSettingsHydrated;
 
     if (!isReady) {
       setCalculationResult({ breakdown: null, logs: ["Esperando datos para calcular..."] });
@@ -191,7 +192,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     materials,
     machines,
     isMachinesHydrated,
-    isMaterialsHydrated
+    isMaterialsHydrated,
+    isSettingsHydrated
   ]);
 
 
@@ -603,5 +605,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    

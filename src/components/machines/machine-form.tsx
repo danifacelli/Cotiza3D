@@ -22,8 +22,8 @@ import Link from "next/link"
 const MachineSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
   costPerHour: z.coerce.number().min(0, "El costo debe ser un número positivo."),
-  powerConsumptionDay: z.coerce.number().min(0, "El consumo debe ser un número positivo."),
-  powerConsumptionNight: z.coerce.number().min(0, "El consumo debe ser un número positivo."),
+  powerConsumptionDay: z.coerce.number().int("El consumo debe ser un número entero.").min(0, "El consumo debe ser un número positivo."),
+  powerConsumptionNight: z.coerce.number().int("El consumo debe ser un número entero.").min(0, "El consumo debe ser un número positivo."),
 })
 
 type MachineFormValues = z.infer<typeof MachineSchema>
