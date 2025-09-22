@@ -28,7 +28,7 @@ import { Trash2, PlusCircle, FileDown, Info } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { calculateCosts, CostBreakdown } from "@/lib/calculations"
 import { CostSummary } from "@/components/quotes/cost-summary"
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { formatCurrency } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -74,7 +74,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const { toast } = useToast()
 
   const [quotes, setQuotes] = useLocalStorage<Quote[]>(LOCAL_STORAGE_KEYS.QUOTES, [])
-  const [machines, _, isMachinesHydrated] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES)
+  const [machines, setMachines, isMachinesHydrated] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES)
   const [materials, __, isMaterialsHydrated] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS)
   const [settings, setSettings, isSettingsHydrated] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
   
@@ -98,6 +98,36 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     },
   })
   
+  const { setValue } = form;
+
+  // Effect to add missing energy cost fields to legacy machines in local storage
+  useEffect(() => {
+    if (isMachinesHydrated) {
+        let machinesUpdated = false;
+        const updatedMachines = machines.map(machine => {
+            const hasEnergyCostDay = 'energyCostPerKwhDay' in machine;
+            const hasEnergyCostNight = 'energyCostPerKwhNight' in machine;
+
+            if (!hasEnergyCostDay || !hasEnergyCostNight) {
+                machinesUpdated = true;
+                return {
+                    ...machine,
+                    energyCostPerKwhDay: hasEnergyCostDay ? machine.energyCostPerKwhDay : 0,
+                    energyCostPerKwhNight: hasEnergyCostNight ? machine.energyCostPerKwhNight : 0,
+                };
+            }
+            return machine;
+        });
+
+        if (machinesUpdated) {
+            setMachines(updatedMachines);
+        }
+    }
+  }, [isMachinesHydrated, machines, setMachines]);
+
+  
+  const stableSetValue = useCallback(setValue, [setValue]);
+
   useEffect(() => {
     // Wait until materials are loaded from localStorage
     if (isMaterialsHydrated && !quote && materials.length > 0) {
@@ -105,11 +135,11 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         form.reset({
           // Keep other default values and only update parts
           ...form.getValues(),
-          parts: [{ id: generateId(), materialId: materials[0].id, materialGrams: 0 }],
+          parts: [{ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 }],
           // Reset other fields for a clean new form
           name: "",
           clientName: "",
-          machineId: "",
+          machineId: machines.length > 0 ? machines[0].id : "",
           printTimeOfDay: "day",
           extraCosts: [],
           notes: "",
@@ -120,8 +150,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           laborMinutes: 0,
         });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMaterialsHydrated, quote, materials]);
+  }, [isMaterialsHydrated, isMachinesHydrated, quote, materials, machines, form]);
   
   
   useEffect(() => {
@@ -132,19 +161,18 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         const minutes = Math.floor(remainingMinutes);
         const seconds = Math.round((remainingMinutes - minutes) * 60);
 
-        form.setValue("printHours", hours);
-        form.setValue("printMinutes", minutes);
-        form.setValue("printSeconds", seconds);
+        stableSetValue("printHours", hours);
+        stableSetValue("printMinutes", minutes);
+        stableSetValue("printSeconds", seconds);
     }
     if (quote?.laborHours) {
         const totalHours = quote.laborHours;
         const hours = Math.floor(totalHours);
         const minutes = Math.floor((totalHours - hours) * 60);
-        form.setValue("laborHours", hours);
-        form.setValue("laborMinutes", minutes);
+        stableSetValue("laborHours", hours);
+        stableSetValue("laborMinutes", minutes);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quote, form.setValue]);
+  }, [quote, stableSetValue]);
   
 
   const { fields: partFields, append: appendPart, remove: removePart } = useFieldArray({
@@ -605,3 +633,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
