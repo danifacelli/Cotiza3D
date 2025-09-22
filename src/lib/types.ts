@@ -12,8 +12,6 @@ export interface Machine {
   name: string;
   costPerHour: number; // in USD
   powerConsumption: number; // in Watts
-  energyCostPerKwhDay: number; // in USD
-  energyCostPerKwhNight: number; // in USD
 }
 
 export interface Settings {
@@ -22,6 +20,8 @@ export interface Settings {
   companyName: string;
   companyContact: string;
   currencyDecimalPlaces: number;
+  peakEnergyCostKwh: number; // in USD
+  offPeakEnergyCostKwh: number; // in USD
 }
 
 export interface ExtraCost {
@@ -47,7 +47,9 @@ export interface Quote {
   
   machineId: string;
   printHours: number;
-  printTimeOfDay: 'day' | 'night';
+  
+  tariffType: 'peak' | 'off-peak' | 'mixed';
+  peakHours?: number; // Only used when tariffType is 'mixed'
   
   laborHours: number;
 

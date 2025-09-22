@@ -23,8 +23,6 @@ const MachineSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
   costPerHour: z.coerce.number().min(0, "El costo debe ser un número positivo."),
   powerConsumption: z.coerce.number().int("El consumo debe ser un número entero.").min(0, "El consumo debe ser un número positivo."),
-  energyCostPerKwhDay: z.coerce.number().min(0, "El costo debe ser un número positivo."),
-  energyCostPerKwhNight: z.coerce.number().min(0, "El costo debe ser un número positivo."),
 })
 
 type MachineFormValues = z.infer<typeof MachineSchema>
@@ -42,8 +40,6 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
       name: defaultValues?.name || "",
       costPerHour: defaultValues?.costPerHour || 0,
       powerConsumption: defaultValues?.powerConsumption || 0,
-      energyCostPerKwhDay: defaultValues?.energyCostPerKwhDay || 0.2,
-      energyCostPerKwhNight: defaultValues?.energyCostPerKwhNight || 0.1,
     },
   })
   
@@ -120,38 +116,6 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
             </FormItem>
             )}
         />
-       
-         <div className="grid grid-cols-2 gap-4">
-            <FormField
-                control={form.control}
-                name="energyCostPerKwhDay"
-                render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Costo Energía Día (USD/kWh)</FormLabel>
-                    <FormControl>
-                    <Input type="number" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
-            <FormField
-                control={form.control}
-                name="energyCostPerKwhNight"
-                render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Costo Energía Noche (USD/kWh)</FormLabel>
-                    <FormControl>
-                    <Input type="number" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
-        </div>
-        <FormDescription>
-            El costo de la electricidad por Kilowatt-hora según el horario.
-        </FormDescription>
 
         <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>

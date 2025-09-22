@@ -23,6 +23,8 @@ export const SettingsSchema = z.object({
   laborCostPerHour: z.coerce.number().min(0, "Debe ser un número positivo"),
   profitMargin: z.coerce.number().min(0, "Debe ser un número positivo"),
   currencyDecimalPlaces: z.coerce.number().min(0, "Puede ser entre 0 y 4").max(4),
+  peakEnergyCostKwh: z.coerce.number().min(0, "Debe ser un número positivo"),
+  offPeakEnergyCostKwh: z.coerce.number().min(0, "Debe ser un número positivo"),
 })
 
 interface SettingsFormProps {
@@ -40,6 +42,8 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
       laborCostPerHour: defaultValues?.laborCostPerHour ?? 0,
       profitMargin: defaultValues?.profitMargin ?? 0,
       currencyDecimalPlaces: defaultValues?.currencyDecimalPlaces ?? 2,
+      peakEnergyCostKwh: defaultValues?.peakEnergyCostKwh ?? 0.351,
+      offPeakEnergyCostKwh: defaultValues?.offPeakEnergyCostKwh ?? 0.139,
     }
   })
 
@@ -110,7 +114,7 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                 />
             </div>
              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Regional</h3>
+                <h3 className="text-lg font-medium">Regional y Energía</h3>
                  <FormField
                   control={form.control}
                   name="currencyDecimalPlaces"
@@ -123,6 +127,32 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                        <FormDescription>
                         El número de decimales a mostrar para los precios (0-4).
                       </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="peakEnergyCostKwh"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Costo Energía Tarifa Punta (USD/kWh)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.001" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="offPeakEnergyCostKwh"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Costo Energía Fuera de Punta (USD/kWh)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.001" {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

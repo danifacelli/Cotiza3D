@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { MoreHorizontal, Pencil, Trash2, Zap, DollarSign, Sun, Moon } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, Zap, DollarSign } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency } from "@/lib/utils"
 import { useLocalStorage } from "@/hooks/use-local-storage"
@@ -128,25 +128,10 @@ export function MachinesGrid({ machines, onEdit, onDelete, isHydrated }: Machine
                 <span className="font-semibold mr-2">Depreciación:</span>
                 <span>{formatCurrency(machine.costPerHour, 'USD', settings.currencyDecimalPlaces)} / hora</span>
             </div>
-            <div className="flex items-start text-sm">
-                <Zap className="w-4 h-4 mr-3 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <div className="grid gap-2">
-                    <div>
-                        <div className="font-semibold mb-1">Consumo Eléctrico</div>
-                         <div className="text-sm">
-                            <span className="font-semibold mr-2">Potencia:</span>
-                            <span>{machine.powerConsumption} W</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs mt-2">
-                            <Sun className="w-4 h-4" />
-                            <span>{formatCurrency(machine.energyCostPerKwhDay, 'USD', settings.currencyDecimalPlaces)}/kWh</span>
-                        </div>
-                         <div className="flex items-center gap-2 text-xs">
-                            <Moon className="w-4 h-4" />
-                            <span>{formatCurrency(machine.energyCostPerKwhNight, 'USD', settings.currencyDecimalPlaces)}/kWh</span>
-                        </div>
-                    </div>
-                </div>
+            <div className="flex items-center text-sm">
+                <Zap className="w-4 h-4 mr-3 text-muted-foreground flex-shrink-0" />
+                 <span className="font-semibold mr-2">Consumo:</span>
+                 <span>{machine.powerConsumption} W</span>
             </div>
           </CardContent>
         </Card>

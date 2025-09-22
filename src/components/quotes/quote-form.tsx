@@ -43,7 +43,8 @@ const QuoteSchema = z.object({
   clientName: z.string().optional(),
   parts: z.array(PartSchema).min(1, "Debes añadir al menos un material."),
   machineId: z.string().min(1, "Debes seleccionar una máquina."),
-  printTimeOfDay: z.enum(["day", "night"]),
+  tariffType: z.enum(["peak", "off-peak", "mixed"]),
+  peakHours: z.coerce.number().optional(),
   printHours: z.coerce.number().optional(),
   printMinutes: z.coerce.number().optional(),
   printSeconds: z.coerce.number().optional(),
@@ -87,7 +88,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       clientName: quote?.clientName || "",
       parts: quote?.parts?.length ? quote.parts : [{ id: generateId(), materialId: "", materialGrams: 0 }],
       machineId: quote?.machineId || "",
-      printTimeOfDay: quote?.printTimeOfDay || "day",
+      tariffType: quote?.tariffType || "off-peak",
+      peakHours: quote?.peakHours || 0,
       extraCosts: quote?.extraCosts || [],
       notes: quote?.notes || "",
       printHours: quote?.printHours ? Math.floor(quote.printHours) : 0,
@@ -100,24 +102,21 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   
   const { setValue } = form;
 
-  // Effect to add missing energy cost fields to legacy machines in local storage
+  // Effect to add missing fields to legacy items in local storage
   useEffect(() => {
     if (isMachinesHydrated) {
         let machinesUpdated = false;
         const updatedMachines = machines.map(machine => {
-            const hasEnergyCostDay = 'energyCostPerKwhDay' in machine;
-            const hasEnergyCostNight = 'energyCostPerKwhNight' in machine;
-            const hasPower = 'powerConsumption' in machine;
-
-            if (!hasEnergyCostDay || !hasEnergyCostNight || !hasPower) {
+            const needsUpdate = !('powerConsumption' in machine);
+            if (needsUpdate) {
                 machinesUpdated = true;
-                const updatedMachine: Partial<Machine> = { ...machine };
-
-                if (!hasPower) updatedMachine.powerConsumption = 0;
-                if (!hasEnergyCostDay) updatedMachine.energyCostPerKwhDay = 0;
-                if (!hasEnergyCostNight) updatedMachine.energyCostPerKwhNight = 0;
-
-                return updatedMachine as Machine;
+                const updatedMachine = { ...machine, powerConsumption: 0 };
+                // Remove old fields if they exist
+                delete (updatedMachine as any).powerConsumptionDay;
+                delete (updatedMachine as any).powerConsumptionNight;
+                delete (updatedMachine as any).energyCostPerKwhDay;
+                delete (updatedMachine as any).energyCostPerKwhNight;
+                return updatedMachine;
             }
             return machine;
         });
@@ -139,7 +138,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           machineId: machines.length > 0 ? machines[0].id : "",
           name: "",
           clientName: "",
-          printTimeOfDay: "day",
+          tariffType: "off-peak",
+          peakHours: 0,
           extraCosts: [],
           notes: "",
           printHours: 0,
@@ -149,7 +149,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           laborMinutes: 0,
         });
     }
-  }, [isMaterialsHydrated, isMachinesHydrated, quote, materials, machines, form]);
+  }, [isMaterialsHydrated, isMachinesHydrated, quote, materials, machines, form.reset]);
   
   
   useEffect(() => {
@@ -212,7 +212,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     laborHoursDecimal,
     watchedValues.machineId,
     watchedValues.parts,
-    watchedValues.printTimeOfDay,
+    watchedValues.tariffType,
+    watchedValues.peakHours,
     watchedValues.extraCosts,
     settings,
     materials,
@@ -259,7 +260,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       parts: data.parts,
       machineId: data.machineId,
       printHours: finalPrintHours,
-      printTimeOfDay: data.printTimeOfDay,
+      tariffType: data.tariffType,
+      peakHours: data.peakHours,
       laborHours: finalLaborHours,
       extraCosts: data.extraCosts || [],
       notes: data.notes || "",
@@ -288,15 +290,14 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const energyInfo = useMemo(() => {
     if (!selectedMachine) return null;
     
-    const isDay = watchedValues.printTimeOfDay === 'day';
-    const cost = isDay ? selectedMachine.energyCostPerKwhDay : selectedMachine.energyCostPerKwhNight;
+    const cost = watchedValues.tariffType === 'peak' ? settings.peakEnergyCostKwh : settings.offPeakEnergyCostKwh;
     const consumption = selectedMachine.powerConsumption;
 
     return {
-        cost: formatCurrency(cost || 0, "USD", settings.currencyDecimalPlaces),
+        cost: formatCurrency(cost || 0, "USD", 3),
         consumption: consumption || 0
     }
-  }, [selectedMachine, watchedValues.printTimeOfDay, settings.currencyDecimalPlaces]);
+  }, [selectedMachine, watchedValues.tariffType, settings]);
 
 
   return (
@@ -381,24 +382,25 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                   <div className="space-y-2">
                      <FormField
                         control={form.control}
-                        name="printTimeOfDay"
+                        name="tariffType"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Horario de Impresión</FormLabel>
+                            <FormLabel>Tarifa de Energía</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona un horario" />
+                                    <SelectValue placeholder="Selecciona una tarifa" />
                                 </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    <SelectItem value="day">Diurno</SelectItem>
-                                    <SelectItem value="night">Nocturno</SelectItem>
+                                    <SelectItem value="peak">Punta</SelectItem>
+                                    <SelectItem value="off-peak">Fuera de punta</SelectItem>
+                                    <SelectItem value="mixed">Mixto</SelectItem>
                                 </SelectContent>
                             </Select>
                              {energyInfo && (
                                 <FormDescription>
-                                  Costo: {energyInfo.cost} / kWh ({energyInfo.consumption}W)
+                                  {energyInfo.consumption}W. Costo: {formatCurrency(settings.peakEnergyCostKwh, "USD", 3)} (Punta) / {formatCurrency(settings.offPeakEnergyCostKwh, "USD", 3)} (Fuera de Punta)
                                 </FormDescription>
                             )}
                             <FormMessage />
@@ -449,6 +451,27 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                   </div>
                   <FormMessage>{form.formState.errors.printHours?.message}</FormMessage>
                 </div>
+                
+                {watchedValues.tariffType === 'mixed' && (
+                  <div className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="peakHours"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Horas en Tarifa Punta</FormLabel>
+                          <FormControl>
+                             <Input type="number" placeholder="0" {...field} onFocus={(e) => e.target.select()} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
+                          </FormControl>
+                          <FormDescription>
+                            Del total, cuántas horas se imprimen en horario punta.
+                          </FormDescription>
+                           <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <FormLabel>Tiempo de Mano de Obra</FormLabel>

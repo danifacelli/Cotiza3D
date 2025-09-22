@@ -49,12 +49,31 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
   const decimalPlaces = settings.currencyDecimalPlaces;
 
   const getEnergyCostDetails = () => {
-    if (!machine || !quoteInput.printHours) return "";
-    const isDay = quoteInput.printTimeOfDay === 'day';
-    const energyPrice = isDay ? machine.energyCostPerKwhDay : machine.energyCostPerKwhNight;
-    const powerInKw = machine.powerConsumption / 1000;
-    return `(${(powerInKw).toFixed(3)}kW * ${quoteInput.printHours.toFixed(2)}h * ${formatCurrency(energyPrice, "USD", 3)})`;
+    if (!machine || !quoteInput.printHours || !settings) return "";
+    
+    const totalPrintHours = quoteInput.printHours;
+    const powerInKw = (machine.powerConsumption || 0) / 1000;
+    const peakPrice = settings.peakEnergyCostKwh || 0;
+    const offPeakPrice = settings.offPeakEnergyCostKwh || 0;
+
+    let peakHours = 0;
+    if (quoteInput.tariffType === 'peak') {
+        peakHours = totalPrintHours;
+    } else if (quoteInput.tariffType === 'mixed') {
+        peakHours = Math.min(quoteInput.peakHours || 0, totalPrintHours);
+    }
+    const offPeakHours = totalPrintHours - peakHours;
+
+    let details = [];
+    if (peakHours > 0) {
+        details.push(`${peakHours.toFixed(1)}h Punta a ${formatCurrency(peakPrice, "USD", 3)}`);
+    }
+    if (offPeakHours > 0) {
+        details.push(`${offPeakHours.toFixed(1)}h Fuera de Punta a ${formatCurrency(offPeakPrice, "USD", 3)}`);
+    }
+    return `(${powerInKw.toFixed(2)}kW) ${details.join(' + ')}`;
   }
+
 
   return (
     <Card>

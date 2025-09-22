@@ -30,16 +30,16 @@ export function calculateCosts(
   logs.push(`Input Quote: ${JSON.stringify(quote)}`);
   
   const machine = machines.find(m => m.id === quote.machineId);
-  const printHours = quote.printHours || 0;
+  const totalPrintHours = quote.printHours || 0;
   const laborHours = quote.laborHours || 0;
-  const printTimeOfDay = quote.printTimeOfDay || 'day';
+  const tariffType = quote.tariffType || 'off-peak';
 
   logs.push(`Máquina encontrada: ${JSON.stringify(machine)}`);
-  logs.push(`Horas de Impresión: ${printHours}`);
-  logs.push(`Horario de Impresión: ${printTimeOfDay}`);
+  logs.push(`Horas de Impresión Totales: ${totalPrintHours}`);
+  logs.push(`Tipo de Tarifa: ${tariffType}`);
   logs.push(`Settings: ${JSON.stringify(settings)}`);
 
-  if (!machine || printHours <= 0 || !settings) {
+  if (!machine || totalPrintHours <= 0 || !settings) {
     logs.push(`[AVISO] Prerrequisitos no cumplidos para cálculo completo.`);
     return { breakdown: null, logs };
   }
@@ -56,19 +56,32 @@ export function calculateCosts(
   }
   logs.push(`Costo de material calculado: ${materialCost}`);
 
-  const machineDepreciationCost = machine.costPerHour * printHours;
+  const machineDepreciationCost = machine.costPerHour * totalPrintHours;
   logs.push(`Costo de depreciación: ${machineDepreciationCost}`);
   
-  const powerInWatts = machine.powerConsumption || 0;
-  const energyPrice = printTimeOfDay === 'day' ? (machine.energyCostPerKwhDay || 0) : (machine.energyCostPerKwhNight || 0);
-  const powerInKw = powerInWatts / 1000;
+  // Energy Cost Calculation
+  const powerInKw = (machine.powerConsumption || 0) / 1000;
+  const peakPrice = settings.peakEnergyCostKwh || 0;
+  const offPeakPrice = settings.offPeakEnergyCostKwh || 0;
+  
+  let peakHours = 0;
+  if (tariffType === 'peak') {
+      peakHours = totalPrintHours;
+  } else if (tariffType === 'mixed') {
+      peakHours = Math.min(quote.peakHours || 0, totalPrintHours);
+  }
+  const offPeakHours = totalPrintHours - peakHours;
 
-  logs.push(`Potencia en Watts: ${powerInWatts}`);
   logs.push(`Potencia en kW: ${powerInKw}`);
-  logs.push(`Precio Energía por kWh: ${energyPrice}`);
+  logs.push(`Precio Tarifa Punta: ${peakPrice}`);
+  logs.push(`Precio Fuera de Punta: ${offPeakPrice}`);
+  logs.push(`Horas en Punta: ${peakHours}`);
+  logs.push(`Horas Fuera de Punta: ${offPeakHours}`);
 
-  const energyCost = powerInKw * printHours * energyPrice;
-  logs.push(`Costo de energía calculado: ${energyCost}`);
+  const peakCost = peakHours * powerInKw * peakPrice;
+  const offPeakCost = offPeakHours * powerInKw * offPeakPrice;
+  const energyCost = peakCost + offPeakCost;
+  logs.push(`Costo de energía calculado: ${energyCost} (Punta: ${peakCost}, Fuera de Punta: ${offPeakCost})`);
   
   const laborCost = (settings.laborCostPerHour || 0) * laborHours;
   logs.push(`Costo de mano de obra: ${laborCost}`);
