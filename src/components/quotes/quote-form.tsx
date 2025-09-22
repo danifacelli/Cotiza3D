@@ -120,7 +120,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           laborMinutes: 0,
         });
     }
-  }, [isMaterialsHydrated, quote, materials, form]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMaterialsHydrated, quote, materials]);
   
   
   useEffect(() => {
@@ -590,3 +591,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
