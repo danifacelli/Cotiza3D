@@ -10,6 +10,8 @@ export const DEFAULT_SETTINGS: Settings = {
   currencyDecimalPlaces: 2,
   peakEnergyCostKwh: 0.351,
   offPeakEnergyCostKwh: 0.139,
+  tariffSource: 'UTE, Enero 2024',
+  tariffLastUpdated: new Date().toISOString().split('T')[0],
 };
 
 export const DEFAULT_MATERIALS: Material[] = [

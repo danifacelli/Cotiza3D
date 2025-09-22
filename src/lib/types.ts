@@ -22,6 +22,8 @@ export interface Settings {
   currencyDecimalPlaces: number;
   peakEnergyCostKwh: number; // in USD
   offPeakEnergyCostKwh: number; // in USD
+  tariffSource: string;
+  tariffLastUpdated: string;
 }
 
 export interface ExtraCost {

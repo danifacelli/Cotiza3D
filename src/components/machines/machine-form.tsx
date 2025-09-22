@@ -77,7 +77,7 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
                 <Input type="number" step="0.01" {...field} />
               </FormControl>
               <FormDescription>
-                Costo asociado al desgaste y mantenimiento de la máquina por cada hora de uso.
+                Costo asociado al desgaste y mantenimiento. Se calcula dividiendo el precio de la máquina entre su vida útil estimada en horas.
               </FormDescription>
                {machineName && (
                  <Button variant="link" size="sm" asChild className="p-0 h-auto mt-2 text-xs">

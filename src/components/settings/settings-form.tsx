@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import type { Settings } from "@/lib/types"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Info } from "lucide-react"
 
 export const SettingsSchema = z.object({
   companyName: z.string().min(1, "El nombre es requerido"),
@@ -25,6 +27,8 @@ export const SettingsSchema = z.object({
   currencyDecimalPlaces: z.coerce.number().min(0, "Puede ser entre 0 y 4").max(4),
   peakEnergyCostKwh: z.coerce.number().min(0, "Debe ser un número positivo"),
   offPeakEnergyCostKwh: z.coerce.number().min(0, "Debe ser un número positivo"),
+  tariffSource: z.string().optional(),
+  tariffLastUpdated: z.string().optional(),
 })
 
 interface SettingsFormProps {
@@ -44,6 +48,8 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
       currencyDecimalPlaces: defaultValues?.currencyDecimalPlaces ?? 2,
       peakEnergyCostKwh: defaultValues?.peakEnergyCostKwh ?? 0.351,
       offPeakEnergyCostKwh: defaultValues?.offPeakEnergyCostKwh ?? 0.139,
+      tariffSource: defaultValues?.tariffSource ?? '',
+      tariffLastUpdated: defaultValues?.tariffLastUpdated ?? '',
     }
   })
 
@@ -112,9 +118,6 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                     </FormItem>
                   )}
                 />
-            </div>
-             <div className="space-y-4">
-                <h3 className="text-lg font-medium">Regional y Energía</h3>
                  <FormField
                   control={form.control}
                   name="currencyDecimalPlaces"
@@ -131,32 +134,78 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                     </FormItem>
                   )}
                 />
-                 <FormField
-                  control={form.control}
-                  name="peakEnergyCostKwh"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Costo Energía Tarifa Punta (USD/kWh)</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.001" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="offPeakEnergyCostKwh"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Costo Energía Fuera de Punta (USD/kWh)</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.001" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            </div>
+             <div className="space-y-4 md:col-span-2">
+                <h3 className="text-lg font-medium">Costos de Energía</h3>
+                 <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>¿De dónde salen estos valores?</AlertTitle>
+                    <AlertDescription>
+                        Estos costos los fija tu proveedor de energía. La **Tarifa Punta** suele ser un bloque de ~4 horas por la tarde/noche en días hábiles, donde la energía es más cara. El resto del tiempo aplica la tarifa **Fuera de Punta**. Consulta tu factura o la web de tu proveedor para obtener los valores exactos para tu región.
+                        <br />
+                        La fórmula es: `Costo Energía = (Potencia Watts / 1000) * Horas de Impresión * Tarifa kWh`
+                    </AlertDescription>
+                </Alert>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                    control={form.control}
+                    name="peakEnergyCostKwh"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Costo Energía Tarifa Punta (USD/kWh)</FormLabel>
+                        <FormControl>
+                            <Input type="number" step="0.001" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="offPeakEnergyCostKwh"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Costo Energía Fuera de Punta (USD/kWh)</FormLabel>
+                        <FormControl>
+                            <Input type="number" step="0.001" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                     <FormField
+                        control={form.control}
+                        name="tariffSource"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Fuente de la Tarifa</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Ej: Factura UTE, Enero 2024" {...field} />
+                            </FormControl>
+                             <FormDescription>
+                                Anota de dónde obtuviste los valores.
+                            </FormDescription>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                    <FormField
+                        control={form.control}
+                        name="tariffLastUpdated"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Fecha de Actualización</FormLabel>
+                            <FormControl>
+                                <Input type="date" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                                ¿Cuándo consultaste la tarifa por última vez?
+                            </FormDescription>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                </div>
             </div>
         </div>
         <Button type="submit">Guardar Cambios</Button>
