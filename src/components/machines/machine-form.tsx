@@ -99,7 +99,7 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
                 name="powerConsumptionDay"
                 render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Consumo Día (Watts)</FormLabel>
+                    <FormLabel>Consumo Día Kwh</FormLabel>
                     <FormControl>
                     <Input type="number" step="1" {...field} />
                     </FormControl>
@@ -112,7 +112,7 @@ export function MachineForm({ onSubmit, onCancel, defaultValues }: MachineFormPr
                 name="powerConsumptionNight"
                 render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Consumo Noche (Watts)</FormLabel>
+                    <FormLabel>Consumo Noche Kwh</FormLabel>
                     <FormControl>
                     <Input type="number" step="1" {...field} />
                     </FormControl>
