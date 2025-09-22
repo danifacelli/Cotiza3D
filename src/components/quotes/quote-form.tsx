@@ -234,7 +234,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       const material = materials.find(m => m.id === part.materialId);
       const parsedGrams = parseFloat(part.materialGrams as any);
       if (material && !isNaN(parsedGrams) && parsedGrams > 0) {
-        return acc + (parsedGrams / 1000) * material.cost;
+        return acc + (grams / 1000) * material.cost;
       }
       return acc;
     }, 0) || 0;
@@ -400,7 +400,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                             </Select>
                              {energyInfo && (
                                 <FormDescription>
-                                  {energyInfo.consumption}W. Costo: {formatCurrency(settings.peakEnergyCostKwh, "USD", 3)} (Punta) / {formatCurrency(settings.offPeakEnergyCostKwh, "USD", 3)} (Fuera de Punta)
+                                  Punta ({settings.peakTariffStartTime} - {settings.peakTariffEndTime}): {formatCurrency(settings.peakEnergyCostKwh, "USD", 3)}/kWh. Resto: {formatCurrency(settings.offPeakEnergyCostKwh, "USD", 3)}/kWh.
                                 </FormDescription>
                             )}
                             <FormMessage />
@@ -675,3 +675,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
