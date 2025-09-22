@@ -22,8 +22,6 @@ export const SettingsSchema = z.object({
   companyContact: z.string().email("Debe ser un email válido"),
   laborCostPerHour: z.coerce.number().min(0, "Debe ser un número positivo"),
   profitMargin: z.coerce.number().min(0, "Debe ser un número positivo"),
-  energyCostPerKwhDay: z.coerce.number().min(0, "Debe ser un número positivo"),
-  energyCostPerKwhNight: z.coerce.number().min(0, "Debe ser un número positivo"),
 })
 
 interface SettingsFormProps {
@@ -102,37 +100,6 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                     </FormItem>
                   )}
                 />
-            </div>
-            <div className="md:col-span-2 space-y-4">
-                <h3 className="text-lg font-medium">Costos de Energía</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                     <FormField
-                        control={form.control}
-                        name="energyCostPerKwhDay"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Costo de Energía (Día, USD por kWh)</FormLabel>
-                            <FormControl>
-                                <Input type="number" step="0.01" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                    <FormField
-                        control={form.control}
-                        name="energyCostPerKwhNight"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Costo de Energía (Noche, USD por kWh)</FormLabel>
-                            <FormControl>
-                                <Input type="number" step="0.01" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                </div>
             </div>
         </div>
         <Button type="submit">Guardar Cambios</Button>

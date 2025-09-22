@@ -259,7 +259,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 <CardTitle>Detalles de Impresión</CardTitle>
               </CardHeader>
               <CardContent className="grid sm:grid-cols-2 gap-6">
-                 <div className="sm:col-span-2 grid sm:grid-cols-2 gap-6">
+                 <div className="sm:col-span-2 grid sm:grid-cols-1 gap-6">
                      <FormField
                         control={form.control}
                         name="machineId"
@@ -285,30 +285,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                                 Depreciación: {formatCurrency(selectedMachine.costPerHour, "USD")} / hora.
                                 </FormDescription>
                             )}
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                    <FormField
-                        control={form.control}
-                        name="printTimeOfDay"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Horario de Impresión</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona un horario" />
-                                </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    <SelectItem value="day">Diurno</SelectItem>
-                                    <SelectItem value="night">Nocturno</SelectItem>
-                                </SelectContent>
-                            </Select>
-                             <FormDescription>
-                                Afecta el costo de energía.
-                                </FormDescription>
                             <FormMessage />
                             </FormItem>
                         )}

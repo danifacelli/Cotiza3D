@@ -7,8 +7,6 @@ export const DEFAULT_SETTINGS: Settings = {
   companyContact: 'tuemail@ejemplo.com',
   laborCostPerHour: 10,
   profitMargin: 50,
-  energyCostPerKwhDay: 0.15,
-  energyCostPerKwhNight: 0.08,
 };
 
 export const DEFAULT_MATERIALS: Material[] = [

@@ -20,8 +20,6 @@ export interface Settings {
   profitMargin: number; // percentage
   companyName: string;
   companyContact: string;
-  energyCostPerKwhDay: number; // in USD
-  energyCostPerKwhNight: number; // in USD
 }
 
 export interface ExtraCost {

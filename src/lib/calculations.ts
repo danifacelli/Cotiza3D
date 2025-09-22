@@ -27,7 +27,6 @@ export function calculateCosts(
   
   const machine = machines.find(m => m.id === quote.machineId);
   const printHours = quote.printHours || 0;
-  const timeOfDay = quote.printTimeOfDay || 'day';
 
   if (!machine || printHours <= 0) {
     return null;
@@ -46,9 +45,7 @@ export function calculateCosts(
 
   const machineDepreciationCost = machine.costPerHour * printHours;
   
-  const powerConsumption = timeOfDay === 'day' ? machine.powerConsumptionDay : machine.powerConsumptionNight;
-  const energyCostPerKwh = timeOfDay === 'day' ? (settings.energyCostPerKwhDay || 0) : (settings.energyCostPerKwhNight || 0);
-  const energyCost = (powerConsumption / 1000) * printHours * energyCostPerKwh;
+  const energyCost = 0; // Energy cost is removed from calculations
 
   const laborCost = (settings.laborCostPerHour || 0) * printHours;
   
