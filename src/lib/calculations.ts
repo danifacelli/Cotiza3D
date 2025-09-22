@@ -15,11 +15,9 @@ export interface CostBreakdown {
   total: number;
 }
 
-interface CalculationInput {
+interface CalculationInput extends Partial<Omit<Quote, 'printHours' | 'parts'>> {
     parts?: Partial<QuotePart>[];
-    machineId?: string;
     printHours?: number;
-    extraCosts?: Quote['extraCosts'];
 }
 
 export function calculateCosts(
@@ -30,27 +28,31 @@ export function calculateCosts(
 ): CostBreakdown | null {
   
   const machine = machines.find(m => m.id === quote.machineId);
+  const printHours = quote.printHours || 0;
+  const printTimeOfDay = quote.printTimeOfDay || 'day';
 
-  // Allow calculation even with 0 hours, to show partial costs
-  if (!machine || typeof quote.printHours === 'undefined' || !quote.parts) {
+  if (!machine) {
     return null;
   }
   
   let materialCost = 0;
-  for (const part of quote.parts) {
-      const material = materials.find(m => m.id === part.materialId);
-      if (material && part.materialGrams && part.materialGrams > 0) {
-        materialCost += (part.materialGrams / 1000) * material.cost;
-      }
+  if (quote.parts) {
+    for (const part of quote.parts) {
+        const material = materials.find(m => m.id === part.materialId);
+        if (material && part.materialGrams && part.materialGrams > 0) {
+          materialCost += (part.materialGrams / 1000) * material.cost;
+        }
+    }
   }
 
-  // Fallback for energyCostPerKwh if it's not in settings (for backward compatibility)
-  const energyCost = settings.energyCostPerKwh ?? 0;
+  const energyCostKwh = printTimeOfDay === 'day' 
+    ? settings.energyCostPerKwhDay ?? 0
+    : settings.energyCostPerKwhNight ?? 0;
 
   // Energy cost: (Power in kW * hours) * cost per kWh
-  const machineEnergyCost = (machine.powerConsumption / 1000) * quote.printHours * energyCost;
-  const machineDepreciationCost = machine.costPerHour * quote.printHours;
-  const laborCost = settings.laborCostPerHour * quote.printHours;
+  const machineEnergyCost = (machine.powerConsumption / 1000) * printHours * energyCostKwh;
+  const machineDepreciationCost = machine.costPerHour * printHours;
+  const laborCost = settings.laborCostPerHour * printHours;
   
   const subtotal = materialCost + machineEnergyCost + machineDepreciationCost + laborCost;
   

@@ -20,7 +20,8 @@ export const SettingsSchema = z.object({
   companyName: z.string().min(1, "El nombre es requerido"),
   companyContact: z.string().email("Debe ser un email válido"),
   laborCostPerHour: z.coerce.number().min(0, "Debe ser un número positivo"),
-  energyCostPerKwh: z.coerce.number().min(0, "Debe ser un número positivo"),
+  energyCostPerKwhDay: z.coerce.number().min(0, "Debe ser un número positivo"),
+  energyCostPerKwhNight: z.coerce.number().min(0, "Debe ser un número positivo"),
   profitMargin: z.coerce.number().min(0, "Debe ser un número positivo"),
   iva: z.coerce.number().min(0, "Debe ser un número positivo"),
 })
@@ -90,10 +91,23 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                 />
                 <FormField
                   control={form.control}
-                  name="energyCostPerKwh"
+                  name="energyCostPerKwhDay"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Costo de Energía (USD por kWh)</FormLabel>
+                      <FormLabel>Costo de Energía (Día, USD por kWh)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="energyCostPerKwhNight"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Costo de Energía (Noche, USD por kWh)</FormLabel>
                       <FormControl>
                         <Input type="number" step="0.01" {...field} />
                       </FormControl>

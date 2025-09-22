@@ -20,7 +20,8 @@ export interface Settings {
   iva: number; // percentage
   companyName: string;
   companyContact: string;
-  energyCostPerKwh: number;
+  energyCostPerKwhDay: number;
+  energyCostPerKwhNight: number;
 }
 
 export interface ExtraCost {
@@ -46,6 +47,7 @@ export interface Quote {
   
   machineId: string;
   printHours: number;
+  printTimeOfDay: 'day' | 'night';
 
   extraCosts: ExtraCost[];
   notes: string;
