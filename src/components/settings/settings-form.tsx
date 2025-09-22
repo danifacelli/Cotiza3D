@@ -29,6 +29,8 @@ export const SettingsSchema = z.object({
   offPeakEnergyCostKwh: z.coerce.number().min(0, "Debe ser un número positivo"),
   tariffSource: z.string().optional(),
   tariffLastUpdated: z.string().optional(),
+  peakTariffStartTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Formato de hora inválido (HH:mm)"),
+  peakTariffEndTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Formato de hora inválido (HH:mm)"),
 })
 
 interface SettingsFormProps {
@@ -50,12 +52,17 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
       offPeakEnergyCostKwh: defaultValues?.offPeakEnergyCostKwh ?? 0.139,
       tariffSource: defaultValues?.tariffSource ?? '',
       tariffLastUpdated: defaultValues?.tariffLastUpdated ?? '',
+      peakTariffStartTime: defaultValues?.peakTariffStartTime ?? '17:00',
+      peakTariffEndTime: defaultValues?.peakTariffEndTime ?? '23:00',
     }
   })
 
   function onSubmit(data: Settings) {
     onSave(data)
   }
+  
+  const peakStart = form.watch("peakTariffStartTime");
+  const peakEnd = form.watch("peakTariffEndTime");
 
   return (
     <Form {...form}>
@@ -141,9 +148,9 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                     <Info className="h-4 w-4" />
                     <AlertTitle>¿De dónde salen estos valores?</AlertTitle>
                     <AlertDescription>
-                        Estos costos los fija tu proveedor de energía. La **Tarifa Punta** suele ser un bloque de ~4 horas por la tarde/noche en días hábiles, donde la energía es más cara. El resto del tiempo aplica la tarifa **Fuera de Punta**. Consulta tu factura o la web de tu proveedor para obtener los valores exactos para tu región.
+                        Estos costos los fija tu proveedor de energía. La **Tarifa Punta** ({peakStart} a {peakEnd}) es un bloque horario en días hábiles donde la energía es más cara. El resto del tiempo aplica la tarifa **Fuera de Punta**. Consulta tu factura o la web de tu proveedor para obtener los valores exactos.
                         <br />
-                        La fórmula es: `Costo Energía = (Potencia Watts / 1000) * Horas de Impresión * Tarifa kWh`
+                        La fórmula es: `Costo = (Potencia Watts / 1000) * Horas de Impresión * Tarifa kWh`
                     </AlertDescription>
                 </Alert>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -173,6 +180,38 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                         </FormItem>
                     )}
                     />
+                     <FormField
+                        control={form.control}
+                        name="peakTariffStartTime"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Inicio Horario Punta</FormLabel>
+                            <FormControl>
+                                <Input type="time" {...field} />
+                            </FormControl>
+                             <FormDescription>
+                                Comienzo del horario de tarifa cara.
+                            </FormDescription>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                    <FormField
+                        control={form.control}
+                        name="peakTariffEndTime"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Fin Horario Punta</FormLabel>
+                            <FormControl>
+                                <Input type="time" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                                Fin del horario de tarifa cara.
+                            </FormDescription>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
                      <FormField
                         control={form.control}
                         name="tariffSource"

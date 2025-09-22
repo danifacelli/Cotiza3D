@@ -12,6 +12,8 @@ export const DEFAULT_SETTINGS: Settings = {
   offPeakEnergyCostKwh: 0.139,
   tariffSource: 'UTE, Enero 2024',
   tariffLastUpdated: new Date().toISOString().split('T')[0],
+  peakTariffStartTime: '17:00',
+  peakTariffEndTime: '23:00',
 };
 
 export const DEFAULT_MATERIALS: Material[] = [

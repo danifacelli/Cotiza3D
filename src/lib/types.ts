@@ -24,6 +24,8 @@ export interface Settings {
   offPeakEnergyCostKwh: number; // in USD
   tariffSource: string;
   tariffLastUpdated: string;
+  peakTariffStartTime: string; // HH:mm format
+  peakTariffEndTime: string; // HH:mm format
 }
 
 export interface ExtraCost {
