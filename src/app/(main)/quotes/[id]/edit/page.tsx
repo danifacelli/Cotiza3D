@@ -40,6 +40,11 @@ export default function EditQuotePage() {
                 if (updatedQuote.laborHours === undefined) {
                     updatedQuote.laborHours = updatedQuote.printHours;
                 }
+
+                // Handle legacy quotes without 'printTimeOfDay'
+                if (updatedQuote.printTimeOfDay === undefined) {
+                    updatedQuote.printTimeOfDay = 'day';
+                }
                 
                 setQuote(updatedQuote);
             }

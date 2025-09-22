@@ -23,6 +23,8 @@ export const SettingsSchema = z.object({
   laborCostPerHour: z.coerce.number().min(0, "Debe ser un número positivo"),
   profitMargin: z.coerce.number().min(0, "Debe ser un número positivo"),
   currencyDecimalPlaces: z.coerce.number().min(0, "Puede ser entre 0 y 4").max(4),
+  energyCostPerKwhDay: z.coerce.number().min(0, "Debe ser un número positivo"),
+  energyCostPerKwhNight: z.coerce.number().min(0, "Debe ser un número positivo"),
 })
 
 interface SettingsFormProps {
@@ -40,6 +42,8 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
       laborCostPerHour: defaultValues?.laborCostPerHour ?? 0,
       profitMargin: defaultValues?.profitMargin ?? 0,
       currencyDecimalPlaces: defaultValues?.currencyDecimalPlaces ?? 2,
+      energyCostPerKwhDay: defaultValues?.energyCostPerKwhDay ?? 0,
+      energyCostPerKwhNight: defaultValues?.energyCostPerKwhNight ?? 0,
     }
   })
 
@@ -123,6 +127,35 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                        <FormDescription>
                         El número de decimales a mostrar para los precios (0-4).
                       </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            </div>
+             <div className="space-y-4">
+                <h3 className="text-lg font-medium">Costos de Energía</h3>
+                 <FormField
+                  control={form.control}
+                  name="energyCostPerKwhDay"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Costo Energía Día (USD por kWh)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="energyCostPerKwhNight"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Costo Energía Noche (USD por kWh)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

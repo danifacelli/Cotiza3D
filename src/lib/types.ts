@@ -21,6 +21,8 @@ export interface Settings {
   companyName: string;
   companyContact: string;
   currencyDecimalPlaces: number;
+  energyCostPerKwhDay: number;
+  energyCostPerKwhNight: number;
 }
 
 export interface ExtraCost {
@@ -46,6 +48,7 @@ export interface Quote {
   
   machineId: string;
   printHours: number;
+  printTimeOfDay: 'day' | 'night';
   
   laborHours: number;
 

@@ -30,10 +30,12 @@ export default function SettingsPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <SettingsForm
-                    defaultValues={settings}
-                    onSave={handleSaveChanges}
-                />
+               {isHydrated && settings ? (
+                    <SettingsForm
+                        defaultValues={settings}
+                        onSave={handleSaveChanges}
+                    />
+                ) : <p>Cargando configuración...</p>}
             </CardContent>
         </Card>
     );

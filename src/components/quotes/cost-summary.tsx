@@ -53,6 +53,10 @@ export function CostSummary({ breakdown, settings, actions }: CostSummaryProps) 
           value={formatCurrency(breakdown.materialCost, "USD", decimalPlaces)}
         />
         <SummaryRow
+          label="Costo de Energía"
+          value={formatCurrency(breakdown.energyCost, "USD", decimalPlaces)}
+        />
+        <SummaryRow
           label="Depreciación Máquina"
           value={formatCurrency(breakdown.machineDepreciationCost, "USD", decimalPlaces)}
         />
