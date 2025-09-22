@@ -77,6 +77,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const [machines, _, isMachinesHydrated] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES)
   const [materials, __, isMaterialsHydrated] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS)
   const [settings] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
+  
+  const [calculationResult, setCalculationResult] = useState<{ breakdown: CostBreakdown | null; logs: string[] }>({ breakdown: null, logs: [] });
 
   const form = useForm<QuoteFormValues>({
     resolver: zodResolver(QuoteSchema),
@@ -158,7 +160,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const printHoursDecimal = (Number(watchedValues.printHours) || 0) + ((Number(watchedValues.printMinutes) || 0) / 60) + ((Number(watchedValues.printSeconds) || 0) / 3600);
   const laborHoursDecimal = (Number(watchedValues.laborHours) || 0) + ((Number(watchedValues.laborMinutes) || 0) / 60);
   
-  const costBreakdown: CostBreakdown | null = useMemo(() => {
+  useEffect(() => {
     const isReady =
       watchedValues.machineId &&
       printHoursDecimal > 0 &&
@@ -166,16 +168,19 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       isMaterialsHydrated;
 
     if (!isReady) {
-      return null;
+      setCalculationResult({ breakdown: null, logs: ["Esperando datos para calcular..."] });
+      return;
     }
     
-    return calculateCosts(
+    const result = calculateCosts(
       { ...watchedValues, printHours: printHoursDecimal, laborHours: laborHoursDecimal, parts: watchedValues.parts },
       materials,
       machines,
       settings
     );
+    setCalculationResult(result);
   }, [watchedValues, printHoursDecimal, laborHoursDecimal, materials, machines, settings, isMachinesHydrated, isMaterialsHydrated]);
+
 
   const materialSummary = useMemo(() => {
     const totalGrams = watchedValues.parts?.reduce((acc, part) => {
@@ -564,8 +569,9 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           {/* Cost Summary Section */}
           <div className="md:col-span-1 sticky top-20">
             <CostSummary
-                breakdown={costBreakdown}
+                breakdown={calculationResult.breakdown}
                 settings={settings}
+                logs={calculationResult.logs}
                 actions={
                   <>
                      <Button type="submit" className="w-full">
@@ -584,5 +590,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    

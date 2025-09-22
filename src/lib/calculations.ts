@@ -24,25 +24,23 @@ export function calculateCosts(
   materials: Material[],
   machines: Machine[],
   settings: Settings
-): CostBreakdown | null {
-  console.log("--- CALCULATE COSTS ---");
-  console.log("Input Quote:", quote);
-  console.log("Materials:", materials);
-  console.log("Machines:", machines);
-  console.log("Settings:", settings);
+): { breakdown: CostBreakdown | null; logs: string[] } {
+  const logs: string[] = [];
+  logs.push("--- INICIANDO CÁLCULO ---");
+  logs.push(`Input Quote: ${JSON.stringify(quote)}`);
   
   const machine = machines.find(m => m.id === quote.machineId);
   const printHours = quote.printHours || 0;
   const laborHours = quote.laborHours || 0;
   const printTimeOfDay = quote.printTimeOfDay || 'day';
 
-  console.log("Found Machine:", machine);
-  console.log("Print Hours:", printHours);
-  console.log("Print Time of Day:", printTimeOfDay);
+  logs.push(`Máquina encontrada: ${JSON.stringify(machine)}`);
+  logs.push(`Horas de Impresión: ${printHours}`);
+  logs.push(`Horario de Impresión: ${printTimeOfDay}`);
 
   if (!machine || printHours <= 0 || !settings) {
-    console.error("Calculation prerequisites not met. Machine:", machine, "Print Hours:", printHours, "Settings:", settings);
-    return null;
+    logs.push(`[ERROR] Prerrequisitos no cumplidos. Máquina: ${!!machine}, Horas: ${printHours}, Config: ${!!settings}`);
+    return { breakdown: null, logs };
   }
   
   let materialCost = 0;
@@ -55,30 +53,37 @@ export function calculateCosts(
         }
     }
   }
+  logs.push(`Costo de material calculado: ${materialCost}`);
 
   const machineDepreciationCost = machine.costPerHour * printHours;
+  logs.push(`Costo de depreciación: ${machineDepreciationCost}`);
   
   const powerInWatts = printTimeOfDay === 'day' ? machine.powerConsumptionDay : machine.powerConsumptionNight;
   const powerInKw = (powerInWatts || 0) / 1000;
   const energyPrice = printTimeOfDay === 'day' ? settings.energyCostPerKwhDay : settings.energyCostPerKwhNight;
 
-  console.log("Power in Watts:", powerInWatts);
-  console.log("Power in kW:", powerInKw);
-  console.log("Energy Price per kWh:", energyPrice);
+  logs.push(`Potencia en Watts: ${powerInWatts}`);
+  logs.push(`Potencia en kW: ${powerInKw}`);
+  logs.push(`Precio Energía por kWh: ${energyPrice}`);
 
   const energyCost = powerInKw * printHours * energyPrice;
-  console.log("Calculated Energy Cost:", energyCost);
+  logs.push(`Costo de energía calculado: ${energyCost}`);
   
   const laborCost = (settings.laborCostPerHour || 0) * laborHours;
+  logs.push(`Costo de mano de obra: ${laborCost}`);
   
   const subtotal = materialCost + machineDepreciationCost + laborCost + energyCost;
+  logs.push(`Subtotal: ${subtotal}`);
   
   const totalExtraCosts = (quote.extraCosts || []).reduce((acc, cost) => acc + (cost.amount || 0), 0);
   const subtotalWithExtras = subtotal + totalExtraCosts;
+  logs.push(`Subtotal con extras: ${subtotalWithExtras}`);
 
   const profitAmount = subtotalWithExtras * ((settings.profitMargin || 0) / 100);
+  logs.push(`Monto de ganancia: ${profitAmount}`);
   
   const total = subtotalWithExtras + profitAmount;
+  logs.push(`Total: ${total}`);
 
   const breakdown = {
     materialCost,
@@ -92,8 +97,8 @@ export function calculateCosts(
     total,
   };
 
-  console.log("Final Breakdown:", breakdown);
-  console.log("--- END CALCULATE COSTS ---");
+  logs.push(`Desglose final: ${JSON.stringify(breakdown)}`);
+  logs.push("--- FIN DEL CÁLCULO ---");
 
-  return breakdown;
+  return { breakdown, logs };
 }
