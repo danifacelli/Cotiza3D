@@ -16,8 +16,8 @@ export const DEFAULT_MATERIALS: Material[] = [
 ];
 
 export const DEFAULT_MACHINES: Machine[] = [
-  { id: 'ender3_default', name: 'Creality Ender 3', costPerHour: 0.5, powerConsumptionDay: 150, powerConsumptionNight: 150 },
-  { id: 'prusa_mk3', name: 'Prusa i3 MK3S+', costPerHour: 0.8, powerConsumptionDay: 200, powerConsumptionNight: 200 },
+  { id: 'ender3_default', name: 'Creality Ender 3', costPerHour: 0.5, powerConsumption: 150 },
+  { id: 'prusa_mk3', name: 'Prusa i3 MK3S+', costPerHour: 0.8, powerConsumption: 200 },
 ];
 
 export const DEFAULT_QUOTES: Quote[] = [];

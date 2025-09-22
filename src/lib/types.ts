@@ -11,8 +11,7 @@ export interface Machine {
   id: string;
   name: string;
   costPerHour: number; // in USD
-  powerConsumptionDay: number; // in Watts
-  powerConsumptionNight: number; // in Watts
+  powerConsumption: number; // in Watts
 }
 
 export interface Settings {

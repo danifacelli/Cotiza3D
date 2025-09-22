@@ -45,7 +45,7 @@ export function calculateCosts(
 
   const machineDepreciationCost = machine.costPerHour * printHours;
   
-  const powerConsumption = timeOfDay === 'day' ? machine.powerConsumptionDay : machine.powerConsumptionNight;
+  const powerConsumption = machine.powerConsumption;
   const energyCostPerKwh = timeOfDay === 'day' ? (settings.energyCostPerKwhDay || 0) : (settings.energyCostPerKwhNight || 0);
   const energyCost = (powerConsumption / 1000) * printHours * energyCostPerKwh;
 
@@ -57,9 +57,8 @@ export function calculateCosts(
   const subtotalWithExtras = subtotal + totalExtraCosts;
 
   const profitAmount = subtotalWithExtras * (settings.profitMargin / 100);
-  const subtotalWithProfit = subtotalWithExtras + profitAmount;
   
-  const total = subtotalWithProfit;
+  const total = subtotalWithExtras + profitAmount;
 
   return {
     materialCost,
