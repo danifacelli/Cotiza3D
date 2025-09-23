@@ -89,7 +89,7 @@ export function calculateCosts(
   const subtotal = materialCost + machineDepreciationCost + laborCost + energyCost;
   logs.push(`Subtotal: ${subtotal}`);
   
-  const totalExtraCosts = (quote.extraCosts || []).reduce((acc, cost) => acc + (cost.amount || 0), 0);
+  const totalExtraCosts = (quote.extraCosts || []).reduce((acc, cost) => acc + (Number(cost.amount) || 0), 0);
   const subtotalWithExtras = subtotal + totalExtraCosts;
   logs.push(`Subtotal con extras: ${subtotalWithExtras}`);
 
