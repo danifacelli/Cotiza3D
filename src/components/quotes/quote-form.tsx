@@ -31,6 +31,7 @@ import { CostSummary } from "@/components/quotes/cost-summary"
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { formatCurrency } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { getUsdToUyuExchangeRate } from "@/services/exchange-rate-service"
 
 const PartSchema = z.object({
   id: z.string(),
@@ -80,6 +81,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const [settings, setSettings, isSettingsHydrated] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
   
   const [calculationResult, setCalculationResult] = useState<{ breakdown: CostBreakdown | null; logs: string[] }>({ breakdown: null, logs: [] });
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
+  const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(true);
 
   const form = useForm<QuoteFormValues>({
     resolver: zodResolver(QuoteSchema),
@@ -100,12 +103,10 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     },
   })
   
-  const { reset, getValues } = form;
+  const { reset } = form;
 
   useEffect(() => {
-    // This effect handles the initial form population for both 'new' and 'edit' modes.
     if (quote) {
-      // EDIT MODE
       const totalPrintHours = quote.printHours || 0;
       const printHours = Math.floor(totalPrintHours);
       const printMinutes = Math.floor((totalPrintHours - printHours) * 60);
@@ -125,7 +126,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         extraCosts: quote.extraCosts || [],
       });
     } else if (isMaterialsHydrated && materials.length > 0 && isMachinesHydrated && machines.length > 0) {
-      // NEW MODE - set defaults only when creating a new quote
       reset({
         name: "",
         clientName: "",
@@ -203,6 +203,22 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     isMaterialsHydrated,
     isSettingsHydrated,
   ]);
+
+  useEffect(() => {
+    async function fetchRate() {
+      setIsExchangeRateLoading(true);
+      try {
+        const rate = await getUsdToUyuExchangeRate();
+        setExchangeRate(rate);
+      } catch (error) {
+        console.error(error);
+        setExchangeRate(null); // Set to null on error
+      } finally {
+        setIsExchangeRateLoading(false);
+      }
+    }
+    fetchRate();
+  }, []);
 
 
   const materialSummary = useMemo(() => {
@@ -649,6 +665,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 machine={selectedMachine}
                 quoteInput={{...watchedValues, printHours: printHoursDecimal}}
                 logs={calculationResult.logs}
+                exchangeRate={exchangeRate}
+                isExchangeRateLoading={isExchangeRateLoading}
                 actions={
                   <>
                      <Button type="submit" className="w-full">
@@ -667,5 +685,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    

@@ -16,6 +16,8 @@ interface CostSummaryProps {
   quoteInput: Partial<Quote>
   actions?: React.ReactNode
   logs?: string[]
+  exchangeRate?: number | null
+  isExchangeRateLoading?: boolean
 }
 
 const SummaryRow = ({ label, value, className = "", description }: { label: string, value: string, className?: string, description?: string }) => (
@@ -28,7 +30,7 @@ const SummaryRow = ({ label, value, className = "", description }: { label: stri
   </div>
 )
 
-export function CostSummary({ breakdown, settings, machine, quoteInput, actions, logs }: CostSummaryProps) {
+export function CostSummary({ breakdown, settings, machine, quoteInput, actions, logs, exchangeRate, isExchangeRateLoading }: CostSummaryProps) {
   if (!breakdown) {
     return (
       <Card>
@@ -125,6 +127,21 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
         <div className="flex justify-between items-center text-xl font-bold pt-4">
           <span>Total</span>
           <span>{formatCurrency(breakdown.total, "USD", decimalPlaces)}</span>
+        </div>
+
+        <Separator />
+
+        <div className="pt-2 space-y-1 text-right">
+            {isExchangeRateLoading && <p className="text-xs text-muted-foreground">Obteniendo cambio...</p>}
+            {exchangeRate && (
+                <>
+                    <p className="text-lg font-bold">{formatCurrency(breakdown.total * exchangeRate, 'UYU', 0, 'symbol')}</p>
+                    <p className="text-xs text-muted-foreground">
+                        Tasa de cambio: 1 USD ≈ {exchangeRate.toFixed(2)} UYU
+                    </p>
+                </>
+            )}
+            {exchangeRate === null && !isExchangeRateLoading && <p className="text-xs text-destructive">No se pudo obtener la tasa de cambio.</p>}
         </div>
       </CardContent>
       {actions && (
