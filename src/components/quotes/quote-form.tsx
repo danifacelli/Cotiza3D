@@ -102,18 +102,19 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   
   const { setValue, reset, getValues } = form;
   
-  // Effect to add missing fields to legacy items in local storage
+   // Effect to add missing fields to legacy items in local storage
   useEffect(() => {
     if (isMachinesHydrated) {
         let machinesUpdated = false;
         const updatedMachines = machines.map(machine => {
-            const needsUpdate = !('powerConsumption' in machine) || !('energyCostPerKwhDay' in machine);
+            const needsUpdate = !('powerConsumption' in machine);
+            const needsEnergyCost = !('energyCostPerKwhDay' in machine);
 
-            if (needsUpdate) {
+            if (needsUpdate || needsEnergyCost) {
                 machinesUpdated = true;
-                const updatedMachine = { ...machine } as any;
+                const updatedMachine = { ...machine } as Partial<Machine> & { id: string };
                  if (!('powerConsumption' in updatedMachine)) {
-                  updatedMachine.powerConsumption = 0;
+                  updatedMachine.powerConsumption = 150; // Default value
                 }
                 if (!('energyCostPerKwhDay' in updatedMachine)) {
                   updatedMachine.energyCostPerKwhDay = 0;
@@ -122,10 +123,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                   updatedMachine.energyCostPerKwhNight = 0;
                 }
                 
-                delete updatedMachine.powerConsumptionDay;
-                delete updatedMachine.powerConsumptionNight;
-
-                return updatedMachine;
+                return updatedMachine as Machine;
             }
             return machine;
         });
@@ -135,11 +133,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         }
     }
   }, [isMachinesHydrated, machines, setMachines]);
-
-  
-  const stableSetValue = useCallback(setValue, [setValue]);
-  const stableGetValues = useCallback(getValues, [getValues]);
-  const stableReset = useCallback(reset, [reset]);
 
   useEffect(() => {
     // This effect handles the initial form population for both 'new' and 'edit' modes.
@@ -154,7 +147,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       const laborHours = Math.floor(totalLaborHours);
       const laborMinutes = Math.round((totalLaborHours - laborHours) * 60);
 
-      stableReset({
+      reset({
         ...quote,
         printHours,
         printMinutes,
@@ -165,8 +158,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       });
     } else if (isMaterialsHydrated && materials.length > 0 && isMachinesHydrated && machines.length > 0) {
       // NEW MODE - set defaults only when creating a new quote
-      stableReset({
-        ...stableGetValues(),
+      reset({
+        ...getValues(),
         parts: [{ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 }],
         machineId: machines.length > 0 ? machines[0].id : "",
         name: "",
@@ -182,7 +175,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         laborMinutes: 0,
       });
     }
-  }, [quote, isMaterialsHydrated, isMachinesHydrated, materials, machines, stableReset, stableGetValues]);
+  }, [quote, isMaterialsHydrated, isMachinesHydrated, materials, machines, reset, getValues]);
   
 
   const { fields: partFields, append: appendPart, remove: removePart } = useFieldArray({
@@ -694,5 +687,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
 
     
