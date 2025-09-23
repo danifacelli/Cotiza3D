@@ -93,7 +93,7 @@ export function calculateCosts(
   const subtotalWithExtras = subtotal + totalExtraCosts;
   logs.push(`Subtotal con extras: ${subtotalWithExtras}`);
 
-  const profitAmount = subtotalWithExtras * ((settings.profitMargin || 0) / 100);
+  const profitAmount = subtotal * ((settings.profitMargin || 0) / 100);
   logs.push(`Monto de ganancia: ${profitAmount}`);
   
   const total = subtotalWithExtras + profitAmount;
@@ -116,3 +116,4 @@ export function calculateCosts(
 
   return { breakdown, logs };
 }
+
