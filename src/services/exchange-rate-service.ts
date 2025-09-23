@@ -1,14 +1,13 @@
 
 'use server';
 
-const API_URL = 'https://api.frankfurter.app/latest?from=USD&to=UYU';
+const API_URL = 'https://open.er-api.com/v6/latest/USD';
 
 export interface ExchangeRateResponse {
-  amount: number;
-  base: string;
-  date: string;
+  result: string;
+  base_code: string;
   rates: {
-    UYU: number;
+    [key: string]: number;
   };
 }
 
@@ -22,6 +21,11 @@ export async function getUsdToUyuExchangeRate(): Promise<number> {
       throw new Error(`Failed to fetch exchange rate. Status: ${response.status} ${response.statusText}`);
     }
     const data: ExchangeRateResponse = await response.json();
+
+    if (data.result !== 'success' || !data.rates || !data.rates.UYU) {
+        throw new Error('Invalid data received from exchange rate API.');
+    }
+
     return data.rates.UYU;
   } catch (error) {
      if (error instanceof Error) {
