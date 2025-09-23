@@ -669,5 +669,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
 }
 
     
-
-    
