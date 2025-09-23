@@ -269,7 +269,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   }
   
   const energyTariffDescription = useMemo(() => {
-    if (!settings) return null;
+    if (!settings || !selectedMachine) return null;
 
     const { 
       peakTariffStartTime, 
@@ -290,7 +290,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       default:
         return null;
     }
-  }, [watchedValues.tariffType, settings]);
+  }, [watchedValues.tariffType, settings, selectedMachine]);
 
 
   return (
@@ -517,7 +517,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                                 size="icon"
                                 className="absolute top-2 right-2 h-7 w-7 text-destructive hover:bg-destructive/10"
                                 onClick={() => removePart(index)}
-                                disabled={partFields.length <= 1}
                               >
                                 <Trash2 className="h-4 w-4" />
                             </Button>
@@ -668,5 +667,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
 
     
