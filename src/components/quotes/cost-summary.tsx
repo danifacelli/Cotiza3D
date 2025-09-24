@@ -80,10 +80,9 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
   const highPrecisionDecimalPlaces = Math.max(4, decimalPlaces);
   const localCurrencyDecimalPlaces = localCurrencyInfo?.value === 'CLP' || localCurrencyInfo?.value === 'PYG' ? 0 : decimalPlaces;
 
-  const formatLocal = (amount: number, useHighPrecision: boolean = false) => {
+  const formatLocal = (amount: number) => {
     if (!exchangeRate || !localCurrencyInfo) return null;
-    const precision = useHighPrecision ? highPrecisionDecimalPlaces : localCurrencyDecimalPlaces;
-    return formatCurrency(amount * exchangeRate, localCurrencyInfo.value, precision, 'symbol', localCurrencyInfo.locale);
+    return formatCurrency(amount * exchangeRate, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale);
   };
 
   const getEnergyCostDetails = () => {
@@ -128,13 +127,13 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
         <SummaryRow
           label="Costo de Energía"
           value={formatCurrency(breakdown.energyCost, "USD", highPrecisionDecimalPlaces)}
-          localValue={formatLocal(breakdown.energyCost, true)}
+          localValue={formatLocal(breakdown.energyCost)}
           description={getEnergyCostDetails()}
         />
         <SummaryRow
           label="Depreciación Máquina"
           value={formatCurrency(breakdown.machineDepreciationCost, "USD", highPrecisionDecimalPlaces)}
-          localValue={formatLocal(breakdown.machineDepreciationCost, true)}
+          localValue={formatLocal(breakdown.machineDepreciationCost)}
         />
         <SummaryRow
           label="Mano de Obra"
@@ -171,11 +170,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
         
         <SummaryRow
           label="Subtotal de Costo"
-          value={
-            <div className="flex flex-col">
-              <span>{formatCurrency(breakdown.costSubtotal, "USD", decimalPlaces)}</span>
-            </div>
-          }
+          value={formatCurrency(breakdown.costSubtotal, "USD", decimalPlaces)}
           localValue={formatLocal(breakdown.costSubtotal)}
           className="font-semibold"
         />
