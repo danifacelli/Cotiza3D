@@ -142,7 +142,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     },
   })
   
-  const { control, setValue } = form;
+  const { control, setValue, watch } = form;
 
   const { fields: partFields, append: appendPart, remove: removePart } = useFieldArray({
     control: form.control,
@@ -153,11 +153,23 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     control: form.control,
     name: "extraCosts",
   })
-
-  const watchedValues = form.watch()
-  const printHoursDecimal = (Number(watchedValues.printHours) || 0) + ((Number(watchedValues.printMinutes) || 0) / 60) + ((Number(watchedValues.printSeconds) || 0) / 3600);
-  const laborHoursDecimal = (Number(watchedValues.laborHours) || 0) + ((Number(watchedValues.laborMinutes) || 0) / 60);
   
+  const watchedParts = watch("parts");
+  const watchedMachineId = watch("machineId");
+  const watchedDesignCost = watch("designCost");
+  const watchedTariffType = watch("tariffType");
+  const watchedPeakHours = watch("peakHours");
+  const watchedExtraCosts = watch("extraCosts");
+  const watchedFinalPriceOverride = watch("finalPriceOverride");
+  const watchedPrintHours = watch("printHours");
+  const watchedPrintMinutes = watch("printMinutes");
+  const watchedPrintSeconds = watch("printSeconds");
+  const watchedLaborHours = watch("laborHours");
+  const watchedLaborMinutes = watch("laborMinutes");
+
+  const printHoursDecimal = useMemo(() => (Number(watchedPrintHours) || 0) + ((Number(watchedPrintMinutes) || 0) / 60) + ((Number(watchedPrintSeconds) || 0) / 3600), [watchedPrintHours, watchedPrintMinutes, watchedPrintSeconds]);
+  const laborHoursDecimal = useMemo(() => (Number(watchedLaborHours) || 0) + ((Number(watchedLaborMinutes) || 0) / 60), [watchedLaborHours, watchedLaborMinutes]);
+
   useEffect(() => {
     const isReady =
       isMachinesHydrated &&
@@ -170,13 +182,13 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     }
     
     const quoteDataForCalc = {
-      machineId: watchedValues.machineId,
-      parts: watchedValues.parts,
-      designCost: watchedValues.designCost,
-      tariffType: watchedValues.tariffType,
-      peakHours: watchedValues.peakHours,
-      extraCosts: watchedValues.extraCosts,
-      finalPriceOverride: watchedValues.finalPriceOverride,
+      machineId: watchedMachineId,
+      parts: watchedParts,
+      designCost: watchedDesignCost,
+      tariffType: watchedTariffType,
+      peakHours: watchedPeakHours,
+      extraCosts: watchedExtraCosts,
+      finalPriceOverride: watchedFinalPriceOverride,
       printHours: printHoursDecimal,
       laborHours: laborHoursDecimal,
     }
@@ -189,14 +201,20 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     );
     setCalculationResult({ breakdown: result.breakdown });
 
-    if (result.breakdown && !result.breakdown.isManualPrice && watchedValues.finalPriceOverride) {
+    if (result.breakdown && !result.breakdown.isManualPrice && watchedFinalPriceOverride !== undefined) {
         setValue('finalPriceOverride', undefined);
     }
 
   }, [
     printHoursDecimal,
     laborHoursDecimal,
-    watchedValues,
+    watchedParts,
+    watchedMachineId,
+    watchedDesignCost,
+    watchedTariffType,
+    watchedPeakHours,
+    watchedExtraCosts,
+    watchedFinalPriceOverride,
     settings,
     materials,
     machines,
@@ -225,17 +243,17 @@ export function QuoteForm({ quote }: QuoteFormProps) {
 
 
   const materialSummary = useMemo(() => {
-    const totalGrams = watchedValues.parts?.reduce((acc, part) => {
+    const totalGrams = watchedParts?.reduce((acc, part) => {
         const parsedGrams = parseFloat(part.materialGrams as any);
         return acc + (isNaN(parsedGrams) ? 0 : parsedGrams);
     }, 0) || 0;
     
     return { totalGrams };
-  }, [watchedValues.parts]);
+  }, [watchedParts]);
   
   const selectedMachine = useMemo(() => {
-    return machines.find(m => m.id === watchedValues.machineId);
-  }, [machines, watchedValues.machineId]);
+    return machines.find(m => m.id === watchedMachineId);
+  }, [machines, watchedMachineId]);
 
 
   const onSubmit = (data: QuoteFormValues) => {
@@ -275,7 +293,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   }
 
   const handleGeneratePdf = async () => {
-    const quoteName = watchedValues.name || 'presupuesto';
+    const quoteName = watch("name") || 'presupuesto';
     if (!pdfRef.current || !calculationResult.breakdown) {
       toast({
         title: "Error",
@@ -339,7 +357,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       offPeakEnergyCostKwh 
     } = settings;
 
-    const tariffType = watchedValues.tariffType;
+    const tariffType = watchedTariffType;
 
     switch (tariffType) {
       case 'peak':
@@ -351,7 +369,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       default:
         return null;
     }
-  }, [watchedValues.tariffType, settings, selectedMachine]);
+  }, [watchedTariffType, settings, selectedMachine]);
   
   const handleAddPart = (data: PartFormValues) => {
     appendPart({
@@ -380,6 +398,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       };
     });
   }, [partFields, materials]);
+
+  const watchedValues = watch();
 
   return (
     <Form {...form}>
@@ -830,7 +850,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 breakdown={calculationResult.breakdown}
                 settings={settings}
                 machine={selectedMachine}
-                quoteInput={{...watchedValues, printHours: printHoursDecimal}}
+                quoteInput={{...watchedValues, printHours: printHoursDecimal, laborHours: laborHoursDecimal}}
                 exchangeRate={exchangeRate}
                 isExchangeRateLoading={isExchangeRateLoading}
                 form={form}
@@ -870,3 +890,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
