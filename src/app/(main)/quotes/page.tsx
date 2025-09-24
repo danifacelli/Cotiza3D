@@ -43,21 +43,17 @@ function QuotesSummary({ quotes, settings, exchangeRate }: { quotes: QuoteWithTo
 
     return (
         <Card>
-            <CardHeader>
-                <CardTitle>Total General (Filtro Actual)</CardTitle>
-                <CardDescription>Suma de los presupuestos que coinciden con el filtro de estado seleccionado.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-                 <div className="flex justify-between font-semibold">
-                    <span>Total en USD:</span>
+            <CardContent className="space-y-2 pt-6">
+                 <div className="flex justify-between font-semibold text-sm">
+                    <span>Total General (USD):</span>
                     <span>{formatCurrency(totals.totalUSD, 'USD', settings.currencyDecimalPlaces)}</span>
                 </div>
-                 <div className="flex justify-between font-semibold">
-                    <span>Total en {settings.localCurrency}:</span>
+                 <div className="flex justify-between font-semibold text-sm">
+                    <span>Total General ({settings.localCurrency}):</span>
                     <span>{formatCurrency(totals.totalLocal, settings.localCurrency, settings.localCurrency === 'CLP' || settings.localCurrency === 'PYG' ? 0 : settings.currencyDecimalPlaces, 'symbol')}</span>
                 </div>
                 <p className="text-xs text-muted-foreground pt-2">
-                    Mostrando {quotes.length} presupuesto(s). 
+                    {`Calculado sobre ${quotes.length} presupuesto(s) del filtro actual.`}
                     {exchangeRate && ` Tasa de cambio: 1 USD ≈ ${exchangeRate.toFixed(2)} ${settings.localCurrency}`}
                 </p>
             </CardContent>
