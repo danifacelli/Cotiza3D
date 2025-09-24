@@ -16,7 +16,7 @@ export default function EditQuotePage() {
     const [quotes, _, isHydrated] = useLocalStorage<Quote[]>(LOCAL_STORAGE_KEYS.QUOTES, []);
 
     const initialQuote = useMemo(() => {
-        if (!isHydrated) return null;
+        if (!isHydrated) return null; // Wait for hydration
 
         const foundQuote = quotes.find(q => q.id === id);
         if (!foundQuote) return undefined; // Use undefined to signify not found after hydration
