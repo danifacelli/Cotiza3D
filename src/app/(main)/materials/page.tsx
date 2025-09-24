@@ -1,13 +1,12 @@
 
 "use client"
 
-import { useState, useRef } from "react"
+import { useState } from "react"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import { LOCAL_STORAGE_KEYS, FILAMENT_TYPES } from "@/lib/constants"
 import { DEFAULT_MATERIALS } from "@/lib/defaults"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { PlusCircle, Trash2, Upload, Download } from "lucide-react"
+import { PlusCircle, Trash2 } from "lucide-react"
 import type { Material } from "@/lib/types"
 import { MaterialForm } from "@/components/materials/material-form"
 import { MaterialsGrid } from "@/components/materials/materials-grid"
@@ -41,9 +40,6 @@ export default function MaterialsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null)
   const { toast } = useToast()
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [pendingImportData, setPendingImportData] = useState<Material[] | null>(null)
-  const [isImportConfirmOpen, setIsImportConfirmOpen] = useState(false)
 
   const handleNewMaterial = () => {
     setSelectedMaterial(null)
@@ -95,87 +91,6 @@ export default function MaterialsPage() {
     setSelectedMaterial(null)
   }
 
-  const handleExportMaterials = () => {
-    try {
-      const dataStr = JSON.stringify(materials, null, 2);
-      const dataBlob = new Blob([dataStr], { type: "application/json" });
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "cotiza3d_insumos.json";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      toast({
-        title: "Exportación exitosa",
-        description: "Tus insumos han sido exportados a `cotiza3d_insumos.json`.",
-      });
-    } catch (error) {
-      console.error("Error exporting materials:", error);
-      toast({
-        title: "Error de exportación",
-        description: "No se pudieron exportar los insumos.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const text = e.target?.result;
-        if (typeof text !== "string") {
-          throw new Error("El archivo no es válido.");
-        }
-        const importedData = JSON.parse(text);
-
-        // Basic validation
-        if (!Array.isArray(importedData) || importedData.some(item => !item.id || !item.name)) {
-            throw new Error("El archivo JSON no tiene el formato esperado para los insumos.");
-        }
-
-        setPendingImportData(importedData);
-setIsImportConfirmOpen(true);
-
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "Error desconocido.";
-        toast({
-          title: "Error de importación",
-          description: `No se pudo leer el archivo. ${message}`,
-          variant: "destructive",
-        });
-      } finally {
-        // Reset file input to allow re-importing the same file
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  const confirmImport = () => {
-    if (pendingImportData) {
-      setMaterials(pendingImportData);
-      toast({
-        title: "Importación exitosa",
-        description: "Tus insumos han sido reemplazados con los datos del archivo.",
-      });
-    }
-    setPendingImportData(null);
-    setIsImportConfirmOpen(false);
-  };
-
-
   const materialsWithDescriptions = materials.map(material => {
     const typeInfo = FILAMENT_TYPES.find(ft => ft.value === material.type);
     return {
@@ -192,25 +107,6 @@ setIsImportConfirmOpen(true);
             <p className="text-muted-foreground">Administra tus filamentos de impresión.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-            {isHydrated && materials.length > 0 && (
-                 <Button variant="outline" onClick={handleExportMaterials}>
-                    <Download className="mr-2" />
-                    Exportar
-                </Button>
-            )}
-            
-            <Button variant="outline" onClick={handleImportClick}>
-                <Upload className="mr-2" />
-                Importar
-            </Button>
-            <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-                accept="application/json"
-            />
-            
             {isHydrated && materials.length > 0 && (
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -257,23 +153,6 @@ setIsImportConfirmOpen(true);
                 />
             </DialogContent>
             </Dialog>
-
-             <AlertDialog open={isImportConfirmOpen} onOpenChange={setIsImportConfirmOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Confirmar Importación</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        ¿Estás seguro de que deseas reemplazar todos tus insumos actuales con los datos del archivo importado? Esta acción no se puede deshacer.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setPendingImportData(null)}>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={confirmImport} asChild>
-                        <Button>Sí, importar</Button>
-                    </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </div>
       </div>
 

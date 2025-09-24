@@ -20,8 +20,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { MoreHorizontal, Pencil, Trash2, DollarSign } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency } from "@/lib/utils"
@@ -90,13 +90,10 @@ export function MaterialsGrid({ materials, onEdit, onDelete, isHydrated }: Mater
                     <Skeleton className="h-6 w-3/4" />
                     <Skeleton className="h-4 w-1/4" />
                 </CardHeader>
-                <CardContent>
-                    <Skeleton className="h-4 w-full mb-2" />
-                    <Skeleton className="h-4 w-5/6" />
-                </CardContent>
-                <CardFooter>
+                <CardContent className="space-y-4">
+                    <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-8 w-1/3" />
-                </CardFooter>
+                </CardContent>
             </Card>
         ))}
       </div>
@@ -128,17 +125,16 @@ export function MaterialsGrid({ materials, onEdit, onDelete, isHydrated }: Mater
                 onDelete={() => onDelete(material.id)}
             />
           </CardHeader>
-          <CardContent className="flex-grow">
-            <p className="text-sm text-muted-foreground">
+          <CardContent className="flex flex-col flex-grow justify-between">
+            <p className="text-sm text-muted-foreground mb-4">
               {material.description}
             </p>
-          </CardContent>
-          <CardFooter>
-             <div className="text-lg font-semibold">
+             <div className="flex items-center text-lg font-semibold">
+                <DollarSign className="w-4 h-4 mr-2 text-muted-foreground" />
                 {formatCurrency(material.cost, 'USD', settings.currencyDecimalPlaces)}
-                 <span className="text-xs text-muted-foreground font-normal"> / kg</span>
+                <span className="text-xs text-muted-foreground font-normal ml-1"> / kg</span>
             </div>
-          </CardFooter>
+          </CardContent>
         </Card>
       ))}
     </div>
