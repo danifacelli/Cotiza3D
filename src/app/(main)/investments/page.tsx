@@ -1,13 +1,13 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
-import { DEFAULT_INVESTMENTS, generateId } from "@/lib/defaults"
+import { DEFAULT_INVESTMENTS, generateId, DEFAULT_QUOTES, DEFAULT_MATERIALS, DEFAULT_MACHINES, DEFAULT_SETTINGS } from "@/lib/defaults"
 import { Button } from "@/components/ui/button"
-import { PlusCircle, Trash2 } from "lucide-react"
-import type { Investment } from "@/lib/types"
+import { PlusCircle, Trash2, TrendingUp, TrendingDown } from "lucide-react"
+import type { Investment, Quote, Material, Machine, Settings } from "@/lib/types"
 import { InvestmentForm } from "@/components/investments/investment-form"
 import {
   Dialog,
@@ -32,6 +32,8 @@ import { useToast } from "@/hooks/use-toast"
 import { InvestmentsTable } from "@/components/investments/investments-table"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils"
+import { calculateCosts } from "@/lib/calculations"
+import { Progress } from "@/components/ui/progress"
 
 type InvestmentFormData = {
     name: string;
@@ -40,13 +42,43 @@ type InvestmentFormData = {
 }
 
 export default function InvestmentsPage() {
-  const [investments, setInvestments, isHydrated] = useLocalStorage<Investment[]>(
+  const [investments, setInvestments, isInvestmentsHydrated] = useLocalStorage<Investment[]>(
     LOCAL_STORAGE_KEYS.INVESTMENTS,
     DEFAULT_INVESTMENTS
   )
+  const [quotes, _, isQuotesHydrated] = useLocalStorage<Quote[]>(LOCAL_STORAGE_KEYS.QUOTES, DEFAULT_QUOTES);
+  const [materials, __, isMaterialsHydrated] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS);
+  const [machines, ___, isMachinesHydrated] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES);
+  const [settings, ____, isSettingsHydrated] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
+
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [selectedInvestment, setSelectedInvestment] = useState<Investment | null>(null)
   const { toast } = useToast()
+
+  const isHydrated = isInvestmentsHydrated && isQuotesHydrated && isMaterialsHydrated && isMachinesHydrated && isSettingsHydrated;
+
+  const investmentData = useMemo(() => {
+    if (!isHydrated) return { totalInvested: 0, totalProfit: 0, amountToRecover: 0, recoveryPercentage: 0 };
+    
+    const accepted = quotes.filter(q => q.status === 'accepted');
+    
+    const totals = accepted.reduce((acc, quote) => {
+        const { breakdown } = calculateCosts(quote, materials, machines, settings);
+        if (breakdown) {
+            acc.revenue += breakdown.total;
+            acc.cost += breakdown.costSubtotal;
+        }
+        return acc;
+    }, { revenue: 0, cost: 0 });
+    
+    const totalProfit = totals.revenue - totals.cost;
+    const totalInvested = investments.reduce((acc, inv) => acc + inv.amount, 0);
+    const amountToRecover = Math.max(0, totalInvested - totalProfit);
+    const recoveryPercentage = totalInvested > 0 ? Math.min((totalProfit / totalInvested) * 100, 100) : 0;
+    
+    return { totalInvested, totalProfit, amountToRecover, recoveryPercentage };
+  }, [isHydrated, quotes, materials, machines, settings, investments])
+
 
   const handleNewInvestment = () => {
     setSelectedInvestment(null)
@@ -103,8 +135,6 @@ export default function InvestmentsPage() {
     setIsFormOpen(false)
     setSelectedInvestment(null)
   }
-
-  const totalInvested = investments.reduce((acc, inv) => acc + inv.amount, 0)
 
   return (
     <div className="flex flex-col gap-6">
@@ -164,14 +194,49 @@ export default function InvestmentsPage() {
 
        <Card>
         <CardHeader>
-            <CardTitle>Total Invertido</CardTitle>
-            <CardDescription>Suma de todos tus gastos de capital.</CardDescription>
+            <CardTitle>Recuperación de Inversión</CardTitle>
+            <CardDescription>Progreso de tus ganancias para cubrir tus gastos de capital.</CardDescription>
         </CardHeader>
         <CardContent>
             {isHydrated ? (
-                 <p className="text-3xl font-bold">{formatCurrency(totalInvested, "USD", 2)}</p>
+                <>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center sm:text-left">
+                        <div className="p-4 bg-muted/50 rounded-lg">
+                            <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-muted-foreground">
+                                <TrendingDown className="h-4 w-4 text-red-500"/>
+                                <span>Total Invertido</span>
+                            </div>
+                            <p className="text-2xl font-bold">{formatCurrency(investmentData.totalInvested, "USD", 2)}</p>
+                        </div>
+                        <div className="p-4 bg-muted/50 rounded-lg">
+                            <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-muted-foreground">
+                               <TrendingUp className="h-4 w-4 text-green-500"/>
+                               <span>Ganancia Neta</span>
+                            </div>
+                            <p className="text-2xl font-bold">{formatCurrency(investmentData.totalProfit, "USD", 2)}</p>
+                        </div>
+                        <div className="p-4 bg-muted/50 rounded-lg">
+                             <div className="text-sm text-muted-foreground">
+                                {investmentData.recoveryPercentage >= 100 ? "¡Inversión Recuperada!" : "Falta por recuperar"}
+                            </div>
+                            <p className="text-2xl font-bold">{formatCurrency(investmentData.amountToRecover, "USD", 2)}</p>
+                        </div>
+                    </div>
+                    {investmentData.totalInvested > 0 && (
+                        <div className="mt-6">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-sm font-medium">Progreso de Recuperación</span>
+                                <span className="text-sm font-bold">{investmentData.recoveryPercentage.toFixed(2)}%</span>
+                            </div>
+                            <Progress value={investmentData.recoveryPercentage} />
+                        </div>
+                    )}
+                </>
             ) : (
-                <div className="h-8 w-48 bg-muted animate-pulse rounded-md" />
+                <div className="space-y-4">
+                    <div className="h-16 w-full bg-muted animate-pulse rounded-md" />
+                    <div className="h-4 w-1/2 bg-muted animate-pulse rounded-md" />
+                </div>
             )}
         </CardContent>
        </Card>
