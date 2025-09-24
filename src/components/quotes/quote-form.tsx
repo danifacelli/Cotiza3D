@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import { useForm, useFieldArray } from "react-hook-form"
@@ -159,7 +158,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   }, [quote, isMaterialsHydrated, isMachinesHydrated, materials, machines, reset, getValues]);
   
 
-  const { fields: partFields, append: appendPart, remove: removePart } = useFieldArray({
+  const { fields: partFields, append: appendPart, remove: removePart, insert: insertPart } = useFieldArray({
     control: form.control,
     name: "parts",
   })
@@ -319,6 +318,13 @@ export function QuoteForm({ quote }: QuoteFormProps) {
 
   const addNewPart = () => {
     appendPart({ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 });
+  };
+  
+  const duplicatePart = (index: number) => {
+    const partToDuplicate = watchedValues.parts[index];
+    if (partToDuplicate) {
+      insertPart(index + 1, { ...partToDuplicate, id: generateId() });
+    }
   };
 
 
@@ -608,7 +614,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                                     )}
                                 />
                                 <div className="flex items-end h-full">
-                                    <Button type="button" variant="outline" size="icon" onClick={addNewPart}>
+                                    <Button type="button" variant="outline" size="icon" onClick={() => duplicatePart(index)}>
                                         <PlusCircle className="h-4 w-4" />
                                     </Button>
                                 </div>
@@ -730,3 +736,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
