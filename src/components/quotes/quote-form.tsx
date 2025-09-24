@@ -36,6 +36,8 @@ import { getExchangeRate } from "@/services/exchange-rate-service"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { QuotePartForm, PartFormValues } from "./quote-part-form"
 import { QuotePartsTable } from "./quote-parts-table"
+import { QuoteExtraCostForm, ExtraCostFormValues } from "./quote-extra-cost-form"
+import { QuoteExtraCostsTable } from "./quote-extra-costs-table"
 
 const PartSchema = z.object({
   id: z.string(),
@@ -89,6 +91,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(true);
   const [isPartFormOpen, setIsPartFormOpen] = useState(false);
+  const [isExtraCostFormOpen, setIsExtraCostFormOpen] = useState(false);
 
   const form = useForm<QuoteFormValues>({
     resolver: zodResolver(QuoteSchema),
@@ -321,6 +324,15 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       materialGrams: data.materialGrams,
     });
     setIsPartFormOpen(false);
+  };
+  
+  const handleAddExtraCost = (data: ExtraCostFormValues) => {
+    appendExtraCost({
+      id: generateId(),
+      description: data.description,
+      amount: data.amount,
+    });
+    setIsExtraCostFormOpen(false);
   };
 
   const partsWithNames = useMemo(() => {
@@ -616,44 +628,26 @@ export function QuoteForm({ quote }: QuoteFormProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle>Costos Adicionales y Notas</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Costos Adicionales y Notas</CardTitle>
+                  <Dialog open={isExtraCostFormOpen} onOpenChange={setIsExtraCostFormOpen}>
+                      <DialogTrigger asChild>
+                          <Button type="button" size="sm" variant="outline">
+                              <PlusCircle className="mr-2" />
+                              Añadir Costo
+                          </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                          <DialogHeader>
+                              <DialogTitle>Añadir Costo Adicional</DialogTitle>
+                          </DialogHeader>
+                          <QuoteExtraCostForm onSubmit={handleAddExtraCost} onCancel={() => setIsExtraCostFormOpen(false)} />
+                      </DialogContent>
+                  </Dialog>
+                </div>
               </CardHeader>
               <CardContent className="grid gap-6">
-                <div>
-                  <FormLabel>Costos Adicionales</FormLabel>
-                  <div className="space-y-4 mt-2">
-                    {extraCostFields.map((field, index) => (
-                      <div key={field.id} className="flex items-center gap-2">
-                        <FormField
-                          control={control}
-                          name={`extraCosts.${index}.description`}
-                          render={({ field }) => (
-                            <Input {...field} placeholder="Descripción" className="flex-grow" />
-                          )}
-                        />
-                        <FormField
-                          control={control}
-                          name={`extraCosts.${index}.amount`}
-                          render={({ field }) => (
-                            <Input type="number" step="0.01" {...field} placeholder="Monto (USD)" />
-                          )}
-                        />
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeExtraCost(index)}>
-                          <Trash2 className="text-destructive" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="mt-4"
-                    onClick={() => appendExtraCost({ id: generateId(), description: "", amount: 0 })}
-                  >
-                    <PlusCircle className="mr-2" /> Añadir Costo
-                  </Button>
-                </div>
+                <QuoteExtraCostsTable costs={extraCostFields} onRemove={removeExtraCost} settings={settings} />
                 <Separator />
                 <FormField
                   control={control}
@@ -699,5 +693,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    
