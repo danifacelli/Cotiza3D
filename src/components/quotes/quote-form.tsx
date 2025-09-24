@@ -875,7 +875,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           <div ref={pdfRef} className="w-[800px] bg-white text-black">
              {calculationResult.breakdown && (
                 <QuotePDF
-                    quote={{...watchedValues, id: quote?.id, createdAt: quote?.createdAt, deliveryDate: watchedValues.deliveryDate?.toISOString()} as Quote}
+                    quote={{...watchedValues, id: quote?.id || '', createdAt: quote?.createdAt || new Date().toISOString(), deliveryDate: watchedValues.deliveryDate?.toISOString()} as Quote}
                     parts={partsWithNames}
                     settings={settings}
                     machine={selectedMachine}
