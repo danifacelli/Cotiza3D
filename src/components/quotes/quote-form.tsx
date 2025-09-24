@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useForm, useFieldArray } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { useRouter } from "next/navigation"
@@ -32,6 +32,9 @@ import { useState, useEffect, useMemo } from "react"
 import { formatCurrency } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { getExchangeRate } from "@/services/exchange-rate-service"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { QuotePartForm, PartFormValues } from "./quote-part-form"
+import { QuotePartsTable } from "./quote-parts-table"
 
 const PartSchema = z.object({
   id: z.string(),
@@ -84,13 +87,14 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const [calculationResult, setCalculationResult] = useState<{ breakdown: CostBreakdown | null; logs: string[] }>({ breakdown: null, logs: [] });
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(true);
+  const [isPartFormOpen, setIsPartFormOpen] = useState(false);
 
   const form = useForm<QuoteFormValues>({
     resolver: zodResolver(QuoteSchema),
     defaultValues: {
       name: quote?.name || "",
       clientName: quote?.clientName || "",
-      parts: quote?.parts?.length ? quote.parts : [{ id: generateId(), materialId: "", materialGrams: 0 }],
+      parts: quote?.parts?.length ? quote.parts : [],
       machineId: quote?.machineId || "",
       designCost: quote?.designCost || 0,
       tariffType: quote?.tariffType || "off-peak",
@@ -105,14 +109,10 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     },
   })
   
-  const { reset, getValues } = form;
+  const { reset, getValues, control } = form;
 
   useEffect(() => {
-    // This effect initializes or resets the form.
-    // It runs when a `quote` object is provided (for editing) or when the essential data (materials, machines) is hydrated for a new quote.
-
     if (quote) {
-      // Editing an existing quote
       const totalPrintHours = quote.printHours || 0;
       const printHours = Math.floor(totalPrintHours);
       const printMinutes = Math.floor((totalPrintHours - printHours) * 60);
@@ -129,18 +129,18 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         printSeconds,
         laborHours,
         laborMinutes,
+        parts: quote.parts || [],
         extraCosts: quote.extraCosts || [],
         designCost: quote.designCost || 0,
       });
 
-    } else if (isMaterialsHydrated && isMachinesHydrated && materials.length > 0 && machines.length > 0) {
-      // Creating a new quote, set defaults only if the form is empty
+    } else if (isMaterialsHydrated && isMachinesHydrated && machines.length > 0) {
       const currentValues = getValues();
-      if (!currentValues.name && currentValues.parts.length <= 1 && currentValues.parts[0]?.materialGrams === 0) {
+      if (!currentValues.name && currentValues.parts.length === 0) {
         reset({
           name: "",
           clientName: "",
-          parts: [{ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 }],
+          parts: [],
           machineId: machines.length > 0 ? machines[0].id : "",
           designCost: 0,
           tariffType: "off-peak",
@@ -158,7 +158,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   }, [quote, isMaterialsHydrated, isMachinesHydrated, materials, machines, reset, getValues]);
   
 
-  const { fields: partFields, append: appendPart, remove: removePart, insert: insertPart } = useFieldArray({
+  const { fields: partFields, append: appendPart, remove: removePart } = useFieldArray({
     control: form.control,
     name: "parts",
   })
@@ -228,7 +228,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         setExchangeRate(rate);
       } catch (error) {
         console.error(error);
-        setExchangeRate(null); // Set to null on error
+        setExchangeRate(null);
       } finally {
         setIsExchangeRateLoading(false);
       }
@@ -273,11 +273,9 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     }
 
     if (quote) {
-      // Editing
       setQuotes(quotes.map((q) => (q.id === quote.id ? quoteToSave : q)))
       toast({ title: "Presupuesto actualizado" })
     } else {
-      // Creating
       setQuotes([quoteToSave, ...quotes])
       toast({ title: "Presupuesto creado" })
     }
@@ -315,18 +313,25 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         return null;
     }
   }, [watchedValues.tariffType, settings, selectedMachine]);
-
-  const addNewPart = () => {
-    appendPart({ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 });
-  };
   
-  const duplicatePart = (index: number) => {
-    const partToDuplicate = watchedValues.parts[index];
-    if (partToDuplicate) {
-      insertPart(index + 1, { ...partToDuplicate, id: generateId() });
-    }
+  const handleAddPart = (data: PartFormValues) => {
+    appendPart({
+      id: generateId(),
+      materialId: data.materialId,
+      materialGrams: data.materialGrams,
+    });
+    setIsPartFormOpen(false);
   };
 
+  const partsWithNames = useMemo(() => {
+    return partFields.map(part => {
+      const material = materials.find(m => m.id === part.materialId);
+      return {
+        ...part,
+        name: material ? `${material.name} (${material.type})` : 'Material no encontrado',
+      };
+    });
+  }, [partFields, materials]);
 
   return (
     <Form {...form}>
@@ -389,7 +394,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
               <CardContent className="grid sm:grid-cols-2 gap-6">
                  <div className="space-y-2">
                      <FormField
-                        control={form.control}
+                        control={control}
                         name="machineId"
                         render={({ field }) => (
                             <FormItem>
@@ -420,7 +425,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                  </div>
                   <div className="space-y-2">
                      <FormField
-                        control={form.control}
+                        control={control}
                         name="tariffType"
                         render={({ field }) => (
                             <FormItem>
@@ -452,7 +457,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                   <FormLabel>Tiempo de Impresión</FormLabel>
                   <div className="grid grid-cols-3 gap-2">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="printHours"
                       render={({ field }) => (
                         <FormItem>
@@ -464,7 +469,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                       )}
                     />
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="printMinutes"
                       render={({ field }) => (
                         <FormItem>
@@ -476,7 +481,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                       )}
                     />
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="printSeconds"
                       render={({ field }) => (
                         <FormItem>
@@ -494,7 +499,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 {watchedValues.tariffType === 'mixed' && (
                   <div className="space-y-2">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="peakHours"
                       render={({ field }) => (
                         <FormItem>
@@ -516,7 +521,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                   <FormLabel>Tiempo de Mano de Obra</FormLabel>
                    <div className="grid grid-cols-2 gap-2">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="laborHours"
                       render={({ field }) => (
                         <FormItem>
@@ -528,7 +533,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                       )}
                     />
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="laborMinutes"
                       render={({ field }) => (
                         <FormItem>
@@ -548,7 +553,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 </div>
                  <div className="space-y-2">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="designCost"
                       render={({ field }) => (
                         <FormItem>
@@ -567,89 +572,40 @@ export function QuoteForm({ quote }: QuoteFormProps) {
               </CardContent>
             </Card>
             
-            {/* Materials Card */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Materiales</CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-6">
-                     <div className="space-y-4">
-                        {partFields.map((field, index) => (
-                            <div key={field.id} className="relative p-4 border rounded-md">
-                                <div className="absolute top-2 right-2 flex gap-1">
-                                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => duplicatePart(index)}>
-                                        <PlusCircle className="h-4 w-4" />
-                                    </Button>
-                                     <Button type="button" variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 h-7 w-7" onClick={() => partFields.length > 1 && removePart(index)}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name={`parts.${index}.materialId`}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Material</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Selecciona un material" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {materials.map((m) => (
-                                                        <SelectItem key={m.id} value={m.id}>
-                                                            {m.name} ({m.type})
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name={`parts.${index}.materialGrams`}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Gramos</FormLabel>
-                                            <FormControl>
-                                                <Input type="number" step="0.1" placeholder="Ej: 150" {...field} onFocus={(e) => e.target.select()} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                </div>
-                            </div>
-                        ))}
+                    <div className="flex items-center justify-between">
+                        <CardTitle>Materiales</CardTitle>
+                        <Dialog open={isPartFormOpen} onOpenChange={setIsPartFormOpen}>
+                            <DialogTrigger asChild>
+                                <Button type="button" size="sm">
+                                    <PlusCircle className="mr-2" />
+                                    Añadir Material
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Añadir Material y Gramos</DialogTitle>
+                                </DialogHeader>
+                                <QuotePartForm materials={materials} onSubmit={handleAddPart} onCancel={() => setIsPartFormOpen(false)} />
+                            </DialogContent>
+                        </Dialog>
                     </div>
-
-                    <FormMessage>{form.formState.errors.parts?.root?.message}</FormMessage>
-
+                </CardHeader>
+                <CardContent>
+                    <QuotePartsTable parts={partsWithNames} onRemove={removePart} />
+                    <FormMessage>{form.formState.errors.parts?.root?.message || form.formState.errors.parts?.message}</FormMessage>
                     {materialSummary.totalGrams > 0 && (
-                        <Alert variant="default">
+                        <Alert variant="default" className="mt-4">
                             <AlertDescription className="flex justify-between items-center text-sm">
                                 <span>Total Gramos: <strong>{materialSummary.totalGrams.toFixed(2)} g</strong></span>
                                 {calculationResult.breakdown && <span>Costo Total de Material: <strong>{formatCurrency(calculationResult.breakdown.materialCost, "USD", settings.currencyDecimalPlaces)}</strong></span>}
                             </AlertDescription>
                         </Alert>
                     )}
-                     <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={addNewPart}
-                        className="w-fit"
-                    >
-                        <PlusCircle className="mr-2" /> Añadir Línea
-                    </Button>
                 </CardContent>
             </Card>
 
-            {/* Extra Costs & Notes Card */}
             <Card>
               <CardHeader>
                 <CardTitle>Costos Adicionales y Notas</CardTitle>
@@ -661,14 +617,14 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                     {extraCostFields.map((field, index) => (
                       <div key={field.id} className="flex items-center gap-2">
                         <FormField
-                          control={form.control}
+                          control={control}
                           name={`extraCosts.${index}.description`}
                           render={({ field }) => (
                             <Input {...field} placeholder="Descripción" className="flex-grow" />
                           )}
                         />
                         <FormField
-                          control={form.control}
+                          control={control}
                           name={`extraCosts.${index}.amount`}
                           render={({ field }) => (
                             <Input type="number" step="0.01" {...field} placeholder="Monto (USD)" />
@@ -692,7 +648,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 </div>
                 <Separator />
                 <FormField
-                  control={form.control}
+                  control={control}
                   name="notes"
                   render={({ field }) => (
                     <FormItem>
@@ -708,7 +664,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
             </Card>
           </div>
 
-          {/* Cost Summary Section */}
           <div className="md:col-span-1 sticky top-20">
             <CostSummary
                 breakdown={calculationResult.breakdown}

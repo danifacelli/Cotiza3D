@@ -20,30 +20,34 @@ export default function EditQuotePage() {
         if (isHydrated) {
             const foundQuote = quotes.find(q => q.id === id);
             
-            // Backwards compatibility for old quotes
             if (foundQuote) {
                 const updatedQuote: Quote = { ...foundQuote };
-
-                // Handle legacy quotes without 'parts'
-                if (!updatedQuote.parts && (updatedQuote as any).materialId) {
-                    const legacyQuote = updatedQuote as any;
-                    updatedQuote.parts = [{
-                        id: 'default-part',
-                        materialId: legacyQuote.materialId,
-                        materialGrams: legacyQuote.materialGrams,
-                    }];
-                    delete (updatedQuote as any).materialId;
-                    delete (updatedQuote as any).materialGrams;
+                
+                // Backwards compatibility for old quotes without 'parts'
+                if (!updatedQuote.parts) {
+                    updatedQuote.parts = [];
+                }
+                
+                // Handle legacy quotes with direct material/grams
+                const legacyQuote = updatedQuote as any;
+                if (legacyQuote.materialId && legacyQuote.materialGrams) {
+                     if (updatedQuote.parts.length === 0) {
+                        updatedQuote.parts.push({
+                            id: 'default-part',
+                            materialId: legacyQuote.materialId,
+                            materialGrams: legacyQuote.materialGrams,
+                        });
+                     }
+                    delete legacyQuote.materialId;
+                    delete legacyQuote.materialGrams;
                 }
 
-                // Handle legacy quotes without 'laborHours'
+                // Handle other legacy fields
                 if (updatedQuote.laborHours === undefined) {
                     updatedQuote.laborHours = updatedQuote.printHours;
                 }
-
-                // Handle legacy quotes without 'printTimeOfDay'
-                if (updatedQuote.printTimeOfDay === undefined) {
-                    updatedQuote.printTimeOfDay = 'day';
+                if (updatedQuote.tariffType === undefined) {
+                    updatedQuote.tariffType = 'off-peak';
                 }
                 
                 setQuote(updatedQuote);
@@ -69,3 +73,5 @@ export default function EditQuotePage() {
 
     return <QuoteForm quote={quote} />;
 }
+
+    
