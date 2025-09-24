@@ -42,6 +42,9 @@ const PartSchema = z.object({
   id: z.string(),
   materialId: z.string().min(1, "Debes seleccionar un material."),
   materialGrams: z.coerce.number().min(0.01, "Los gramos deben ser mayor a 0."),
+  width: z.coerce.number().optional(),
+  height: z.coerce.number().optional(),
+  depth: z.coerce.number().optional(),
 })
 
 const QuoteSchema = z.object({
@@ -321,6 +324,9 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       id: generateId(),
       materialId: data.materialId,
       materialGrams: data.materialGrams,
+      width: data.width,
+      height: data.height,
+      depth: data.depth,
     });
     setIsPartFormOpen(false);
   };
@@ -587,7 +593,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <div>
-                            <CardTitle>Materiales</CardTitle>
+                            <CardTitle>Piezas y Materiales</CardTitle>
                              {form.formState.errors.parts && partFields.length === 0 && (
                                 <p className="text-sm font-medium text-destructive mt-2">
                                     {form.formState.errors.parts.message}
@@ -598,12 +604,12 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                             <DialogTrigger asChild>
                                 <Button type="button" size="sm">
                                     <PlusCircle className="mr-2" />
-                                    Añadir Material
+                                    Añadir Pieza
                                 </Button>
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Añadir Material y Gramos</DialogTitle>
+                                    <DialogTitle>Añadir Pieza</DialogTitle>
                                 </DialogHeader>
                                 <QuotePartForm materials={materials} onSubmit={handleAddPart} onCancel={() => setIsPartFormOpen(false)} />
                             </DialogContent>
@@ -692,5 +698,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    

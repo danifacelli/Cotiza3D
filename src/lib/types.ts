@@ -40,6 +40,9 @@ export interface QuotePart {
   id: string;
   materialId: string;
   materialGrams: number;
+  width?: number;
+  height?: number;
+  depth?: number;
 }
 
 export interface Quote {

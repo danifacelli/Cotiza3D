@@ -16,6 +16,9 @@ interface PartRow {
   id: string
   name: string
   materialGrams: number
+  width?: number
+  height?: number
+  depth?: number
 }
 
 interface QuotePartsTableProps {
@@ -27,7 +30,7 @@ export function QuotePartsTable({ parts, onRemove }: QuotePartsTableProps) {
   if (parts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-md border-2 border-dashed text-center h-24">
-        <p className="text-sm text-muted-foreground">Aún no has añadido materiales.</p>
+        <p className="text-sm text-muted-foreground">Aún no has añadido piezas.</p>
       </div>
     )
   }
@@ -38,7 +41,8 @@ export function QuotePartsTable({ parts, onRemove }: QuotePartsTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Material</TableHead>
-            <TableHead className="w-[100px] text-right">Gramos</TableHead>
+            <TableHead className="text-right">Peso (g)</TableHead>
+            <TableHead className="text-right">Dimensiones (mm)</TableHead>
             <TableHead className="w-[50px]"></TableHead>
           </TableRow>
         </TableHeader>
@@ -47,6 +51,9 @@ export function QuotePartsTable({ parts, onRemove }: QuotePartsTableProps) {
             <TableRow key={part.id}>
               <TableCell className="font-medium">{part.name}</TableCell>
               <TableCell className="text-right">{part.materialGrams} g</TableCell>
+              <TableCell className="text-right text-xs text-muted-foreground">
+                {part.width || 0} x {part.height || 0} x {part.depth || 0}
+              </TableCell>
               <TableCell>
                 <Button
                   type="button"
@@ -65,5 +72,3 @@ export function QuotePartsTable({ parts, onRemove }: QuotePartsTableProps) {
     </div>
   )
 }
-
-    
