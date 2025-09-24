@@ -413,7 +413,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                     <div>
                         <CardTitle>{quote ? "Editar Presupuesto" : "Nuevo Presupuesto"}</CardTitle>
                         <CardDescription>
-                            {quote ? `ID: ${quote.id}` : 'Completa los datos para generar un nuevo presupuesto.'}
+                            {quote ? 'Modifica los detalles para actualizar tu presupuesto.' : 'Completa los datos para generar un nuevo presupuesto.'}
                         </CardDescription>
                     </div>
                      <div className="text-right">
