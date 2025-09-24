@@ -36,6 +36,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { QuotePartForm, PartFormValues } from "./quote-part-form"
 import { QuotePartsTable } from "./quote-parts-table"
 import { QuoteExtraCostForm, ExtraCostFormValues } from "./quote-extra-cost-form"
+import { QuoteExtraCostsTable } from "./quote-extra-costs-table"
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
 import { QuotePDF } from "./quote-pdf"
@@ -98,7 +99,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const [materials, __, isMaterialsHydrated] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS)
   const [settings, setSettings, isSettingsHydrated] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
   
-  const [calculationResult, setCalculationResult] = useState<{ breakdown: CostBreakdown | null; logs: string[] }>({ breakdown: null, logs: [] });
+  const [calculationResult, setCalculationResult] = useState<{ breakdown: CostBreakdown | null }>({ breakdown: null });
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(true);
   const [isPartFormOpen, setIsPartFormOpen] = useState(false);
@@ -214,7 +215,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       isSettingsHydrated;
 
     if (!isReady) {
-      setCalculationResult({ breakdown: null, logs: ["Esperando datos para calcular..."] });
+      setCalculationResult({ breakdown: null });
       return;
     }
     
@@ -236,7 +237,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       machines,
       settings
     );
-    setCalculationResult(result);
+    setCalculationResult({ breakdown: result.breakdown });
 
     if (result.breakdown && !result.breakdown.isManualPrice && watchedValues.finalPriceOverride) {
         setValue('finalPriceOverride', undefined);
@@ -919,3 +920,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
