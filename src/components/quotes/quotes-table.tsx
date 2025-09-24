@@ -29,6 +29,7 @@ import { cn, formatCurrency } from "@/lib/utils"
 export type QuoteWithTotals = Quote & {
   totalUSD: number;
   totalLocal: number;
+  costUSD: number;
 };
 
 interface QuotesTableProps {
@@ -70,6 +71,7 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
             <TableHead className="w-[30%]">Nombre</TableHead>
             <TableHead>Cliente</TableHead>
             <TableHead>Estado</TableHead>
+            <TableHead className="text-right">Costo (USD)</TableHead>
             <TableHead className="text-right">Total (USD)</TableHead>
             <TableHead className="text-right">Total (Local)</TableHead>
             <TableHead>Fecha</TableHead>
@@ -105,6 +107,7 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </TableCell>
+                <TableCell className="text-right font-mono">{formatCurrency(quote.costUSD, "USD", decimalPlaces)}</TableCell>
                 <TableCell className="text-right font-mono">{formatCurrency(quote.totalUSD, "USD", decimalPlaces)}</TableCell>
                 <TableCell className="text-right font-mono">
                     {formatCurrency(
@@ -153,7 +156,7 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={7} className="h-24 text-center">
+              <TableCell colSpan={8} className="h-24 text-center">
                 No hay presupuestos que coincidan con el filtro.
               </TableCell>
             </TableRow>

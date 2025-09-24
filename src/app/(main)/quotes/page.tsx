@@ -105,7 +105,8 @@ export default function QuotesPage() {
       const { breakdown } = calculateCosts(quote, materials, machines, settings);
       const totalUSD = breakdown?.total ?? 0;
       const totalLocal = exchangeRate ? totalUSD * exchangeRate : 0;
-      return { ...quote, totalUSD, totalLocal };
+      const costUSD = breakdown?.subtotal ?? 0;
+      return { ...quote, totalUSD, totalLocal, costUSD };
     }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [quotes, materials, machines, settings, exchangeRate, isHydrated]);
   
@@ -290,7 +291,3 @@ export default function QuotesPage() {
     </div>
   )
 }
-
-    
-
-    
