@@ -110,89 +110,39 @@ export function QuoteForm({ quote }: QuoteFormProps) {
 
   const form = useForm<QuoteFormValues>({
     resolver: zodResolver(QuoteSchema),
-    defaultValues: {
-      name: quote?.name || "",
-      clientName: quote?.clientName || "",
-      status: quote?.status || "draft",
-      parts: quote?.parts?.length ? quote.parts : [],
-      machineId: quote?.machineId || "",
-      designCost: quote?.designCost || 0,
-      deliveryDate: quote?.deliveryDate ? new Date(quote.deliveryDate) : undefined,
-      width: quote?.width || 0,
-      height: quote?.height || 0,
-      depth: quote?.depth || 0,
-      tariffType: quote?.tariffType || "off-peak",
-      peakHours: quote?.peakHours || 0,
-      extraCosts: quote?.extraCosts || [],
-      notes: quote?.notes || "",
-      printHours: quote?.printHours ? Math.floor(quote.printHours) : 0,
-      printMinutes: quote?.printHours ? Math.floor((quote.printHours * 60) % 60) : 0,
-      printSeconds: quote?.printHours ? Math.round((quote.printHours * 3600) % 60) : 0,
-      laborHours: quote?.laborHours ? Math.floor(quote.laborHours) : 0,
-      laborMinutes: quote?.laborHours ? Math.floor((quote.laborHours * 60) % 60) : 0,
-      finalPriceOverride: quote?.finalPriceOverride,
+    defaultValues: quote ? {
+        ...quote,
+        printHours: quote.printHours ? Math.floor(quote.printHours) : 0,
+        printMinutes: quote.printHours ? Math.floor((quote.printHours * 60) % 60) : 0,
+        printSeconds: quote.printHours ? Math.round((quote.printHours * 3600) % 60) : 0,
+        laborHours: quote.laborHours ? Math.floor(quote.laborHours) : 0,
+        laborMinutes: quote.laborHours ? Math.floor((quote.laborHours * 60) % 60) : 0,
+        deliveryDate: quote.deliveryDate ? new Date(quote.deliveryDate) : undefined,
+    } : {
+        name: "",
+        clientName: "",
+        status: "draft",
+        parts: [],
+        machineId: machines.length > 0 ? machines[0].id : "",
+        designCost: 0,
+        deliveryDate: undefined,
+        width: 0,
+        height: 0,
+        depth: 0,
+        tariffType: "off-peak",
+        peakHours: 0,
+        extraCosts: [],
+        notes: "",
+        printHours: 0,
+        printMinutes: 0,
+        printSeconds: 0,
+        laborHours: 0,
+        laborMinutes: 0,
+        finalPriceOverride: undefined,
     },
   })
   
-  const { reset, getValues, control, setValue } = form;
-
-  useEffect(() => {
-    if (quote) {
-      const totalPrintHours = quote.printHours || 0;
-      const printHours = Math.floor(totalPrintHours);
-      const printMinutes = Math.floor((totalPrintHours - printHours) * 60);
-      const printSeconds = Math.round(((totalPrintHours - printHours) * 60 - printMinutes) * 60);
-
-      const totalLaborHours = quote.laborHours || 0;
-      const laborHours = Math.floor(totalLaborHours);
-      const laborMinutes = Math.round((totalLaborHours - laborHours) * 60);
-
-      reset({
-        ...quote,
-        printHours,
-        printMinutes,
-        printSeconds,
-        laborHours,
-        laborMinutes,
-        deliveryDate: quote.deliveryDate ? new Date(quote.deliveryDate) : undefined,
-        parts: quote.parts || [],
-        extraCosts: quote.extraCosts || [],
-        designCost: quote.designCost || 0,
-        width: quote.width || 0,
-        height: quote.height || 0,
-        depth: quote.depth || 0,
-        finalPriceOverride: quote.finalPriceOverride,
-      });
-
-    } else if (isMaterialsHydrated && isMachinesHydrated && machines.length > 0) {
-      const currentValues = getValues();
-      if (!currentValues.name && currentValues.parts.length === 0) {
-        reset({
-          name: "",
-          clientName: "",
-          status: "draft",
-          parts: [],
-          machineId: machines.length > 0 ? machines[0].id : "",
-          designCost: 0,
-          deliveryDate: undefined,
-          width: 0,
-          height: 0,
-          depth: 0,
-          tariffType: "off-peak",
-          peakHours: 0,
-          extraCosts: [],
-          notes: "",
-          printHours: 0,
-          printMinutes: 0,
-          printSeconds: 0,
-          laborHours: 0,
-          laborMinutes: 0,
-          finalPriceOverride: undefined,
-        });
-      }
-    }
-  }, [quote, isMaterialsHydrated, isMachinesHydrated, materials, machines, reset, getValues]);
-  
+  const { control, setValue } = form;
 
   const { fields: partFields, append: appendPart, remove: removePart } = useFieldArray({
     control: form.control,
@@ -920,5 +870,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    
