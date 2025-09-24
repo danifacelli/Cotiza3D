@@ -752,7 +752,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                   <CardTitle>Costos Adicionales y Notas</CardTitle>
                   <Dialog open={isExtraCostFormOpen} onOpenChange={setIsExtraCostFormOpen}>
                       <DialogTrigger asChild>
-                          <Button type="button" size="sm">
+                           <Button type="button" size="sm">
                               <PlusCircle className="mr-2" />
                               Añadir Costo
                           </Button>
@@ -813,7 +813,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       
       {/* Hidden element for PDF generation */}
       <div className="fixed -z-50 -left-[10000px] top-0">
-          <div ref={pdfRef} className="w-[800px] bg-background text-foreground">
+          <div ref={pdfRef} className="w-[800px] bg-white text-black">
              {calculationResult.breakdown && (
                 <QuotePDF
                     quote={{...watchedValues, id: quote?.id, createdAt: quote?.createdAt} as Quote}
@@ -831,3 +831,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
