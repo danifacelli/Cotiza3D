@@ -263,11 +263,11 @@ export default function QuotesPage() {
                 settings={settings}
                 isHydrated={isHydrated}
               />
-              <div className="grid md:grid-cols-3 items-start gap-4">
-                 <div className="md:col-span-2">
+              <div className="grid md:grid-cols-2 items-start gap-4">
+                <div className="w-full">
                     <QuotesSummary quotes={filteredQuotes} settings={settings} exchangeRate={exchangeRate} />
-                 </div>
-                 <div className="flex items-center justify-end gap-2">
+                </div>
+                <div className="flex items-center justify-end gap-2 self-end pb-1">
                     <Button
                         variant="outline"
                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -285,7 +285,7 @@ export default function QuotesPage() {
                     >
                         Siguiente
                     </Button>
-                 </div>
+                </div>
               </div>
             </>
         )}
@@ -294,5 +294,7 @@ export default function QuotesPage() {
     </div>
   )
 }
+
+    
 
     
