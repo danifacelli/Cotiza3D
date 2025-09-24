@@ -31,7 +31,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Pencil, Trash2, Copy, CheckCircle, XCircle, FileText } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, CheckCircle, XCircle, FileText } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn, formatCurrency } from "@/lib/utils"
@@ -93,9 +93,9 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
             quotes.map((quote) => {
               const currentStatus = statusConfig[quote.status] || statusConfig.draft;
               return (
-              <TableRow key={quote.id}>
-                <TableCell className="font-medium" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{quote.name}</TableCell>
-                <TableCell onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{quote.clientName || "-"}</TableCell>
+              <TableRow key={quote.id} className="cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
+                <TableCell className="font-medium">{quote.name}</TableCell>
+                <TableCell>{quote.clientName || "-"}</TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -117,9 +117,9 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </TableCell>
-                <TableCell className="text-right font-mono" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{formatCurrency(quote.costUSD, "USD", decimalPlaces)}</TableCell>
-                <TableCell className="text-right font-mono" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{formatCurrency(quote.totalUSD, "USD", decimalPlaces)}</TableCell>
-                <TableCell className="text-right font-mono" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
+                <TableCell className="text-right font-mono">{formatCurrency(quote.costUSD, "USD", decimalPlaces)}</TableCell>
+                <TableCell className="text-right font-mono">{formatCurrency(quote.totalUSD, "USD", decimalPlaces)}</TableCell>
+                <TableCell className="text-right font-mono">
                     {formatCurrency(
                         quote.totalLocal, 
                         localCurrencyCode,
@@ -127,18 +127,14 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
                         'symbol'
                     )}
                 </TableCell>
-                <TableCell onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
+                <TableCell>
                   {format(new Date(quote.createdAt), "d MMM yyyy", { locale: es })}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                   <div className="flex justify-end gap-1">
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
                         <Pencil className="h-4 w-4" />
                         <span className="sr-only">Editar</span>
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onDuplicate(quote.id)}>
-                        <Copy className="h-4 w-4" />
-                        <span className="sr-only">Duplicar</span>
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -151,7 +147,7 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
                           <AlertDialogHeader>
                           <AlertDialogTitle>¿Estás seguro que deseas eliminar?</AlertDialogTitle>
                           <AlertDialogDescription>
-                              Esta acción no se puede deshacer. Esto eliminará permanentemente el presupuesto.
+                              Esta acción no se puede deshacer. Esto eliminará permanentemente el presupuesto <strong>{quote.name}</strong>.
                           </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -179,5 +175,3 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
     </div>
   )
 }
-
-    
