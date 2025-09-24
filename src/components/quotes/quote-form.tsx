@@ -39,7 +39,7 @@ import { QuotePartsTable } from "./quote-parts-table"
 const PartSchema = z.object({
   id: z.string(),
   materialId: z.string().min(1, "Debes seleccionar un material."),
-  materialGrams: z.coerce.number().min(0.01, "Los gramos deben ser un número positivo."),
+  materialGrams: z.coerce.number().min(0.01, "Los gramos deben ser mayor a 0."),
 })
 
 const QuoteSchema = z.object({
@@ -594,7 +594,11 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 </CardHeader>
                 <CardContent>
                     <QuotePartsTable parts={partsWithNames} onRemove={removePart} />
-                    <FormMessage>{form.formState.errors.parts?.root?.message || form.formState.errors.parts?.message}</FormMessage>
+                     {form.formState.errors.parts && partFields.length === 0 && (
+                        <p className="text-sm font-medium text-destructive mt-2">
+                            {form.formState.errors.parts.root?.message || form.formState.errors.parts.message}
+                        </p>
+                    )}
                     {materialSummary.totalGrams > 0 && (
                         <Alert variant="default" className="mt-4">
                             <AlertDescription className="flex justify-between items-center text-sm">
@@ -691,3 +695,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
