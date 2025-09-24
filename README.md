@@ -4,7 +4,7 @@
 
 Cotiza3D es una aplicación web diseñada para ayudar a entusiastas y profesionales de la impresión 3D a calcular de manera precisa y sencilla los costos de sus trabajos. El objetivo principal es desglosar todos los factores que influyen en el precio final de una pieza impresa, permitiendo generar presupuestos justos, rentables y profesionales.
 
-La aplicación resuelve la complejidad de tener que calcular manualmente costos variables como el desgaste de la máquina, el consumo de energía según la tarifa eléctrica, y la mano de obra, centralizando todo en una interfaz intuitiva y fácil de usar.
+La aplicación resuelve la complejidad de tener que calcular manually costos variables como el desgaste de la máquina, el consumo de energía según la tarifa eléctrica, y la mano de obra, centralizando todo en una interfaz intuitiva y fácil de usar.
 
 ## Funcionalidades Principales
 
@@ -44,3 +44,9 @@ Esta herramienta ha sido construida para ser un completo centro de operaciones p
 ## ¿Cómo funciona?
 
 Toda la información que manejas en **Cotiza3D se almacena localmente en tu navegador** usando `localStorage`. Esto significa que tus datos son privados y no se envían a ningún servidor externo. La ventaja es que la aplicación es rápida y funciona sin necesidad de una conexión a internet constante, pero es importante que realices copias de seguridad periódicas usando la función de exportación, especialmente si planeas limpiar el caché de tu navegador o cambiar de computadora.
+
+## Autor
+
+Este proyecto fue creado por **Daniel Facelli**. Si tienes alguna consulta o quieres conectar, puedes encontrarme en LinkedIn:
+
+[https://www.linkedin.com/in/danielfacelli/](https://www.linkedin.com/in/danielfacelli/)
