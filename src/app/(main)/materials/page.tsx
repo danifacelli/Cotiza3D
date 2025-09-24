@@ -144,7 +144,7 @@ export default function MaterialsPage() {
         }
 
         setPendingImportData(importedData);
-        setIsImportConfirmOpen(true);
+setIsImportConfirmOpen(true);
 
       } catch (error) {
         const message = error instanceof Error ? error.message : "Error desconocido.";
