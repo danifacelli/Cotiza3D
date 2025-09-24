@@ -9,7 +9,6 @@ export interface CostBreakdown {
   subtotal: number;
   designCost: number;
   totalExtraCosts: number;
-  subtotalWithExtras: number;
   profitAmount: number;
   total: number;
   isManualPrice: boolean;
@@ -58,11 +57,11 @@ export function calculateCosts(
 
   if (!machine || !settings) {
     logs.push(`[AVISO] No hay máquina o configuración para cálculo completo.`);
-    const partialBreakdown = {
+    const partialBreakdown: CostBreakdown = {
         materialCost,
         machineDepreciationCost: 0, energyCost: 0, laborCost: 0,
         subtotal: materialCost, designCost: 0, totalExtraCosts: 0,
-        subtotalWithExtras: materialCost, profitAmount: 0, total: materialCost,
+        profitAmount: 0, total: materialCost,
         isManualPrice: false,
     };
     return { breakdown: totalPrintHours > 0 ? null : partialBreakdown, logs };
@@ -103,26 +102,23 @@ export function calculateCosts(
   const totalExtraCosts = (quote.extraCosts || []).reduce((acc, cost) => acc + (Number(cost.amount) || 0), 0);
   logs.push(`Costos adicionales: ${totalExtraCosts}`);
   
-  const subtotalWithExtras = subtotal + totalExtraCosts + designCost;
-  logs.push(`Subtotal + extras + diseño: ${subtotalWithExtras}`);
-
   let profitAmount: number;
   let total: number;
-  const isManualPrice = typeof finalPriceOverride === 'number' && finalPriceOverride > 0;
+  const isManualPrice = typeof finalPriceOverride === 'number' && finalPriceOverride >= 0;
 
   if (isManualPrice) {
     total = finalPriceOverride;
-    profitAmount = total - subtotalWithExtras;
+    profitAmount = total - (subtotal + designCost + totalExtraCosts);
     logs.push(`Precio manual aplicado: ${total}`);
     logs.push(`Nueva ganancia calculada: ${profitAmount}`);
   } else {
     profitAmount = subtotal * ((settings.profitMargin || 0) / 100);
-    total = subtotal + profitAmount + totalExtraCosts + designCost;
+    total = subtotal + profitAmount + designCost + totalExtraCosts;
     logs.push(`Monto de ganancia (sobre Subtotal de Producción): ${profitAmount}`);
     logs.push(`Total (calculado): ${total}`);
   }
 
-  const breakdown = {
+  const breakdown: CostBreakdown = {
     materialCost,
     machineDepreciationCost,
     energyCost,
@@ -130,7 +126,6 @@ export function calculateCosts(
     subtotal,
     designCost,
     totalExtraCosts,
-    subtotalWithExtras,
     profitAmount,
     total,
     isManualPrice
