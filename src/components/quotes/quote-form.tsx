@@ -22,7 +22,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Trash2, PlusCircle, FileDown, Info, Instagram } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
@@ -42,17 +42,17 @@ const PartSchema = z.object({
   id: z.string(),
   materialId: z.string().min(1, "Debes seleccionar un material."),
   materialGrams: z.coerce.number().min(0.01, "Los gramos deben ser mayor a 0."),
-  width: z.coerce.number().optional(),
-  height: z.coerce.number().optional(),
-  depth: z.coerce.number().optional(),
 })
 
 const QuoteSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
   clientName: z.string().optional(),
-  parts: z.array(PartSchema).min(1, "Debes añadir al menos una pieza."),
+  parts: z.array(PartSchema).min(1, "Debes añadir al menos un material."),
   machineId: z.string().min(1, "Debes seleccionar una máquina."),
   designCost: z.coerce.number().optional(),
+  width: z.coerce.number().optional(),
+  height: z.coerce.number().optional(),
+  depth: z.coerce.number().optional(),
   tariffType: z.enum(["peak", "off-peak", "mixed"]),
   peakHours: z.coerce.number().optional(),
   printHours: z.coerce.number().optional(),
@@ -103,6 +103,9 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       parts: quote?.parts?.length ? quote.parts : [],
       machineId: quote?.machineId || "",
       designCost: quote?.designCost || 0,
+      width: quote?.width || 0,
+      height: quote?.height || 0,
+      depth: quote?.depth || 0,
       tariffType: quote?.tariffType || "off-peak",
       peakHours: quote?.peakHours || 0,
       extraCosts: quote?.extraCosts || [],
@@ -138,6 +141,9 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         parts: quote.parts || [],
         extraCosts: quote.extraCosts || [],
         designCost: quote.designCost || 0,
+        width: quote.width || 0,
+        height: quote.height || 0,
+        depth: quote.depth || 0,
       });
 
     } else if (isMaterialsHydrated && isMachinesHydrated && machines.length > 0) {
@@ -149,6 +155,9 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           parts: [],
           machineId: machines.length > 0 ? machines[0].id : "",
           designCost: 0,
+          width: 0,
+          height: 0,
+          depth: 0,
           tariffType: "off-peak",
           peakHours: 0,
           extraCosts: [],
@@ -269,6 +278,9 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       parts: data.parts,
       machineId: data.machineId,
       designCost: data.designCost || 0,
+      width: data.width || 0,
+      height: data.height || 0,
+      depth: data.depth || 0,
       printHours: finalPrintHours,
       tariffType: data.tariffType,
       peakHours: data.peakHours,
@@ -324,9 +336,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       id: generateId(),
       materialId: data.materialId,
       materialGrams: data.materialGrams,
-      width: data.width,
-      height: data.height,
-      depth: data.depth,
     });
     setIsPartFormOpen(false);
   };
@@ -361,11 +370,16 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 <div className="flex justify-between items-start">
                     <div>
                         <CardTitle>{quote ? "Editar Presupuesto" : "Nuevo Presupuesto"}</CardTitle>
+                        <CardDescription>
+                            {quote ? `ID: ${quote.id}` : 'Completa los datos para generar un nuevo presupuesto.'}
+                        </CardDescription>
+                    </div>
+                     <div className="text-right">
                         {settings.companyName && (
-                            <p className="text-sm text-muted-foreground mt-2">{settings.companyName}</p>
+                            <p className="font-semibold">{settings.companyName}</p>
                         )}
                          {settings.companyInstagram && (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                            <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground mt-1">
                                 <Instagram className="w-4 h-4" />
                                 <span>{settings.companyInstagram}</span>
                             </div>
@@ -374,33 +388,81 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 </div>
               </CardHeader>
               <CardContent className="grid gap-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nombre del Trabajo</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ej: Engranaje para motor" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="clientName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nombre del Cliente (Opcional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ej: Juan Pérez" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre del Trabajo</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ej: Engranaje para motor" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="clientName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre del Cliente (Opcional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ej: Juan Pérez" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Dimensiones de la Pieza</CardTitle>
+                </CardHeader>
+                <CardContent>
+                     <div className="grid grid-cols-3 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="width"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Ancho (mm)</FormLabel>
+                                <FormControl>
+                                    <Input type="number" placeholder="0" {...field} onFocus={(e) => e.target.select()} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
+                                </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="height"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Alto (mm)</FormLabel>
+                                <FormControl>
+                                    <Input type="number" placeholder="0" {...field} onFocus={(e) => e.target.select()} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
+                                </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                         <FormField
+                            control={form.control}
+                            name="depth"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Largo (mm)</FormLabel>
+                                <FormControl>
+                                    <Input type="number" placeholder="0" {...field} onFocus={(e) => e.target.select()} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
+                                </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                </CardContent>
             </Card>
 
             {/* Print Details Card */}
@@ -593,7 +655,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <div>
-                            <CardTitle>Piezas y Materiales</CardTitle>
+                            <CardTitle>Materiales Utilizados</CardTitle>
                              {form.formState.errors.parts && partFields.length === 0 && (
                                 <p className="text-sm font-medium text-destructive mt-2">
                                     {form.formState.errors.parts.message}
@@ -604,12 +666,12 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                             <DialogTrigger asChild>
                                 <Button type="button" size="sm">
                                     <PlusCircle className="mr-2" />
-                                    Añadir Pieza
+                                    Añadir Material
                                 </Button>
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Añadir Pieza</DialogTitle>
+                                    <DialogTitle>Añadir Material</DialogTitle>
                                 </DialogHeader>
                                 <QuotePartForm materials={materials} onSubmit={handleAddPart} onCancel={() => setIsPartFormOpen(false)} />
                             </DialogContent>
@@ -698,5 +760,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    

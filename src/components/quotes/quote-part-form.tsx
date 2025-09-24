@@ -26,9 +26,6 @@ import type { Material } from "@/lib/types"
 const PartFormSchema = z.object({
   materialId: z.string().min(1, "Debes seleccionar un material."),
   materialGrams: z.coerce.number().min(0.01, "El peso debe ser mayor a 0."),
-  width: z.coerce.number().optional(),
-  height: z.coerce.number().optional(),
-  depth: z.coerce.number().optional(),
 })
 
 export type PartFormValues = z.infer<typeof PartFormSchema>
@@ -46,9 +43,6 @@ export function QuotePartForm({ materials, onSubmit, onCancel, defaultValues }: 
     defaultValues: {
       materialId: defaultValues?.materialId || (materials.length > 0 ? materials[0].id : ""),
       materialGrams: defaultValues?.materialGrams || 0,
-      width: defaultValues?.width || 0,
-      height: defaultValues?.height || 0,
-      depth: defaultValues?.depth || 0,
     },
   })
 
@@ -80,63 +74,19 @@ export function QuotePartForm({ materials, onSubmit, onCancel, defaultValues }: 
           )}
         />
         
-        <div className="grid grid-cols-2 gap-4">
-            <FormField
-                control={form.control}
-                name="materialGrams"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Peso (g)</FormLabel>
-                    <FormControl>
-                        <Input type="number" step="0.1" placeholder="Ej: 150" {...field} onFocus={(e) => e.target.select()} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-            />
-        </div>
-        
-        <div>
-            <FormLabel>Dimensiones (mm) (Opcional)</FormLabel>
-            <div className="grid grid-cols-3 gap-2 mt-2">
-                <FormField
-                    control={form.control}
-                    name="width"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel className="text-xs text-muted-foreground">Ancho</FormLabel>
-                        <FormControl>
-                            <Input type="number" placeholder="0" {...field} onFocus={(e) => e.target.select()} />
-                        </FormControl>
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="height"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel className="text-xs text-muted-foreground">Alto</FormLabel>
-                        <FormControl>
-                            <Input type="number" placeholder="0" {...field} onFocus={(e) => e.target.select()} />
-                        </FormControl>
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="depth"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel className="text-xs text-muted-foreground">Largo</FormLabel>
-                        <FormControl>
-                            <Input type="number" placeholder="0" {...field} onFocus={(e) => e.target.select()} />
-                        </FormControl>
-                        </FormItem>
-                    )}
-                />
-            </div>
-        </div>
+        <FormField
+            control={form.control}
+            name="materialGrams"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Peso (g)</FormLabel>
+                <FormControl>
+                    <Input type="number" step="0.1" placeholder="Ej: 150" {...field} onFocus={(e) => e.target.select()} />
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
+        />
 
         <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>

@@ -41,6 +41,21 @@ export default function EditQuotePage() {
                     delete legacyQuote.materialId;
                     delete legacyQuote.materialGrams;
                 }
+                
+                // Handle legacy dimension fields being on the parts
+                if (updatedQuote.parts[0] && (updatedQuote.parts[0] as any).width) {
+                    const firstPart = (updatedQuote.parts[0] as any);
+                    if (!updatedQuote.width) updatedQuote.width = firstPart.width;
+                    if (!updatedQuote.height) updatedQuote.height = firstPart.height;
+                    if (!updatedQuote.depth) updatedQuote.depth = firstPart.depth;
+
+                    updatedQuote.parts.forEach(p => {
+                        delete (p as any).width;
+                        delete (p as any).height;
+                        delete (p as any).depth;
+                    })
+                }
+
 
                 // Handle other legacy fields
                 if (updatedQuote.laborHours === undefined) {
@@ -73,5 +88,3 @@ export default function EditQuotePage() {
 
     return <QuoteForm quote={quote} />;
 }
-
-    

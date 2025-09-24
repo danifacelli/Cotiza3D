@@ -40,9 +40,6 @@ export interface QuotePart {
   id: string;
   materialId: string;
   materialGrams: number;
-  width?: number;
-  height?: number;
-  depth?: number;
 }
 
 export interface Quote {
@@ -57,6 +54,10 @@ export interface Quote {
   machineId: string;
   printHours: number;
   designCost: number;
+  
+  width?: number;
+  height?: number;
+  depth?: number;
   
   tariffType: 'peak' | 'off-peak' | 'mixed';
   peakHours?: number; // Only used when tariffType is 'mixed'
