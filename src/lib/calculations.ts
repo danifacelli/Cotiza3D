@@ -9,7 +9,7 @@ export interface CostBreakdown {
   subtotal: number; // Production subtotal
   designCost: number;
   totalExtraCosts: number;
-  generalSubtotal: number; // Production + design + extras
+  costSubtotal: number; // Production + design + extras
   profitAmount: number;
   total: number;
   isManualPrice: boolean;
@@ -62,7 +62,7 @@ export function calculateCosts(
         materialCost,
         machineDepreciationCost: 0, energyCost: 0, laborCost: 0,
         subtotal: materialCost, designCost: 0, totalExtraCosts: 0,
-        generalSubtotal: materialCost, profitAmount: 0, total: materialCost,
+        costSubtotal: materialCost, profitAmount: 0, total: materialCost,
         isManualPrice: false,
     };
     return { breakdown: totalPrintHours > 0 ? null : partialBreakdown, logs };
@@ -103,8 +103,8 @@ export function calculateCosts(
   const totalExtraCosts = (quote.extraCosts || []).reduce((acc, cost) => acc + (Number(cost.amount) || 0), 0);
   logs.push(`Costos adicionales: ${totalExtraCosts}`);
   
-  const generalSubtotal = subtotal + designCost + totalExtraCosts;
-  logs.push(`Subtotal General (Producción + Diseño + Extras): ${generalSubtotal}`);
+  const costSubtotal = subtotal + designCost + totalExtraCosts;
+  logs.push(`Subtotal de Costo (Producción + Diseño + Extras): ${costSubtotal}`);
   
   let profitAmount: number;
   let total: number;
@@ -112,13 +112,13 @@ export function calculateCosts(
 
   if (isManualPrice) {
     total = finalPriceOverride;
-    profitAmount = total - generalSubtotal;
+    profitAmount = total - costSubtotal;
     logs.push(`Precio manual aplicado: ${total}`);
     logs.push(`Nueva ganancia calculada: ${profitAmount}`);
   } else {
-    profitAmount = generalSubtotal * ((settings.profitMargin || 0) / 100);
-    total = generalSubtotal + profitAmount;
-    logs.push(`Monto de ganancia (sobre Subtotal General): ${profitAmount}`);
+    profitAmount = costSubtotal * ((settings.profitMargin || 0) / 100);
+    total = costSubtotal + profitAmount;
+    logs.push(`Monto de ganancia (sobre Subtotal de costo): ${profitAmount}`);
     logs.push(`Total (calculado): ${total}`);
   }
 
@@ -130,7 +130,7 @@ export function calculateCosts(
     subtotal,
     designCost,
     totalExtraCosts,
-    generalSubtotal,
+    costSubtotal,
     profitAmount,
     total,
     isManualPrice
