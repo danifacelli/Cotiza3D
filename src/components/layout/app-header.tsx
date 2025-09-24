@@ -8,6 +8,7 @@ import {
   Settings,
   FileText,
   Printer,
+  Banknote,
 } from "lucide-react"
 
 import {
@@ -24,6 +25,7 @@ const navLinks = [
     { href: "/quotes", icon: FileText, label: "Presupuestos", className: "text-muted-foreground hover:text-foreground" },
     { href: "/materials", icon: Layers, label: "Insumos", className: "text-muted-foreground hover:text-foreground" },
     { href: "/machines", icon: Printer, label: "Máquinas", className: "text-muted-foreground hover:text-foreground" },
+    { href: "/investments", icon: Banknote, label: "Inversiones", className: "text-muted-foreground hover:text-foreground" },
     { href: "/settings", icon: Settings, label: "Configuración", className: "text-muted-foreground hover:text-foreground" },
 ]
 

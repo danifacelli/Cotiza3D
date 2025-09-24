@@ -4,8 +4,8 @@
 import Link from "next/link"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
-import type { Quote, Material, Machine, Settings } from "@/lib/types"
-import { DEFAULT_QUOTES, DEFAULT_MATERIALS, DEFAULT_MACHINES, DEFAULT_SETTINGS } from "@/lib/defaults"
+import type { Quote, Material, Machine, Settings, Investment } from "@/lib/types"
+import { DEFAULT_QUOTES, DEFAULT_MATERIALS, DEFAULT_MACHINES, DEFAULT_SETTINGS, DEFAULT_INVESTMENTS } from "@/lib/defaults"
 import { calculateCosts } from "@/lib/calculations"
 import { formatCurrency, cn } from "@/lib/utils"
 
@@ -19,6 +19,8 @@ import {
   FileClock,
   CheckCircle,
   Circle,
+  Banknote,
+  TrendingDown,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -30,14 +32,16 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Progress } from "@/components/ui/progress"
 
 export default function Dashboard() {
   const [quotes, _, isQuotesHydrated] = useLocalStorage<Quote[]>(LOCAL_STORAGE_KEYS.QUOTES, DEFAULT_QUOTES);
   const [materials, __, isMaterialsHydrated] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS);
   const [machines, ___, isMachinesHydrated] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES);
   const [settings, ____, isSettingsHydrated] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
+  const [investments, _____, isInvestmentsHydrated] = useLocalStorage<Investment[]>(LOCAL_STORAGE_KEYS.INVESTMENTS, DEFAULT_INVESTMENTS);
 
-  const isHydrated = isQuotesHydrated && isMaterialsHydrated && isMachinesHydrated && isSettingsHydrated;
+  const isHydrated = isQuotesHydrated && isMaterialsHydrated && isMachinesHydrated && isSettingsHydrated && isInvestmentsHydrated;
 
   const dashboardData = ((): {
     totalRevenue: number;
@@ -48,6 +52,8 @@ export default function Dashboard() {
     materialCount: number;
     machineCount: number;
     hasQuotes: boolean;
+    totalInvestments: number;
+    investmentRecoveryPercentage: number;
   } | null => {
     if (!isHydrated) return null;
 
@@ -57,20 +63,26 @@ export default function Dashboard() {
         const { breakdown } = calculateCosts(quote, materials, machines, settings);
         if (breakdown) {
             acc.revenue += breakdown.total;
-            acc.cost += breakdown.subtotal;
+            acc.cost += breakdown.costSubtotal;
         }
         return acc;
     }, { revenue: 0, cost: 0 });
 
+    const totalProfit = totals.revenue - totals.cost;
+    const totalInvestments = investments.reduce((acc, inv) => acc + inv.amount, 0);
+    const investmentRecoveryPercentage = totalInvestments > 0 ? Math.min((totalProfit / totalInvestments) * 100, 100) : 0;
+
     return {
       totalRevenue: totals.revenue,
       totalCost: totals.cost,
-      totalProfit: totals.revenue - totals.cost,
+      totalProfit: totalProfit,
       acceptedQuotes: accepted.length,
       draftQuotes: quotes.filter(q => q.status === 'draft').length,
       materialCount: materials.length,
       machineCount: machines.length,
       hasQuotes: quotes.length > 0,
+      totalInvestments: totalInvestments,
+      investmentRecoveryPercentage: investmentRecoveryPercentage,
     };
   })();
 
@@ -80,6 +92,12 @@ export default function Dashboard() {
       href: "/settings",
       isComplete: true, // Settings always exist
       icon: SettingsIcon
+    },
+    {
+      label: "Registra tus inversiones",
+      href: "/investments",
+      isComplete: (investments?.length ?? 0) > 0,
+      icon: Banknote,
     },
     {
       label: "Añade tus máquinas",
@@ -188,33 +206,46 @@ export default function Dashboard() {
           </CardContent>
         </Card>
         <div className="space-y-4">
-            <Card className="hover:bg-accent/10 transition-colors">
-                <Link href="/materials" className="flex items-center p-6">
-                    <div className="flex-1">
-                        <CardTitle className="text-base font-semibold">
-                            <span>Insumos</span>
-                        </CardTitle>
-                         {isHydrated ? (
-                             <p className="text-3xl font-bold mt-2">{dashboardData?.materialCount}</p>
-                         ) : <Skeleton className="h-8 w-12 mt-2" />}
-                        <p className="text-xs text-muted-foreground mt-1">Filamentos registrados</p>
+            <Card>
+              <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                      <TrendingDown className="h-5 w-5" />
+                      <span>Recuperación de Inversión</span>
+                  </CardTitle>
+                  <CardDescription>
+                      Progreso de tus ganancias para cubrir el costo de tus inversiones.
+                  </CardDescription>
+              </CardHeader>
+              <CardContent>
+                  {isHydrated ? (
+                      <>
+                          <Progress value={dashboardData?.investmentRecoveryPercentage ?? 0} className="w-full" />
+                          <div className="flex justify-between text-sm mt-2">
+                              <span className="font-bold text-green-500">
+                                  {formatCurrency(dashboardData?.totalProfit ?? 0, 'USD', settings.currencyDecimalPlaces)}
+                              </span>
+                              <span className="font-bold text-red-500">
+                                  {formatCurrency(dashboardData?.totalInvestments ?? 0, 'USD', settings.currencyDecimalPlaces)}
+                              </span>
+                          </div>
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                              <span>Ganancia Neta</span>
+                              <span>Inversión Total</span>
+                          </div>
+                           {(dashboardData?.totalInvestments ?? 0) > 0 && 
+                              <div className="text-center mt-4">
+                                <p className="text-2xl font-bold">{dashboardData?.investmentRecoveryPercentage.toFixed(2)}%</p>
+                                <p className="text-xs text-muted-foreground">recuperado</p>
+                              </div>
+                           }
+                      </>
+                  ) : (
+                    <div className="space-y-2">
+                       <Skeleton className="h-4 w-full" />
+                       <Skeleton className="h-6 w-1/2" />
                     </div>
-                    <Layers className="h-8 w-8 text-muted-foreground" />
-                </Link>
-            </Card>
-             <Card className="hover:bg-accent/10 transition-colors">
-                 <Link href="/machines" className="flex items-center p-6">
-                    <div className="flex-1">
-                        <CardTitle className="text-base font-semibold">
-                            <span>Máquinas</span>
-                        </CardTitle>
-                         {isHydrated ? (
-                            <p className="text-3xl font-bold mt-2">{dashboardData?.machineCount}</p>
-                         ) : <Skeleton className="h-8 w-12 mt-2" />}
-                        <p className="text-xs text-muted-foreground mt-1">Impresoras registradas</p>
-                    </div>
-                    <Printer className="h-8 w-8 text-muted-foreground" />
-                </Link>
+                  )}
+              </CardContent>
             </Card>
         </div>
       </div>

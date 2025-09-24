@@ -42,6 +42,13 @@ export interface QuotePart {
   materialGrams: number;
 }
 
+export interface Investment {
+  id: string;
+  name: string;
+  amount: number;
+  createdAt: string; // ISO date string
+}
+
 export interface Quote {
   id: string;
   name: string;
