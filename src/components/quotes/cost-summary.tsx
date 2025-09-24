@@ -158,11 +158,6 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
           value={
             <div className="flex flex-col">
               <span>{formatCurrency(breakdown.generalSubtotal, "USD", decimalPlaces)}</span>
-              {exchangeRate && localCurrencyInfo && (
-                <span className="text-xs text-muted-foreground">
-                  {formatCurrency(breakdown.generalSubtotal * exchangeRate, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale)}
-                </span>
-              )}
             </div>
           }
           className="font-semibold"
