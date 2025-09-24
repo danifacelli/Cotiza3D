@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import type { Settings } from "@/lib/types";
+import { BackupRestore } from "@/components/settings/backup-restore";
 
 export default function SettingsPage() {
     const [settings, setSettings, isHydrated] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
@@ -24,7 +25,7 @@ export default function SettingsPage() {
     const renderForm = () => (
          <Card>
             <CardHeader>
-                <CardTitle>Configuración</CardTitle>
+                <CardTitle>Configuración General</CardTitle>
                 <CardDescription>
                     Ajusta los parámetros globales de la aplicación. Estos valores se usarán para todos los cálculos de presupuestos.
                 </CardDescription>
@@ -56,8 +57,20 @@ export default function SettingsPage() {
     );
 
     return (
-        <div>
+        <div className="space-y-6">
             {isHydrated ? renderForm() : renderSkeleton()}
+            
+            <Card>
+                <CardHeader>
+                    <CardTitle>Copia de Seguridad y Restauración</CardTitle>
+                    <CardDescription>
+                        Exporta todos tus datos a un archivo JSON o importa un respaldo para restaurar tu información.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <BackupRestore />
+                </CardContent>
+            </Card>
         </div>
     );
 }
