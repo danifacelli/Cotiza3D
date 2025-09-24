@@ -7,18 +7,18 @@ import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
 import type { Quote, Material, Machine, Settings } from "@/lib/types"
 import { DEFAULT_QUOTES, DEFAULT_MATERIALS, DEFAULT_MACHINES, DEFAULT_SETTINGS } from "@/lib/defaults"
 import { calculateCosts } from "@/lib/calculations"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, cn } from "@/lib/utils"
 
 import {
   FileText,
   Layers,
-  Settings,
+  Settings as SettingsIcon,
   Printer,
   DollarSign,
   TrendingUp,
   FileClock,
   CheckCircle,
-  Package,
+  Circle,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -47,6 +47,7 @@ export default function Dashboard() {
     draftQuotes: number;
     materialCount: number;
     machineCount: number;
+    hasQuotes: boolean;
   } | null => {
     if (!isHydrated) return null;
 
@@ -69,8 +70,36 @@ export default function Dashboard() {
       draftQuotes: quotes.filter(q => q.status === 'draft').length,
       materialCount: materials.length,
       machineCount: machines.length,
+      hasQuotes: quotes.length > 0,
     };
   })();
+
+  const setupSteps = [
+    {
+      label: "Configura tus ajustes",
+      href: "/settings",
+      isComplete: true, // Settings always exist
+      icon: SettingsIcon
+    },
+    {
+      label: "Añade tus máquinas",
+      href: "/machines",
+      isComplete: (dashboardData?.machineCount ?? 0) > 0,
+      icon: Printer,
+    },
+    {
+      label: "Registra tus insumos",
+      href: "/materials",
+      isComplete: (dashboardData?.materialCount ?? 0) > 0,
+      icon: Layers
+    },
+    {
+      label: "Crea tu primer presupuesto",
+      href: "/quotes/new",
+      isComplete: dashboardData?.hasQuotes ?? false,
+      icon: FileText
+    }
+  ]
 
   const renderMetricCard = (title: string, value: string, description: string, icon: React.ReactNode, isLoading: boolean) => (
     <Card>
@@ -126,52 +155,68 @@ export default function Dashboard() {
             !isHydrated
         )}
       </div>
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-        <Card className="lg:col-span-2 bg-primary/5 dark:bg-primary/10 border-primary/20">
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-2">
+        <Card className="lg:col-span-1">
           <CardHeader>
-             <CardTitle>Bienvenido a Cotiza3D</CardTitle>
-             <CardDescription>La herramienta definitiva para calcular los costos de tus impresiones 3D.</CardDescription>
+             <CardTitle>¡Bienvenido a Cotiza3D!</CardTitle>
+             <CardDescription>Sigue estos pasos para empezar a calcular los costos de tus impresiones 3D.</CardDescription>
           </CardHeader>
           <CardContent>
-             <Button asChild>
-                <Link href="/quotes/new">
-                  <FileText className="mr-2 h-4 w-4" /> Nuevo Presupuesto
+            <div className="space-y-4">
+              {setupSteps.map((step, index) => (
+                <Link href={step.href} key={index} className="block group">
+                  <div className="flex items-center gap-4 p-3 rounded-md hover:bg-muted transition-colors">
+                    {isHydrated ? (
+                      step.isComplete ? (
+                        <CheckCircle className="h-6 w-6 text-green-500" />
+                      ) : (
+                        <Circle className="h-6 w-6 text-muted-foreground" />
+                      )
+                    ) : (
+                      <Skeleton className="h-6 w-6 rounded-full" />
+                    )}
+                    <div>
+                      <p className={cn("font-semibold group-hover:text-primary", step.isComplete && "line-through text-muted-foreground")}>
+                        {step.label}
+                      </p>
+                    </div>
+                    <step.icon className="h-5 w-5 text-muted-foreground ml-auto" />
+                  </div>
                 </Link>
-              </Button>
+              ))}
+            </div>
           </CardContent>
         </Card>
-         <Card className="hover:bg-accent/10 transition-colors">
-            <Link href="/materials" className="flex flex-col justify-between h-full">
-                <CardHeader>
-                    <CardTitle className="text-base font-semibold flex items-center justify-between">
-                        <span>Insumos</span>
-                        <Layers className="h-5 w-5 text-muted-foreground" />
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                     {isHydrated ? (
-                         <p className="text-3xl font-bold">{dashboardData?.materialCount}</p>
-                     ) : <Skeleton className="h-8 w-12" />}
-                    <p className="text-xs text-muted-foreground mt-1">Filamentos registrados</p>
-                </CardContent>
-            </Link>
-        </Card>
-         <Card className="hover:bg-accent/10 transition-colors">
-             <Link href="/machines" className="flex flex-col justify-between h-full">
-                <CardHeader>
-                    <CardTitle className="text-base font-semibold flex items-center justify-between">
-                        <span>Máquinas</span>
-                        <Printer className="h-5 w-5 text-muted-foreground" />
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                     {isHydrated ? (
-                        <p className="text-3xl font-bold">{dashboardData?.machineCount}</p>
-                     ) : <Skeleton className="h-8 w-12" />}
-                    <p className="text-xs text-muted-foreground mt-1">Impresoras registradas</p>
-                </CardContent>
-            </Link>
-        </Card>
+        <div className="space-y-4">
+            <Card className="hover:bg-accent/10 transition-colors">
+                <Link href="/materials" className="flex items-center p-6">
+                    <div className="flex-1">
+                        <CardTitle className="text-base font-semibold">
+                            <span>Insumos</span>
+                        </CardTitle>
+                         {isHydrated ? (
+                             <p className="text-3xl font-bold mt-2">{dashboardData?.materialCount}</p>
+                         ) : <Skeleton className="h-8 w-12 mt-2" />}
+                        <p className="text-xs text-muted-foreground mt-1">Filamentos registrados</p>
+                    </div>
+                    <Layers className="h-8 w-8 text-muted-foreground" />
+                </Link>
+            </Card>
+             <Card className="hover:bg-accent/10 transition-colors">
+                 <Link href="/machines" className="flex items-center p-6">
+                    <div className="flex-1">
+                        <CardTitle className="text-base font-semibold">
+                            <span>Máquinas</span>
+                        </CardTitle>
+                         {isHydrated ? (
+                            <p className="text-3xl font-bold mt-2">{dashboardData?.machineCount}</p>
+                         ) : <Skeleton className="h-8 w-12 mt-2" />}
+                        <p className="text-xs text-muted-foreground mt-1">Impresoras registradas</p>
+                    </div>
+                    <Printer className="h-8 w-8 text-muted-foreground" />
+                </Link>
+            </Card>
+        </div>
       </div>
     </div>
   )
