@@ -25,7 +25,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Trash2, PlusCircle, FileDown, Info } from "lucide-react"
+import { Trash2, PlusCircle, FileDown, Info, Instagram } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { calculateCosts, CostBreakdown } from "@/lib/calculations"
 import { CostSummary } from "@/components/quotes/cost-summary"
@@ -327,7 +327,18 @@ export function QuoteForm({ quote }: QuoteFormProps) {
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-start">
-                    <CardTitle>{quote ? "Editar Presupuesto" : "Nuevo Presupuesto"}</CardTitle>
+                    <div>
+                        <CardTitle>{quote ? "Editar Presupuesto" : "Nuevo Presupuesto"}</CardTitle>
+                        {settings.companyName && (
+                            <p className="text-sm text-muted-foreground mt-2">{settings.companyName}</p>
+                        )}
+                         {settings.companyInstagram && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                                <Instagram className="w-4 h-4" />
+                                <span>{settings.companyInstagram}</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
               </CardHeader>
               <CardContent className="grid gap-6">
@@ -714,5 +725,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
 
     
