@@ -317,6 +317,10 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     }
   }, [watchedValues.tariffType, settings, selectedMachine]);
 
+  const addNewPart = () => {
+    appendPart({ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 });
+  };
+
 
   return (
     <Form {...form}>
@@ -563,77 +567,78 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                     <CardTitle>Materiales</CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-6">
-                     {partFields.map((field, index) => {
-                        return (
-                            <div key={field.id} className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-4 items-start p-4 border rounded-md relative">
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute top-2 right-2 h-7 w-7 text-destructive hover:bg-destructive/10"
-                                    onClick={() => removePart(index)}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-
+                     <div className="space-y-4">
+                        {partFields.map((field, index) => (
+                            <div key={field.id} className="grid grid-cols-[1fr_auto_auto_auto] gap-4 items-start p-4 border rounded-md">
                                 <FormField
-                                control={form.control}
-                                name={`parts.${index}.materialId`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Material</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                        <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Selecciona un material" />
-                                        </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                        {materials.map((m) => (
-                                            <SelectItem key={m.id} value={m.id}>
-                                            {m.name} ({m.type})
-                                            </SelectItem>
-                                        ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
+                                    control={form.control}
+                                    name={`parts.${index}.materialId`}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Material</FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Selecciona un material" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {materials.map((m) => (
+                                                        <SelectItem key={m.id} value={m.id}>
+                                                            {m.name} ({m.type})
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
                                 />
                                 <FormField
-                                control={form.control}
-                                name={`parts.${index}.materialGrams`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Gramos</FormLabel>
-                                    <FormControl>
-                                        <Input type="number" step="0.1" placeholder="Ej: 150" {...field} className="w-28" onFocus={(e) => e.target.select()} />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
+                                    control={form.control}
+                                    name={`parts.${index}.materialGrams`}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Gramos</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" step="0.1" placeholder="Ej: 150" {...field} className="w-28" onFocus={(e) => e.target.select()} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
                                 />
+                                <div className="flex items-end h-full">
+                                    <Button type="button" variant="outline" size="icon" onClick={addNewPart}>
+                                        <PlusCircle className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                <div className="flex items-end h-full">
+                                    <Button type="button" variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => partFields.length > 1 && removePart(index)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
-                        )
-                    })}
+                        ))}
+                    </div>
+
                     <FormMessage>{form.formState.errors.parts?.root?.message}</FormMessage>
 
                     {materialSummary.totalGrams > 0 && (
-                        <Alert variant="default" className="mt-4">
+                        <Alert variant="default">
                             <AlertDescription className="flex justify-between items-center text-sm">
                                 <span>Total Gramos: <strong>{materialSummary.totalGrams.toFixed(2)} g</strong></span>
                                 {calculationResult.breakdown && <span>Costo Total de Material: <strong>{formatCurrency(calculationResult.breakdown.materialCost, "USD", settings.currencyDecimalPlaces)}</strong></span>}
                             </AlertDescription>
                         </Alert>
                     )}
-
-                    <Button
+                     <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => appendPart({ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 })}
+                        onClick={addNewPart}
+                        className="w-fit"
                     >
-                        <PlusCircle className="mr-2" /> Añadir Material
+                        <PlusCircle className="mr-2" /> Añadir Línea
                     </Button>
                 </CardContent>
             </Card>
@@ -725,7 +730,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    
-
-    
