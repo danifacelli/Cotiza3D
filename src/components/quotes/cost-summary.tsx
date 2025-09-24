@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { LATAM_CURRENCIES } from "@/lib/constants"
+import { useMemo } from "react"
 
 interface CostSummaryProps {
   breakdown: CostBreakdown | null
@@ -31,6 +33,11 @@ const SummaryRow = ({ label, value, className = "", description }: { label: stri
 )
 
 export function CostSummary({ breakdown, settings, machine, quoteInput, actions, logs, exchangeRate, isExchangeRateLoading }: CostSummaryProps) {
+  
+  const localCurrencyInfo = useMemo(() => {
+    return LATAM_CURRENCIES.find(c => c.value === settings.localCurrency);
+  }, [settings.localCurrency]);
+
   if (!breakdown) {
     return (
       <Card>
@@ -133,11 +140,11 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
 
         <div className="pt-2 space-y-1 text-right">
             {isExchangeRateLoading && <p className="text-xs text-muted-foreground">Obteniendo cambio...</p>}
-            {exchangeRate && (
+            {exchangeRate && localCurrencyInfo && (
                 <>
-                    <p className="text-lg font-bold">{formatCurrency(breakdown.total * exchangeRate, 'UYU', 0, 'symbol')}</p>
+                    <p className="text-lg font-bold">{formatCurrency(breakdown.total * exchangeRate, localCurrencyInfo.value, 0, 'symbol', localCurrencyInfo.locale)}</p>
                     <p className="text-xs text-muted-foreground">
-                        Tasa de cambio: 1 USD ≈ {exchangeRate.toFixed(2)} UYU
+                        Tasa de cambio: 1 USD ≈ {exchangeRate.toFixed(2)} {localCurrencyInfo.value}
                     </p>
                 </>
             )}

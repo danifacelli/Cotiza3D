@@ -20,6 +20,7 @@ export interface Settings {
   companyName: string;
   companyContact: string;
   currencyDecimalPlaces: number;
+  localCurrency: string; // e.g. 'UYU'
   peakEnergyCostKwh: number; // in USD
   offPeakEnergyCostKwh: number; // in USD
   tariffSource: string;

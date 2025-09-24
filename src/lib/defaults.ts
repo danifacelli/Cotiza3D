@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS: Settings = {
   laborCostPerHour: 10,
   profitMargin: 50,
   currencyDecimalPlaces: 2,
+  localCurrency: 'UYU',
   peakEnergyCostKwh: 0.351,
   offPeakEnergyCostKwh: 0.139,
   tariffSource: 'UTE, Enero 2024',

@@ -69,3 +69,24 @@ export const FILAMENT_TYPES = [
   },
   { value: 'Other', label: 'Otro', description: 'Cualquier otro tipo de filamento no listado.' },
 ];
+
+export const LATAM_CURRENCIES = [
+  { value: 'ARS', label: 'Argentina - Peso Argentino', locale: 'es-AR' },
+  { value: 'BOB', label: 'Bolivia - Boliviano', locale: 'es-BO' },
+  { value: 'BRL', label: 'Brasil - Real Brasileño', locale: 'pt-BR' },
+  { value: 'CLP', label: 'Chile - Peso Chileno', locale: 'es-CL' },
+  { value: 'COP', label: 'Colombia - Peso Colombiano', locale: 'es-CO' },
+  { value: 'CRC', label: 'Costa Rica - Colón', locale: 'es-CR' },
+  { value: 'CUP', label: 'Cuba - Peso Cubano', locale: 'es-CU' },
+  { value: 'DOP', label: 'Rep. Dominicana - Peso Dominicano', locale: 'es-DO' },
+  { value: 'GTQ', label: 'Guatemala - Quetzal', locale: 'es-GT' },
+  { value: 'HNL', label: 'Honduras - Lempira', locale: 'es-HN' },
+  { value: 'MXN', label: 'México - Peso Mexicano', locale: 'es-MX' },
+  { value: 'NIO', label: 'Nicaragua - Córdoba', locale: 'es-NI' },
+  { value: 'PAB', label: 'Panamá - Balboa', locale: 'es-PA' },
+  { value: 'PYG', label: 'Paraguay - Guaraní', locale: 'es-PY' },
+  { value: 'PEN', label: 'Perú - Sol', locale: 'es-PE' },
+  { value: 'USD', label: 'Puerto Rico - Dólar Estadounidense', locale: 'en-PR' },
+  { value: 'UYU', label: 'Uruguay - Peso Uruguayo', locale: 'es-UY' },
+  { value: 'VES', label: 'Venezuela - Bolívar Soberano', locale: 'es-VE' },
+];

@@ -31,7 +31,7 @@ import { CostSummary } from "@/components/quotes/cost-summary"
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { formatCurrency } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { getUsdToUyuExchangeRate } from "@/services/exchange-rate-service"
+import { getExchangeRate } from "@/services/exchange-rate-service"
 
 const PartSchema = z.object({
   id: z.string(),
@@ -103,10 +103,14 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     },
   })
   
-  const { reset } = form;
+  const { reset, getValues } = form;
 
   useEffect(() => {
+    // This effect initializes or resets the form.
+    // It runs when a `quote` object is provided (for editing) or when the essential data (materials, machines) is hydrated for a new quote.
+
     if (quote) {
+      // Editing an existing quote
       const totalPrintHours = quote.printHours || 0;
       const printHours = Math.floor(totalPrintHours);
       const printMinutes = Math.floor((totalPrintHours - printHours) * 60);
@@ -125,24 +129,29 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         laborMinutes,
         extraCosts: quote.extraCosts || [],
       });
-    } else if (isMaterialsHydrated && materials.length > 0 && isMachinesHydrated && machines.length > 0) {
-      reset({
-        name: "",
-        clientName: "",
-        parts: [{ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 }],
-        machineId: machines.length > 0 ? machines[0].id : "",
-        tariffType: "off-peak",
-        peakHours: 0,
-        extraCosts: [],
-        notes: "",
-        printHours: 0,
-        printMinutes: 0,
-        printSeconds: 0,
-        laborHours: 0,
-        laborMinutes: 0,
-      });
+
+    } else if (isMaterialsHydrated && isMachinesHydrated && materials.length > 0 && machines.length > 0) {
+      // Creating a new quote, set defaults only if the form is empty
+      const currentValues = getValues();
+      if (!currentValues.name && currentValues.parts.length <= 1 && currentValues.parts[0]?.materialGrams === 0) {
+        reset({
+          name: "",
+          clientName: "",
+          parts: [{ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 }],
+          machineId: machines.length > 0 ? machines[0].id : "",
+          tariffType: "off-peak",
+          peakHours: 0,
+          extraCosts: [],
+          notes: "",
+          printHours: 0,
+          printMinutes: 0,
+          printSeconds: 0,
+          laborHours: 0,
+          laborMinutes: 0,
+        });
+      }
     }
-  }, [quote, isMaterialsHydrated, isMachinesHydrated, materials, machines, reset]);
+  }, [quote, isMaterialsHydrated, isMachinesHydrated, materials, machines, reset, getValues]);
   
 
   const { fields: partFields, append: appendPart, remove: removePart } = useFieldArray({
@@ -206,9 +215,10 @@ export function QuoteForm({ quote }: QuoteFormProps) {
 
   useEffect(() => {
     async function fetchRate() {
+      if (!settings?.localCurrency) return;
       setIsExchangeRateLoading(true);
       try {
-        const rate = await getUsdToUyuExchangeRate();
+        const rate = await getExchangeRate(settings.localCurrency);
         setExchangeRate(rate);
       } catch (error) {
         console.error(error);
@@ -218,7 +228,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       }
     }
     fetchRate();
-  }, []);
+  }, [settings?.localCurrency]);
 
 
   const materialSummary = useMemo(() => {
@@ -364,7 +374,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Máquina</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecciona una máquina" />

@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input"
 import type { Settings } from "@/lib/types"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Info } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { LATAM_CURRENCIES } from "@/lib/constants"
 
 export const SettingsSchema = z.object({
   companyName: z.string().min(1, "El nombre es requerido"),
@@ -25,6 +27,7 @@ export const SettingsSchema = z.object({
   laborCostPerHour: z.coerce.number().min(0, "Debe ser un número positivo"),
   profitMargin: z.coerce.number().min(0, "Debe ser un número positivo"),
   currencyDecimalPlaces: z.coerce.number().min(0, "Puede ser entre 0 y 4").max(4),
+  localCurrency: z.string().min(3, "Debes seleccionar una moneda."),
   peakEnergyCostKwh: z.coerce.number().min(0, "Debe ser un número positivo"),
   offPeakEnergyCostKwh: z.coerce.number().min(0, "Debe ser un número positivo"),
   tariffSource: z.string().optional(),
@@ -48,6 +51,7 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
       laborCostPerHour: defaultValues?.laborCostPerHour ?? 0,
       profitMargin: defaultValues?.profitMargin ?? 0,
       currencyDecimalPlaces: defaultValues?.currencyDecimalPlaces ?? 2,
+      localCurrency: defaultValues?.localCurrency ?? 'UYU',
       peakEnergyCostKwh: defaultValues?.peakEnergyCostKwh ?? 0.351,
       offPeakEnergyCostKwh: defaultValues?.offPeakEnergyCostKwh ?? 0.139,
       tariffSource: defaultValues?.tariffSource ?? '',
@@ -98,7 +102,7 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                 />
             </div>
             <div className="space-y-4">
-                <h3 className="text-lg font-medium">Costos y Ganancias</h3>
+                <h3 className="text-lg font-medium">Costos y Moneda</h3>
                 <FormField
                   control={form.control}
                   name="laborCostPerHour"
@@ -125,6 +129,33 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                     </FormItem>
                   )}
                 />
+                 <FormField
+                    control={form.control}
+                    name="localCurrency"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Moneda Local</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecciona una moneda" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            {LATAM_CURRENCIES.map((currency) => (
+                                <SelectItem key={currency.value} value={currency.value}>
+                                {currency.label}
+                                </SelectItem>
+                            ))}
+                            </SelectContent>
+                        </Select>
+                        <FormDescription>
+                            La moneda que se usará para mostrar el precio final convertido.
+                        </FormDescription>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                 />
                  <FormField
                   control={form.control}
                   name="currencyDecimalPlaces"
