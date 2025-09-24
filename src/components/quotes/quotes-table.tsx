@@ -19,21 +19,31 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Pencil, Trash2, Copy } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, Copy, CheckCircle, XCircle, FileText } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { formatCurrency } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 
 interface QuotesTableProps {
   quotes: Quote[]
   onDelete: (id: string) => void
   onDuplicate: (id: string) => void
+  onUpdateStatus: (id: string, status: Quote['status']) => void;
   isHydrated: boolean
 }
 
-export function QuotesTable({ quotes, onDelete, onDuplicate, isHydrated }: QuotesTableProps) {
+const statusConfig = {
+    draft: { label: 'Borrador', icon: FileText, badgeClass: "bg-secondary text-secondary-foreground hover:bg-secondary/80" },
+    accepted: { label: 'Aceptado', icon: CheckCircle, badgeClass: "bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30" },
+    canceled: { label: 'Cancelado', icon: XCircle, badgeClass: "bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30" }
+}
+
+export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, isHydrated }: QuotesTableProps) {
   const router = useRouter()
 
   if (!isHydrated) {
@@ -60,14 +70,32 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, isHydrated }: Quote
         </TableHeader>
         <TableBody>
           {quotes.length > 0 ? (
-            quotes.map((quote) => (
+            quotes.map((quote) => {
+              const currentStatus = statusConfig[quote.status] || statusConfig.draft;
+              return (
               <TableRow key={quote.id} onClick={() => router.push(`/quotes/${quote.id}/edit`)} className="cursor-pointer">
                 <TableCell className="font-medium">{quote.name}</TableCell>
                 <TableCell>{quote.clientName || "-"}</TableCell>
-                <TableCell>
-                  <Badge variant={quote.status === 'draft' ? 'secondary' : 'default'}>
-                    {quote.status === 'draft' ? 'Borrador' : 'Finalizado'}
-                  </Badge>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                             <Badge className={cn("cursor-pointer transition-colors", currentStatus.badgeClass)}>
+                                <currentStatus.icon className="mr-2 h-4 w-4"/>
+                                {currentStatus.label}
+                            </Badge>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => onUpdateStatus(quote.id, 'draft')}>
+                                <FileText className="mr-2"/> Marcar como Borrador
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onUpdateStatus(quote.id, 'accepted')}>
+                                <CheckCircle className="mr-2"/> Marcar como Aceptado
+                            </DropdownMenuItem>
+                             <DropdownMenuItem onClick={() => onUpdateStatus(quote.id, 'canceled')}>
+                                <XCircle className="mr-2"/> Marcar como Cancelado
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </TableCell>
                 <TableCell>
                   {format(new Date(quote.createdAt), "d MMM yyyy", { locale: es })}
@@ -101,7 +129,8 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, isHydrated }: Quote
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            ))
+              )
+            })
           ) : (
             <TableRow>
               <TableCell colSpan={5} className="h-24 text-center">

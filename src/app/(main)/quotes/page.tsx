@@ -63,6 +63,16 @@ export default function QuotesPage() {
       description: "Tu lista de presupuestos está ahora vacía.",
     })
   }
+  
+  const handleUpdateStatus = (id: string, status: Quote['status']) => {
+    setQuotes(
+      quotes.map((q) => (q.id === id ? { ...q, status } : q))
+    );
+    toast({
+      title: "Estado actualizado",
+      description: `El presupuesto ha sido marcado como ${status === 'accepted' ? 'aceptado' : 'cancelado'}.`,
+    });
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -89,7 +99,7 @@ export default function QuotesPage() {
                   </AlertDialogTitle>
                   <AlertDialogDescription>
                     Esta acción no se puede deshacer. Esto eliminará
-                    permanentemente todos tus presupuestos.
+                    permanemente todos tus presupuestos.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -114,6 +124,7 @@ export default function QuotesPage() {
         quotes={quotes}
         onDelete={handleDeleteQuote}
         onDuplicate={handleDuplicateQuote}
+        onUpdateStatus={handleUpdateStatus}
         isHydrated={isHydrated}
       />
     </div>
