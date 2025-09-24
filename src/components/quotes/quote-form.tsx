@@ -39,7 +39,7 @@ import { QuotePartsTable } from "./quote-parts-table"
 const PartSchema = z.object({
   id: z.string(),
   materialId: z.string().min(1, "Debes seleccionar un material."),
-  materialGrams: z.coerce.number().min(0, "Los gramos deben ser un número positivo."),
+  materialGrams: z.coerce.number().min(0.01, "Los gramos deben ser un número positivo."),
 })
 
 const QuoteSchema = z.object({
@@ -691,5 +691,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    
