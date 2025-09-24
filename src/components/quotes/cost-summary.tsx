@@ -26,13 +26,16 @@ interface CostSummaryProps {
   form: UseFormReturn<any>
 }
 
-const SummaryRow = ({ label, value, className = "", description }: { label: string, value: React.ReactNode, className?: string, description?: string }) => (
+const SummaryRow = ({ label, value, localValue, className = "", description }: { label: string, value: React.ReactNode, localValue?: React.ReactNode, className?: string, description?: string }) => (
   <div className={`flex justify-between items-start text-sm ${className}`}>
     <div className="text-muted-foreground">
         <p>{label}</p>
         {description && <p className="text-xs text-muted-foreground/80">{description}</p>}
     </div>
-    <div className="font-medium text-right">{value}</div>
+    <div className="font-medium text-right">
+        <div>{value}</div>
+        {localValue && <div className="text-xs text-muted-foreground font-normal">{localValue}</div>}
+    </div>
   </div>
 )
 
@@ -75,6 +78,12 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
   
   const decimalPlaces = settings.currencyDecimalPlaces;
   const highPrecisionDecimalPlaces = Math.max(4, decimalPlaces);
+  const localCurrencyDecimalPlaces = localCurrencyInfo?.value === 'CLP' || localCurrencyInfo?.value === 'PYG' ? 0 : decimalPlaces;
+
+  const formatLocal = (amount: number, precision = decimalPlaces) => {
+    if (!exchangeRate || !localCurrencyInfo) return null;
+    return formatCurrency(amount * exchangeRate, localCurrencyInfo.value, precision, 'symbol', localCurrencyInfo.locale);
+  };
 
   const getEnergyCostDetails = () => {
     if (!machine || !quoteInput.printHours || !settings) return "";
@@ -102,7 +111,6 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
     return `(${powerInKw.toFixed(2)}kW) ${details.join(' + ')}`;
   }
 
-  const localCurrencyDecimalPlaces = localCurrencyInfo?.value === 'CLP' || localCurrencyInfo?.value === 'PYG' ? 0 : decimalPlaces;
 
   return (
     <Card>
@@ -114,19 +122,23 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
         <SummaryRow
           label="Costo de Material"
           value={formatCurrency(breakdown.materialCost, "USD", decimalPlaces)}
+          localValue={formatLocal(breakdown.materialCost)}
         />
         <SummaryRow
           label="Costo de Energía"
           value={formatCurrency(breakdown.energyCost, "USD", highPrecisionDecimalPlaces)}
+          localValue={formatLocal(breakdown.energyCost, highPrecisionDecimalPlaces)}
           description={getEnergyCostDetails()}
         />
         <SummaryRow
           label="Depreciación Máquina"
           value={formatCurrency(breakdown.machineDepreciationCost, "USD", highPrecisionDecimalPlaces)}
+          localValue={formatLocal(breakdown.machineDepreciationCost, highPrecisionDecimalPlaces)}
         />
         <SummaryRow
           label="Mano de Obra"
           value={formatCurrency(breakdown.laborCost, "USD", decimalPlaces)}
+          localValue={formatLocal(breakdown.laborCost)}
         />
         
         <Separator />
@@ -134,6 +146,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
         <SummaryRow
           label="Subtotal Producción"
           value={formatCurrency(breakdown.subtotal, "USD", decimalPlaces)}
+          localValue={formatLocal(breakdown.subtotal)}
           className="font-semibold"
         />
 
@@ -143,6 +156,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
             <SummaryRow
                 label="Costo de Diseño"
                 value={formatCurrency(breakdown.designCost, "USD", decimalPlaces)}
+                localValue={formatLocal(breakdown.designCost)}
             />
         )}
         
@@ -150,6 +164,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
             <SummaryRow
                 label="Costos Adicionales"
                 value={formatCurrency(breakdown.totalExtraCosts, "USD", decimalPlaces)}
+                localValue={formatLocal(breakdown.totalExtraCosts)}
             />
         )}
         
@@ -160,12 +175,14 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
               <span>{formatCurrency(breakdown.costSubtotal, "USD", decimalPlaces)}</span>
             </div>
           }
+          localValue={formatLocal(breakdown.costSubtotal)}
           className="font-semibold"
         />
         
         <SummaryRow
           label={`Ganancia (${isManualPrice ? 'Ajustada' : `${settings.profitMargin}%`})`}
           value={formatCurrency(breakdown.profitAmount, "USD", decimalPlaces)}
+          localValue={formatLocal(breakdown.profitAmount)}
         />
         
         <Separator />
