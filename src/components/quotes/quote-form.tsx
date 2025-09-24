@@ -575,7 +575,16 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 <CardContent className="grid gap-6">
                      <div className="space-y-4">
                         {partFields.map((field, index) => (
-                            <div key={field.id} className="grid grid-cols-[1fr_auto_auto_auto] gap-4 items-start p-4 border rounded-md">
+                            <div key={field.id} className="relative p-4 border rounded-md">
+                                <div className="absolute top-2 right-2 flex gap-1">
+                                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => duplicatePart(index)}>
+                                        <PlusCircle className="h-4 w-4" />
+                                    </Button>
+                                     <Button type="button" variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 h-7 w-7" onClick={() => partFields.length > 1 && removePart(index)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <FormField
                                     control={form.control}
                                     name={`parts.${index}.materialId`}
@@ -607,21 +616,12 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                                         <FormItem>
                                             <FormLabel>Gramos</FormLabel>
                                             <FormControl>
-                                                <Input type="number" step="0.1" placeholder="Ej: 150" {...field} className="w-28" onFocus={(e) => e.target.select()} />
+                                                <Input type="number" step="0.1" placeholder="Ej: 150" {...field} onFocus={(e) => e.target.select()} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                                <div className="flex items-end h-full">
-                                    <Button type="button" variant="outline" size="icon" onClick={() => duplicatePart(index)}>
-                                        <PlusCircle className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                                <div className="flex items-end h-full">
-                                    <Button type="button" variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => partFields.length > 1 && removePart(index)}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
                                 </div>
                             </div>
                         ))}
