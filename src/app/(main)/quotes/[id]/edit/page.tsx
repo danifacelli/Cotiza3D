@@ -17,18 +17,16 @@ export default function EditQuotePage() {
     const [initialQuote, setInitialQuote] = useState<Quote | null>(null);
 
     useEffect(() => {
-        if (isHydrated) {
+        if (isHydrated && !initialQuote) { // Only run if hydrated and quote not set
             const foundQuote = quotes.find(q => q.id === id);
             if (foundQuote) {
-                // Create a stable, memoized version of the quote object.
+                
                 const updatedQuote: Quote = { ...foundQuote };
                  
-                // Backwards compatibility for old quotes without 'parts'
                 if (!updatedQuote.parts) {
                     updatedQuote.parts = [];
                 }
                 
-                // Handle legacy quotes with direct material/grams
                 const legacyQuote = updatedQuote as any;
                 if (legacyQuote.materialId && legacyQuote.materialGrams) {
                      if (updatedQuote.parts.length === 0) {
@@ -42,7 +40,6 @@ export default function EditQuotePage() {
                     delete legacyQuote.materialGrams;
                 }
                 
-                // Handle legacy dimension fields being on the parts
                 if (updatedQuote.parts[0] && (updatedQuote.parts[0] as any).width) {
                     const firstPart = (updatedQuote.parts[0] as any);
                     if (!updatedQuote.width) updatedQuote.width = firstPart.width;
@@ -56,7 +53,6 @@ export default function EditQuotePage() {
                     })
                 }
 
-                // Handle other legacy fields
                 if (updatedQuote.laborHours === undefined) {
                     updatedQuote.laborHours = updatedQuote.printHours;
                 }
@@ -64,12 +60,7 @@ export default function EditQuotePage() {
                     updatedQuote.tariffType = 'off-peak';
                 }
 
-                // Only update state if the derived quote is different
-                if (JSON.stringify(initialQuote) !== JSON.stringify(updatedQuote)) {
-                    setInitialQuote(updatedQuote);
-                }
-            } else {
-                setInitialQuote(null);
+                setInitialQuote(updatedQuote);
             }
         }
     }, [id, quotes, isHydrated, initialQuote]);
