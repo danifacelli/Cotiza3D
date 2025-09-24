@@ -25,8 +25,45 @@ import { QuotesTable, type QuoteWithTotals } from "@/components/quotes/quotes-ta
 import { calculateCosts } from "@/lib/calculations"
 import { getExchangeRate } from "@/services/exchange-rate-service"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { formatCurrency } from "@/lib/utils"
 
 type StatusFilter = "all" | Quote["status"];
+
+const ITEMS_PER_PAGE = 10;
+
+function QuotesSummary({ quotes, settings, exchangeRate }: { quotes: QuoteWithTotals[], settings: Settings, exchangeRate: number | null }) {
+    const totals = useMemo(() => {
+        return quotes.reduce((acc, quote) => {
+            acc.totalUSD += quote.totalUSD;
+            acc.totalLocal += quote.totalLocal;
+            return acc;
+        }, { totalUSD: 0, totalLocal: 0 });
+    }, [quotes]);
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Total General (Filtro Actual)</CardTitle>
+                <CardDescription>Suma de los presupuestos que coinciden con el filtro de estado seleccionado.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+                 <div className="flex justify-between font-semibold">
+                    <span>Total en USD:</span>
+                    <span>{formatCurrency(totals.totalUSD, 'USD', settings.currencyDecimalPlaces)}</span>
+                </div>
+                 <div className="flex justify-between font-semibold">
+                    <span>Total en {settings.localCurrency}:</span>
+                    <span>{formatCurrency(totals.totalLocal, settings.localCurrency, settings.localCurrency === 'CLP' || settings.localCurrency === 'PYG' ? 0 : settings.currencyDecimalPlaces, 'symbol')}</span>
+                </div>
+                <p className="text-xs text-muted-foreground pt-2">
+                    Mostrando {quotes.length} presupuesto(s). 
+                    {exchangeRate && ` Tasa de cambio: 1 USD ≈ ${exchangeRate.toFixed(2)} ${settings.localCurrency}`}
+                </p>
+            </CardContent>
+        </Card>
+    );
+}
 
 export default function QuotesPage() {
   const [quotes, setQuotes, isQuotesHydrated] = useLocalStorage<Quote[]>(
@@ -40,6 +77,7 @@ export default function QuotesPage() {
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { toast } = useToast()
 
@@ -57,8 +95,10 @@ export default function QuotesPage() {
         setIsExchangeRateLoading(false);
       }
     }
-    fetchRate();
-  }, [settings?.localCurrency]);
+    if (isSettingsHydrated) {
+        fetchRate();
+    }
+  }, [settings?.localCurrency, isSettingsHydrated]);
 
   const isHydrated = isQuotesHydrated && isMaterialsHydrated && isMachinesHydrated && isSettingsHydrated;
 
@@ -70,7 +110,7 @@ export default function QuotesPage() {
       const totalUSD = breakdown?.total ?? 0;
       const totalLocal = exchangeRate ? totalUSD * exchangeRate : 0;
       return { ...quote, totalUSD, totalLocal };
-    });
+    }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [quotes, materials, machines, settings, exchangeRate, isHydrated]);
   
   const filteredQuotes = useMemo(() => {
@@ -79,6 +119,18 @@ export default function QuotesPage() {
     }
     return quotesWithTotals.filter(quote => quote.status === statusFilter);
   }, [quotesWithTotals, statusFilter]);
+  
+  const paginatedQuotes = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredQuotes.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredQuotes, currentPage]);
+
+  const totalPages = Math.ceil(filteredQuotes.length / ITEMS_PER_PAGE);
+  
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter]);
+
 
   const handleDeleteQuote = (id: string) => {
     setQuotes(quotes.filter((q) => q.id !== id))
@@ -132,7 +184,9 @@ export default function QuotesPage() {
       canceled: 0,
     };
     quotes.forEach(quote => {
-      counts[quote.status]++;
+      if (counts[quote.status] !== undefined) {
+          counts[quote.status]++;
+      }
     });
     return counts;
   }, [quotes]);
@@ -200,17 +254,45 @@ export default function QuotesPage() {
                 <p>Cargando presupuestos...</p>
             </div>
         ) : (
+            <>
              <QuotesTable
-                quotes={filteredQuotes}
+                quotes={paginatedQuotes}
                 onDelete={handleDeleteQuote}
                 onDuplicate={handleDuplicateQuote}
                 onUpdateStatus={handleUpdateStatus}
                 settings={settings}
                 isHydrated={isHydrated}
               />
+              <div className="grid md:grid-cols-3 items-start gap-4">
+                 <div className="md:col-span-2">
+                    <QuotesSummary quotes={filteredQuotes} settings={settings} exchangeRate={exchangeRate} />
+                 </div>
+                 <div className="flex items-center justify-end gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                    >
+                        Anterior
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                        Página {currentPage} de {totalPages}
+                    </span>
+                    <Button
+                        variant="outline"
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                    >
+                        Siguiente
+                    </Button>
+                 </div>
+              </div>
+            </>
         )}
       </div>
 
     </div>
   )
 }
+
+    
