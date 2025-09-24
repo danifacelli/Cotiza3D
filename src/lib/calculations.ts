@@ -12,6 +12,7 @@ export interface CostBreakdown {
   subtotalWithExtras: number;
   profitAmount: number;
   total: number;
+  isManualPrice: boolean;
 }
 
 interface CalculationInput extends Partial<Omit<Quote, 'printHours' | 'laborHours' | 'parts'>> {
@@ -35,6 +36,7 @@ export function calculateCosts(
   const laborHours = quote.laborHours || 0;
   const tariffType = quote.tariffType || 'off-peak';
   const designCost = Number(quote.designCost) || 0;
+  const finalPriceOverride = quote.finalPriceOverride;
 
   logs.push(`Máquina encontrada: ${JSON.stringify(machine)}`);
   logs.push(`Horas de Impresión Totales: ${totalPrintHours}`);
@@ -61,6 +63,7 @@ export function calculateCosts(
         machineDepreciationCost: 0, energyCost: 0, laborCost: 0,
         subtotal: materialCost, designCost: 0, totalExtraCosts: 0,
         subtotalWithExtras: materialCost, profitAmount: 0, total: materialCost,
+        isManualPrice: false,
     };
     return { breakdown: totalPrintHours > 0 ? null : partialBreakdown, logs };
   }
@@ -68,7 +71,6 @@ export function calculateCosts(
   const machineDepreciationCost = machine.costPerHour * totalPrintHours;
   logs.push(`Costo de depreciación: ${machineDepreciationCost}`);
   
-  // Energy Cost Calculation
   const powerInKw = (machine.powerConsumption || 0) / 1000;
   const peakPrice = settings.peakEnergyCostKwh || 0;
   const offPeakPrice = settings.offPeakEnergyCostKwh || 0;
@@ -104,11 +106,21 @@ export function calculateCosts(
   const subtotalWithExtras = subtotal + totalExtraCosts + designCost;
   logs.push(`Subtotal + extras + diseño: ${subtotalWithExtras}`);
 
-  const profitAmount = subtotal * ((settings.profitMargin || 0) / 100);
-  logs.push(`Monto de ganancia (sobre Subtotal de Producción): ${profitAmount}`);
-  
-  const total = subtotal + profitAmount + totalExtraCosts + designCost;
-  logs.push(`Total: ${total}`);
+  let profitAmount: number;
+  let total: number;
+  const isManualPrice = typeof finalPriceOverride === 'number' && finalPriceOverride > 0;
+
+  if (isManualPrice) {
+    total = finalPriceOverride;
+    profitAmount = total - subtotalWithExtras;
+    logs.push(`Precio manual aplicado: ${total}`);
+    logs.push(`Nueva ganancia calculada: ${profitAmount}`);
+  } else {
+    profitAmount = subtotal * ((settings.profitMargin || 0) / 100);
+    total = subtotal + profitAmount + totalExtraCosts + designCost;
+    logs.push(`Monto de ganancia (sobre Subtotal de Producción): ${profitAmount}`);
+    logs.push(`Total (calculado): ${total}`);
+  }
 
   const breakdown = {
     materialCost,
@@ -121,6 +133,7 @@ export function calculateCosts(
     subtotalWithExtras,
     profitAmount,
     total,
+    isManualPrice
   };
 
   logs.push(`Desglose final: ${JSON.stringify(breakdown)}`);
@@ -128,5 +141,3 @@ export function calculateCosts(
 
   return { breakdown, logs };
 }
-
-    

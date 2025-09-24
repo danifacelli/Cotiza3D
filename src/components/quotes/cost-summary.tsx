@@ -3,12 +3,17 @@
 
 import type { CostBreakdown } from "@/lib/calculations"
 import type { Settings, Machine, Quote } from "@/lib/types"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, cn } from "@/lib/utils"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { LATAM_CURRENCIES } from "@/lib/constants"
 import { useMemo } from "react"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
+import type { UseFormReturn } from "react-hook-form"
 
 interface CostSummaryProps {
   breakdown: CostBreakdown | null
@@ -18,6 +23,7 @@ interface CostSummaryProps {
   actions?: React.ReactNode
   exchangeRate?: number | null
   isExchangeRateLoading?: boolean
+  form: UseFormReturn<any>
 }
 
 const SummaryRow = ({ label, value, className = "", description }: { label: string, value: React.ReactNode, className?: string, description?: string }) => (
@@ -30,11 +36,25 @@ const SummaryRow = ({ label, value, className = "", description }: { label: stri
   </div>
 )
 
-export function CostSummary({ breakdown, settings, machine, quoteInput, actions, exchangeRate, isExchangeRateLoading }: CostSummaryProps) {
+export function CostSummary({ breakdown, settings, machine, quoteInput, actions, exchangeRate, isExchangeRateLoading, form }: CostSummaryProps) {
   
   const localCurrencyInfo = useMemo(() => {
     return LATAM_CURRENCIES.find(c => c.value === settings.localCurrency);
   }, [settings.localCurrency]);
+
+  const { watch, setValue } = form;
+  const finalPriceOverride = watch('finalPriceOverride');
+  const isManualPrice = useMemo(() => typeof finalPriceOverride === 'number', [finalPriceOverride]);
+
+  const handleManualPriceToggle = (checked: boolean) => {
+    if (checked) {
+        if (breakdown) {
+             setValue('finalPriceOverride', parseFloat(breakdown.total.toFixed(settings.currencyDecimalPlaces)), { shouldDirty: true });
+        }
+    } else {
+        setValue('finalPriceOverride', undefined, { shouldDirty: true });
+    }
+  }
 
   if (!breakdown) {
     return (
@@ -55,7 +75,6 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
   
   const decimalPlaces = settings.currencyDecimalPlaces;
   const highPrecisionDecimalPlaces = Math.max(4, decimalPlaces);
-
 
   const getEnergyCostDetails = () => {
     if (!machine || !quoteInput.printHours || !settings) return "";
@@ -130,7 +149,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
         <Separator />
         
         <SummaryRow
-          label={`Ganancia (${settings.profitMargin}%)`}
+          label={`Ganancia (${isManualPrice ? 'Ajustada' : `${settings.profitMargin}%`})`}
           value={formatCurrency(breakdown.profitAmount, "USD", decimalPlaces)}
         />
 
@@ -150,18 +169,55 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
             />
         )}
 
-        <div className="flex justify-between items-center text-xl font-bold pt-4">
-          <span>Total</span>
-          <span>{formatCurrency(breakdown.total, "USD", decimalPlaces)}</span>
+        <Separator />
+
+        <div className="pt-4 space-y-4">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                    <Switch
+                        id="manual-price-toggle"
+                        checked={isManualPrice}
+                        onCheckedChange={handleManualPriceToggle}
+                    />
+                    <Label htmlFor="manual-price-toggle" className={cn(isManualPrice && "text-primary")}>
+                        Precio Manual
+                    </Label>
+                </div>
+                {!isManualPrice && (
+                    <div className="text-2xl font-bold text-right">
+                        {formatCurrency(breakdown.total, "USD", decimalPlaces)}
+                    </div>
+                )}
+            </div>
+            
+            {isManualPrice && (
+                <FormField
+                    control={form.control}
+                    name="finalPriceOverride"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormControl>
+                            <Input 
+                                type="number" 
+                                step="0.01" 
+                                className="text-2xl font-bold h-12 text-right"
+                                {...field}
+                                onFocus={(e) => e.target.select()}
+                                onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)}
+                             />
+                        </FormControl>
+                    </FormItem>
+                    )}
+                />
+            )}
         </div>
 
-        <Separator />
 
         <div className="pt-2 space-y-1 text-right">
             {isExchangeRateLoading && <p className="text-xs text-muted-foreground">Obteniendo cambio...</p>}
             {exchangeRate && localCurrencyInfo && (
                 <>
-                    <p className="text-lg font-bold">{formatCurrency(breakdown.total * exchangeRate, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale)}</p>
+                    <p className="text-xl font-bold">{formatCurrency(breakdown.total * exchangeRate, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale)}</p>
                     <p className="text-xs text-muted-foreground">
                         Tasa de cambio: 1 USD ≈ {exchangeRate.toFixed(2)} {localCurrencyInfo.value}
                     </p>

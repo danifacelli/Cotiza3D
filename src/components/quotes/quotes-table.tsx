@@ -28,10 +28,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Pencil, Trash2, CheckCircle, XCircle, FileText, Copy } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, CheckCircle, XCircle, FileText, Copy, Edit, Tag } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn, formatCurrency } from "@/lib/utils"
@@ -40,6 +39,7 @@ export type QuoteWithTotals = Quote & {
   totalUSD: number;
   totalLocal: number;
   costUSD: number;
+  isManualPrice: boolean;
 };
 
 interface QuotesTableProps {
@@ -118,7 +118,12 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
                     </DropdownMenu>
                 </TableCell>
                 <TableCell className="text-right font-mono">{formatCurrency(quote.costUSD, "USD", decimalPlaces)}</TableCell>
-                <TableCell className="text-right font-mono">{formatCurrency(quote.totalUSD, "USD", decimalPlaces)}</TableCell>
+                <TableCell className="text-right font-mono">
+                    <div className="flex items-center justify-end gap-2">
+                         {quote.isManualPrice && <Tag className="h-3 w-3 text-muted-foreground" title="Precio manual"/>}
+                         {formatCurrency(quote.totalUSD, "USD", decimalPlaces)}
+                    </div>
+                </TableCell>
                 <TableCell className="text-right font-mono">
                     {formatCurrency(
                         quote.totalLocal, 

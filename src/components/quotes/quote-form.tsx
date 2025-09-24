@@ -36,7 +36,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { QuotePartForm, PartFormValues } from "./quote-part-form"
 import { QuotePartsTable } from "./quote-parts-table"
 import { QuoteExtraCostForm, ExtraCostFormValues } from "./quote-extra-cost-form"
-import { QuoteExtraCostsTable } from "./quote-extra-costs-table"
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
 import { QuotePDF } from "./quote-pdf"
@@ -77,9 +76,10 @@ const QuoteSchema = z.object({
     })
   ).optional(),
   notes: z.string().optional(),
+  finalPriceOverride: z.coerce.number().optional(),
 }).refine(data => (data.printHours || 0) + (data.printMinutes || 0) + (data.printSeconds || 0) > 0, {
   message: "El tiempo de impresión total debe ser mayor a 0.",
-  path: ["printHours"], // You can point to any of the time fields
+  path: ["printHours"], 
 });
 
 
@@ -129,10 +129,11 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       printSeconds: quote?.printHours ? Math.round((quote.printHours * 3600) % 60) : 0,
       laborHours: quote?.laborHours ? Math.floor(quote.laborHours) : 0,
       laborMinutes: quote?.laborHours ? Math.floor((quote.laborHours * 60) % 60) : 0,
+      finalPriceOverride: quote?.finalPriceOverride,
     },
   })
   
-  const { reset, getValues, control } = form;
+  const { reset, getValues, control, setValue } = form;
 
   useEffect(() => {
     if (quote) {
@@ -159,6 +160,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         width: quote.width || 0,
         height: quote.height || 0,
         depth: quote.depth || 0,
+        finalPriceOverride: quote.finalPriceOverride,
       });
 
     } else if (isMaterialsHydrated && isMachinesHydrated && machines.length > 0) {
@@ -184,6 +186,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           printSeconds: 0,
           laborHours: 0,
           laborMinutes: 0,
+          finalPriceOverride: undefined,
         });
       }
     }
@@ -222,6 +225,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       tariffType: watchedValues.tariffType,
       peakHours: watchedValues.peakHours,
       extraCosts: watchedValues.extraCosts,
+      finalPriceOverride: watchedValues.finalPriceOverride,
       printHours: printHoursDecimal,
       laborHours: laborHoursDecimal,
     }
@@ -233,21 +237,22 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       settings
     );
     setCalculationResult(result);
+
+    if (result.breakdown && !result.breakdown.isManualPrice && watchedValues.finalPriceOverride) {
+        setValue('finalPriceOverride', undefined);
+    }
+
   }, [
     printHoursDecimal,
     laborHoursDecimal,
-    watchedValues.machineId,
-    watchedValues.parts,
-    watchedValues.designCost,
-    watchedValues.tariffType,
-    watchedValues.peakHours,
-    watchedValues.extraCosts,
+    watchedValues,
     settings,
     materials,
     machines,
     isMachinesHydrated,
     isMaterialsHydrated,
     isSettingsHydrated,
+    setValue
   ]);
 
   useEffect(() => {
@@ -305,6 +310,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       laborHours: finalLaborHours,
       extraCosts: data.extraCosts || [],
       notes: data.notes || "",
+      finalPriceOverride: data.finalPriceOverride,
     }
 
     if (quote) {
@@ -386,11 +392,11 @@ export function QuoteForm({ quote }: QuoteFormProps) {
 
     switch (tariffType) {
       case 'peak':
-        return `Punta (${peakTariffStartTime} - ${peakTariffEndTime}): ${formatCurrency(peakEnergyCostKwh, "USD", 3)}/kWh.`;
+        return `Punta (${peakTariffStartTime} - ${peakTariffEndTime}): ${formatCurrency(peakEnergyCostKwh, "USD", settings.currencyDecimalPlaces, 'code')}/kWh.`;
       case 'off-peak':
-        return `Fuera de Punta: ${formatCurrency(offPeakEnergyCostKwh, "USD", 3)}/kWh.`;
+        return `Fuera de Punta: ${formatCurrency(offPeakEnergyCostKwh, "USD", settings.currencyDecimalPlaces, 'code')}/kWh.`;
       case 'mixed':
-         return `Punta (${peakTariffStartTime} - ${peakTariffEndTime}): ${formatCurrency(peakEnergyCostKwh, "USD", 3)}/kWh. Resto: ${formatCurrency(offPeakEnergyCostKwh, "USD", 3)}/kWh.`;
+         return `Punta (${peakTariffStartTime} - ${peakTariffEndTime}): ${formatCurrency(peakEnergyCostKwh, "USD", settings.currencyDecimalPlaces, 'code')}/kWh. Resto: ${formatCurrency(offPeakEnergyCostKwh, "USD", settings.currencyDecimalPlaces, 'code')}/kWh.`;
       default:
         return null;
     }
@@ -874,9 +880,9 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 settings={settings}
                 machine={selectedMachine}
                 quoteInput={{...watchedValues, printHours: printHoursDecimal}}
-                logs={calculationResult.logs}
                 exchangeRate={exchangeRate}
                 isExchangeRateLoading={isExchangeRateLoading}
+                form={form}
                 actions={
                   <>
                      <Button type="submit" className="w-full">
@@ -913,5 +919,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    

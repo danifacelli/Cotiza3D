@@ -77,7 +77,8 @@ export default function QuotesPage() {
       const totalUSD = breakdown?.total ?? 0;
       const totalLocal = exchangeRate ? totalUSD * exchangeRate : 0;
       const costUSD = breakdown?.subtotal ?? 0;
-      return { ...quote, totalUSD, totalLocal, costUSD };
+      const isManualPrice = breakdown?.isManualPrice ?? false;
+      return { ...quote, totalUSD, totalLocal, costUSD, isManualPrice };
     }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [quotes, materials, machines, settings, exchangeRate, isHydrated]);
   

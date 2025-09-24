@@ -67,4 +67,5 @@ export interface Quote {
   extraCosts: ExtraCost[];
   notes: string;
   deliveryDate?: string;
+  finalPriceOverride?: number; // Manual override for the total price in USD
 }
