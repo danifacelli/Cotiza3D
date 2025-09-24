@@ -112,24 +112,33 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
         <Separator />
         
         <SummaryRow
-          label="Subtotal Costos Fijos"
+          label="Subtotal Producción"
           value={formatCurrency(breakdown.subtotal, "USD", decimalPlaces)}
           className="font-semibold"
         />
+        
+        <Separator />
+        
+        <SummaryRow
+          label={`Ganancia (${settings.profitMargin}%)`}
+          value={formatCurrency(breakdown.profitAmount, "USD", decimalPlaces)}
+        />
 
+        {(breakdown.designCost > 0 || breakdown.totalExtraCosts > 0) && <Separator />}
+
+        {breakdown.designCost > 0 && (
+            <SummaryRow
+                label="Costo de Diseño"
+                value={formatCurrency(breakdown.designCost, "USD", decimalPlaces)}
+            />
+        )}
+        
         {breakdown.totalExtraCosts > 0 && (
             <SummaryRow
                 label="Costos Adicionales"
                 value={formatCurrency(breakdown.totalExtraCosts, "USD", decimalPlaces)}
             />
         )}
-        
-        <Separator />
-
-        <SummaryRow
-          label={`Ganancia (${settings.profitMargin}%)`}
-          value={formatCurrency(breakdown.profitAmount, "USD", decimalPlaces)}
-        />
 
         <div className="flex justify-between items-center text-xl font-bold pt-4">
           <span>Total</span>

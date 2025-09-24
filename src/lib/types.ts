@@ -52,6 +52,7 @@ export interface Quote {
   
   machineId: string;
   printHours: number;
+  designCost: number;
   
   tariffType: 'peak' | 'off-peak' | 'mixed';
   peakHours?: number; // Only used when tariffType is 'mixed'

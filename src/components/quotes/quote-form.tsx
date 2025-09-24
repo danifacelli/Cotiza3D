@@ -45,6 +45,7 @@ const QuoteSchema = z.object({
   clientName: z.string().optional(),
   parts: z.array(PartSchema).min(1, "Debes añadir al menos un material."),
   machineId: z.string().min(1, "Debes seleccionar una máquina."),
+  designCost: z.coerce.number().optional(),
   tariffType: z.enum(["peak", "off-peak", "mixed"]),
   peakHours: z.coerce.number().optional(),
   printHours: z.coerce.number().optional(),
@@ -92,6 +93,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       clientName: quote?.clientName || "",
       parts: quote?.parts?.length ? quote.parts : [{ id: generateId(), materialId: "", materialGrams: 0 }],
       machineId: quote?.machineId || "",
+      designCost: quote?.designCost || 0,
       tariffType: quote?.tariffType || "off-peak",
       peakHours: quote?.peakHours || 0,
       extraCosts: quote?.extraCosts || [],
@@ -129,6 +131,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         laborHours,
         laborMinutes,
         extraCosts: quote.extraCosts || [],
+        designCost: quote.designCost || 0,
       });
 
     } else if (isMaterialsHydrated && isMachinesHydrated && materials.length > 0 && machines.length > 0) {
@@ -140,6 +143,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           clientName: "",
           parts: [{ id: generateId(), materialId: materials.length > 0 ? materials[0].id : "", materialGrams: 0 }],
           machineId: machines.length > 0 ? machines[0].id : "",
+          designCost: 0,
           tariffType: "off-peak",
           peakHours: 0,
           extraCosts: [],
@@ -184,6 +188,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     const quoteDataForCalc = {
       machineId: watchedValues.machineId,
       parts: watchedValues.parts,
+      designCost: watchedValues.designCost,
       tariffType: watchedValues.tariffType,
       peakHours: watchedValues.peakHours,
       extraCosts: watchedValues.extraCosts,
@@ -203,6 +208,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     laborHoursDecimal,
     watchedValues.machineId,
     watchedValues.parts,
+    watchedValues.designCost,
     watchedValues.tariffType,
     watchedValues.peakHours,
     watchedValues.extraCosts,
@@ -238,17 +244,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         return acc + (isNaN(parsedGrams) ? 0 : parsedGrams);
     }, 0) || 0;
     
-    const totalCost = watchedValues.parts?.reduce((acc, part) => {
-      const material = materials.find(m => m.id === part.materialId);
-      const parsedGrams = parseFloat(part.materialGrams as any);
-      if (material && !isNaN(parsedGrams) && parsedGrams > 0) {
-        return acc + (parsedGrams / 1000) * material.cost;
-      }
-      return acc;
-    }, 0) || 0;
-
-    return { totalGrams, totalCost };
-  }, [watchedValues.parts, materials]);
+    return { totalGrams };
+  }, [watchedValues.parts]);
   
   const selectedMachine = useMemo(() => {
     return machines.find(m => m.id === watchedValues.machineId);
@@ -267,6 +264,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       clientName: data.clientName || "",
       parts: data.parts,
       machineId: data.machineId,
+      designCost: data.designCost || 0,
       printHours: finalPrintHours,
       tariffType: data.tariffType,
       peakHours: data.peakHours,
@@ -527,6 +525,24 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                     </FormDescription>
                   <FormMessage>{form.formState.errors.laborHours?.message}</FormMessage>
                 </div>
+                 <div className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="designCost"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Costo del Diseño (USD)</FormLabel>
+                          <FormControl>
+                             <Input type="number" step="0.01" placeholder="0.00" {...field} onFocus={(e) => e.target.select()} onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)} />
+                          </FormControl>
+                          <FormDescription>
+                            Si compraste el modelo 3D, ingresa aquí su costo.
+                          </FormDescription>
+                           <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
               </CardContent>
             </Card>
             
@@ -537,11 +553,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 </CardHeader>
                 <CardContent className="grid gap-6">
                      {partFields.map((field, index) => {
-                        const watchedPart = watchedValues.parts?.[index];
-                        const material = materials.find(m => m.id === watchedPart?.materialId);
-                        const grams = Number(watchedPart?.materialGrams) || 0;
-                        const cost = material && grams > 0 ? (grams / 1000) * material.cost : 0;
-
                         return (
                             <div key={field.id} className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-4 items-start p-4 border rounded-md relative">
                                 <Button
@@ -574,9 +585,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                                         ))}
                                         </SelectContent>
                                     </Select>
-                                    <FormDescription>
-                                        {cost > 0 ? `Costo: ${formatCurrency(cost, 'USD', settings.currencyDecimalPlaces)}` : ''}
-                                    </FormDescription>
                                     <FormMessage />
                                     </FormItem>
                                 )}

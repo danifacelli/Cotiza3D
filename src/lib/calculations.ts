@@ -7,6 +7,7 @@ export interface CostBreakdown {
   energyCost: number;
   laborCost: number;
   subtotal: number;
+  designCost: number;
   totalExtraCosts: number;
   subtotalWithExtras: number;
   profitAmount: number;
@@ -33,11 +34,14 @@ export function calculateCosts(
   const totalPrintHours = quote.printHours || 0;
   const laborHours = quote.laborHours || 0;
   const tariffType = quote.tariffType || 'off-peak';
+  const designCost = Number(quote.designCost) || 0;
 
   logs.push(`Máquina encontrada: ${JSON.stringify(machine)}`);
   logs.push(`Horas de Impresión Totales: ${totalPrintHours}`);
   logs.push(`Tipo de Tarifa: ${tariffType}`);
   logs.push(`Settings: ${JSON.stringify(settings)}`);
+  logs.push(`Costo de Diseño: ${designCost}`);
+
 
   if (!machine || totalPrintHours <= 0 || !settings) {
     logs.push(`[AVISO] Prerrequisitos no cumplidos para cálculo completo.`);
@@ -87,16 +91,18 @@ export function calculateCosts(
   logs.push(`Costo de mano de obra: ${laborCost}`);
   
   const subtotal = materialCost + machineDepreciationCost + laborCost + energyCost;
-  logs.push(`Subtotal: ${subtotal}`);
+  logs.push(`Subtotal (Producción): ${subtotal}`);
   
   const totalExtraCosts = (quote.extraCosts || []).reduce((acc, cost) => acc + (Number(cost.amount) || 0), 0);
-  const subtotalWithExtras = subtotal + totalExtraCosts;
-  logs.push(`Subtotal con extras: ${subtotalWithExtras}`);
+  logs.push(`Costos adicionales: ${totalExtraCosts}`);
+  
+  const subtotalWithExtras = subtotal + totalExtraCosts + designCost;
+  logs.push(`Subtotal + extras + diseño: ${subtotalWithExtras}`);
 
   const profitAmount = subtotal * ((settings.profitMargin || 0) / 100);
-  logs.push(`Monto de ganancia: ${profitAmount}`);
+  logs.push(`Monto de ganancia (sobre Subtotal de Producción): ${profitAmount}`);
   
-  const total = subtotalWithExtras + profitAmount;
+  const total = subtotal + profitAmount + totalExtraCosts + designCost;
   logs.push(`Total: ${total}`);
 
   const breakdown = {
@@ -105,6 +111,7 @@ export function calculateCosts(
     energyCost,
     laborCost,
     subtotal,
+    designCost,
     totalExtraCosts,
     subtotalWithExtras,
     profitAmount,
@@ -116,4 +123,3 @@ export function calculateCosts(
 
   return { breakdown, logs };
 }
-
