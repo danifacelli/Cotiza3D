@@ -133,16 +133,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
         
         <SummaryRow
           label="Subtotal Producción"
-          value={
-            <div className="flex flex-col">
-              <span>{formatCurrency(breakdown.subtotal, "USD", decimalPlaces)}</span>
-              {exchangeRate && localCurrencyInfo && (
-                <span className="text-xs text-muted-foreground">
-                  {formatCurrency(breakdown.subtotal * exchangeRate, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale)}
-                </span>
-              )}
-            </div>
-          }
+          value={formatCurrency(breakdown.subtotal, "USD", decimalPlaces)}
           className="font-semibold"
         />
 
@@ -161,6 +152,21 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
                 value={formatCurrency(breakdown.totalExtraCosts, "USD", decimalPlaces)}
             />
         )}
+
+        <SummaryRow
+          label="Subtotal General"
+          value={
+            <div className="flex flex-col">
+              <span>{formatCurrency(breakdown.generalSubtotal, "USD", decimalPlaces)}</span>
+              {exchangeRate && localCurrencyInfo && (
+                <span className="text-xs text-muted-foreground">
+                  {formatCurrency(breakdown.generalSubtotal * exchangeRate, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale)}
+                </span>
+              )}
+            </div>
+          }
+          className="font-semibold"
+        />
         
         <SummaryRow
           label={`Ganancia (${isManualPrice ? 'Ajustada' : `${settings.profitMargin}%`})`}
