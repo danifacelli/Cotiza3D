@@ -135,14 +135,6 @@ export default function QuotesPage() {
     }
   }
 
-  const handleDeleteAllQuotes = () => {
-    setQuotes([])
-    toast({
-      title: "Todos los presupuestos han sido eliminados",
-      description: "Tu lista de presupuestos está ahora vacía.",
-    })
-  }
-  
   const handleUpdateStatus = (id: string, status: Quote['status']) => {
     setQuotes(
       quotes.map((q) => (q.id === id ? { ...q, status } : q))
@@ -179,33 +171,6 @@ export default function QuotesPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          {isHydrated && quotes.length > 0 && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive-outline">
-                  <Trash2 className="mr-2" />
-                  Eliminar Todo
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    ¿Estás absolutamente seguro?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Esta acción no se puede deshacer. Esto eliminará
-                    permanemente todos tus presupuestos.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteAllQuotes} asChild>
-                    <Button variant="destructive">Sí, eliminar todo</Button>
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
           <Button asChild>
             <Link href="/quotes/new">
               <PlusCircle className="mr-2" />
@@ -235,7 +200,6 @@ export default function QuotesPage() {
              <QuotesTable
                 quotes={paginatedQuotes}
                 onDelete={handleDeleteQuote}
-                onDuplicate={handleDuplicateQuote}
                 onUpdateStatus={handleUpdateStatus}
                 settings={settings}
                 isHydrated={isHydrated}
