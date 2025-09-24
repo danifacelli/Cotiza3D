@@ -42,7 +42,7 @@ function MachineCardActions({ machine, onEdit, onDelete }: { machine: Machine, o
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="h-4 w-4" /> 
                 <span className="sr-only">Más acciones</span>
             </Button>
             </DropdownMenuTrigger>
