@@ -35,10 +35,6 @@ export const QuotePDF = ({ quote, parts, settings, machine, breakdown, exchangeR
         return LATAM_CURRENCIES.find(c => c.value === settings.localCurrency);
     }, [settings.localCurrency]);
 
-    const totalGrams = useMemo(() => {
-        return parts.reduce((acc, part) => acc + part.materialGrams, 0);
-    }, [parts]);
-
     return (
         <div className="p-8 font-sans">
             {/* Header */}
@@ -58,7 +54,6 @@ export const QuotePDF = ({ quote, parts, settings, machine, breakdown, exchangeR
                 </div>
                 <div className="text-right">
                     <h2 className="text-xl font-semibold text-muted-foreground">Presupuesto</h2>
-                    <p className="font-mono text-xs">ID: {quote.id}</p>
                     <p className="text-sm mt-1">Fecha: {format(new Date(quote.createdAt || new Date()), "d 'de' MMMM, yyyy", { locale: es })}</p>
                 </div>
             </header>
@@ -79,38 +74,16 @@ export const QuotePDF = ({ quote, parts, settings, machine, breakdown, exchangeR
             <section>
                  <h3 className="text-sm font-semibold text-muted-foreground mb-2 px-4">DETALLES DEL PROYECTO</h3>
                  <div className="border rounded-lg overflow-hidden">
-                    <div className="grid grid-cols-4 bg-muted/50 font-semibold text-sm">
+                    <div className="grid grid-cols-2 bg-muted/50 font-semibold text-sm">
                         <div className="p-2 border-b">Descripción</div>
-                        <div className="p-2 border-b text-right">Cantidad</div>
-                        <div className="p-2 border-b text-right"></div>
-                        <div className="p-2 border-b text-right"></div>
+                        <div className="p-2 border-b text-right">Valor</div>
                     </div>
-                    <div className="grid grid-cols-4 text-sm">
-                        <div className="p-2 border-b">Dimensiones (Ancho x Alto x Largo)</div>
-                        <div className="p-2 border-b text-right font-mono">{quote.width || 0} x {quote.height || 0} x {quote.depth || 0} mm</div>
-                         <div className="p-2 border-b text-right"></div>
-                        <div className="p-2 border-b text-right"></div>
-                    </div>
-                     <div className="grid grid-cols-4 text-sm">
-                        <div className="p-2 border-b">Tiempo de Impresión</div>
-                        <div className="p-2 border-b text-right font-mono">{quote.printHours.toFixed(2)} hs</div>
-                         <div className="p-2 border-b text-right"></div>
-                        <div className="p-2 border-b text-right"></div>
-                    </div>
-                    <div className="grid grid-cols-4 text-sm">
-                        <div className="p-2 border-b">Material Utilizado</div>
-                        <div className="p-2 border-b text-right font-mono">{totalGrams.toFixed(2)} g</div>
-                        <div className="p-2 border-b text-right"></div>
-                        <div className="p-2 border-b text-right"></div>
-                    </div>
-                    {parts.map(part => (
-                         <div key={part.id} className="grid grid-cols-4 text-sm pl-6">
-                            <div className="p-2 border-b text-muted-foreground">{part.name}</div>
-                            <div className="p-2 border-b text-right font-mono">{part.materialGrams.toFixed(2)} g</div>
-                             <div className="p-2 border-b text-right"></div>
-                            <div className="p-2 border-b text-right"></div>
+                    {(quote.width || quote.height || quote.depth) ? (
+                        <div className="grid grid-cols-2 text-sm">
+                            <div className="p-2 border-b">Dimensiones (Ancho x Alto x Largo)</div>
+                            <div className="p-2 border-b text-right font-mono">{quote.width || 0} x {quote.height || 0} x {quote.depth || 0} mm</div>
                         </div>
-                    ))}
+                    ) : null}
                  </div>
             </section>
 
@@ -125,17 +98,12 @@ export const QuotePDF = ({ quote, parts, settings, machine, breakdown, exchangeR
                      )}
                 </div>
                 <div className="border rounded-lg">
-                    <h3 className="text-sm font-semibold text-muted-foreground mb-2 pt-3 px-4">DESGLOSE DE COSTOS (USD)</h3>
-                    <PDFRow label="Subtotal Producción" value={formatCurrency(breakdown.subtotal, 'USD', settings.currencyDecimalPlaces)} />
-                    <PDFRow label={`Ganancia (${settings.profitMargin}%)`} value={formatCurrency(breakdown.profitAmount, 'USD', settings.currencyDecimalPlaces)} />
-                    {breakdown.designCost > 0 && <PDFRow label="Costo de Diseño" value={formatCurrency(breakdown.designCost, 'USD', settings.currencyDecimalPlaces)} />}
-                    {breakdown.totalExtraCosts > 0 && <PDFRow label="Costos Adicionales" value={formatCurrency(breakdown.totalExtraCosts, 'USD', settings.currencyDecimalPlaces)} />}
                     <PDFRow label="TOTAL (USD)" value={formatCurrency(breakdown.total, 'USD', settings.currencyDecimalPlaces)} isTotal={true} className="bg-muted/50" />
                     {exchangeRate && localCurrencyInfo && (
-                        <div className="text-right px-4 pt-2">
-                             <p className="text-lg font-bold">{formatCurrency(breakdown.total * exchangeRate, localCurrencyInfo.value, 0, 'symbol', localCurrencyInfo.locale)}</p>
-                            <p className="text-xs text-muted-foreground">
-                                1 USD ≈ {exchangeRate.toFixed(2)} {localCurrencyInfo.value}
+                        <div className="text-right px-4 py-4">
+                             <p className="text-2xl font-bold">{formatCurrency(breakdown.total * exchangeRate, localCurrencyInfo.value, localCurrencyInfo.value === 'CLP' || localCurrencyInfo.value === 'PYG' ? 0 : settings.currencyDecimalPlaces, 'symbol', localCurrencyInfo.locale)}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Tasa de cambio (aprox): 1 USD ≈ {exchangeRate.toFixed(2)} {localCurrencyInfo.value}
                             </p>
                         </div>
                     )}
