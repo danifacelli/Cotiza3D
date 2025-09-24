@@ -7,7 +7,6 @@ import { formatCurrency } from "@/lib/utils"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { LATAM_CURRENCIES } from "@/lib/constants"
 import { useMemo } from "react"
 
@@ -175,20 +174,6 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
         <CardFooter className="flex flex-col gap-2 pt-0">
             {actions}
         </CardFooter>
-      )}
-       {logs && logs.length > 0 && (
-        <Accordion type="single" collapsible className="w-full px-6 pb-4">
-          <AccordionItem value="logs">
-            <AccordionTrigger className="text-xs text-muted-foreground">Mostrar Logs de Depuración</AccordionTrigger>
-            <AccordionContent>
-                <div className="mt-2 p-2 bg-muted/50 rounded-md max-h-48 overflow-y-auto">
-                    <pre className="text-xs whitespace-pre-wrap font-mono">
-                        {logs.join('\n')}
-                    </pre>
-                </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
       )}
     </Card>
   )
