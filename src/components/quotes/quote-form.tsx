@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { useForm, useFieldArray } from "react-hook-form"
@@ -174,7 +175,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   
   useEffect(() => {
     const isReady =
-      watchedValues.machineId &&
       isMachinesHydrated &&
       isMaterialsHydrated &&
       isSettingsHydrated;
@@ -577,11 +577,11 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                     <div className="flex items-center justify-between">
                         <div>
                             <CardTitle>Materiales</CardTitle>
-                            {form.formState.errors.parts && partFields.length === 0 && (
+                             {form.formState.errors.parts && partFields.length === 0 && (
                                 <p className="text-sm font-medium text-destructive mt-2">
-                                    {form.formState.errors.parts.root?.message || form.formState.errors.parts.message}
+                                    {form.formState.errors.parts.message}
                                 </p>
-                            )}
+                             )}
                         </div>
                         <Dialog open={isPartFormOpen} onOpenChange={setIsPartFormOpen}>
                             <DialogTrigger asChild>
@@ -699,3 +699,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    

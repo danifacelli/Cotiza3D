@@ -42,14 +42,8 @@ export function calculateCosts(
   logs.push(`Settings: ${JSON.stringify(settings)}`);
   logs.push(`Costo de Diseño: ${designCost}`);
 
-
-  if (!machine || totalPrintHours <= 0 || !settings) {
-    logs.push(`[AVISO] Prerrequisitos no cumplidos para cálculo completo.`);
-    return { breakdown: null, logs };
-  }
-  
   let materialCost = 0;
-  if (quote.parts) {
+  if (quote.parts && quote.parts.length > 0) {
     for (const part of quote.parts) {
         const material = materials.find(m => m.id === part.materialId);
         const grams = Number(part.materialGrams) || 0;
@@ -60,6 +54,17 @@ export function calculateCosts(
   }
   logs.push(`Costo de material calculado: ${materialCost}`);
 
+  if (!machine || !settings) {
+    logs.push(`[AVISO] No hay máquina o configuración para cálculo completo.`);
+    const partialBreakdown = {
+        materialCost,
+        machineDepreciationCost: 0, energyCost: 0, laborCost: 0,
+        subtotal: materialCost, designCost: 0, totalExtraCosts: 0,
+        subtotalWithExtras: materialCost, profitAmount: 0, total: materialCost,
+    };
+    return { breakdown: totalPrintHours > 0 ? null : partialBreakdown, logs };
+  }
+  
   const machineDepreciationCost = machine.costPerHour * totalPrintHours;
   logs.push(`Costo de depreciación: ${machineDepreciationCost}`);
   
@@ -123,3 +128,5 @@ export function calculateCosts(
 
   return { breakdown, logs };
 }
+
+    
