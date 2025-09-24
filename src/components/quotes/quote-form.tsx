@@ -54,6 +54,7 @@ const PartSchema = z.object({
 const QuoteSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
   clientName: z.string().optional(),
+  status: z.enum(["draft", "accepted", "canceled"]),
   parts: z.array(PartSchema).min(1, "Debes añadir al menos un material."),
   machineId: z.string().min(1, "Debes seleccionar una máquina."),
   designCost: z.coerce.number().optional(),
@@ -111,6 +112,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     defaultValues: {
       name: quote?.name || "",
       clientName: quote?.clientName || "",
+      status: quote?.status || "draft",
       parts: quote?.parts?.length ? quote.parts : [],
       machineId: quote?.machineId || "",
       designCost: quote?.designCost || 0,
@@ -165,6 +167,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         reset({
           name: "",
           clientName: "",
+          status: "draft",
           parts: [],
           machineId: machines.length > 0 ? machines[0].id : "",
           designCost: 0,
@@ -285,7 +288,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
 
     const quoteToSave: Quote = {
       id: quote?.id || generateId(),
-      status: quote?.status || "draft",
+      status: data.status,
       createdAt: quote?.createdAt || new Date().toISOString(),
       name: data.name,
       clientName: data.clientName || "",
@@ -477,6 +480,30 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                       </FormItem>
                     )}
                   />
+                   {quote && (
+                    <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Estado del Presupuesto</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona un estado" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="draft">Borrador</SelectItem>
+                              <SelectItem value="accepted">Aceptado</SelectItem>
+                              <SelectItem value="canceled">Cancelado</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -886,3 +913,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
