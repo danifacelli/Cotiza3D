@@ -2,7 +2,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import type { Quote } from "@/lib/types"
+import type { Quote, Settings } from "@/lib/types"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import {
@@ -19,21 +19,24 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { MoreHorizontal, Pencil, Trash2, Copy, CheckCircle, XCircle, FileText } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "@/lib/utils"
+import { cn, formatCurrency } from "@/lib/utils"
+
+export type QuoteWithTotals = Quote & {
+  totalUSD: number;
+  totalLocal: number;
+};
 
 interface QuotesTableProps {
-  quotes: Quote[]
+  quotes: QuoteWithTotals[]
   onDelete: (id: string) => void
   onDuplicate: (id: string) => void
   onUpdateStatus: (id: string, status: Quote['status']) => void;
+  settings: Settings | null;
   isHydrated: boolean
 }
 
@@ -43,7 +46,7 @@ const statusConfig = {
     canceled: { label: 'Cancelado', icon: XCircle, badgeClass: "bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30" }
 }
 
-export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, isHydrated }: QuotesTableProps) {
+export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, settings, isHydrated }: QuotesTableProps) {
   const router = useRouter()
 
   if (!isHydrated) {
@@ -56,14 +59,19 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, isH
     )
   }
 
+  const decimalPlaces = settings?.currencyDecimalPlaces ?? 2;
+  const localCurrencyCode = settings?.localCurrency ?? 'USD';
+
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Nombre</TableHead>
+            <TableHead className="w-[30%]">Nombre</TableHead>
             <TableHead>Cliente</TableHead>
             <TableHead>Estado</TableHead>
+            <TableHead className="text-right">Total (USD)</TableHead>
+            <TableHead className="text-right">Total (Local)</TableHead>
             <TableHead>Fecha</TableHead>
             <TableHead className="w-[50px]"></TableHead>
           </TableRow>
@@ -97,6 +105,15 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, isH
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </TableCell>
+                <TableCell className="text-right font-mono">{formatCurrency(quote.totalUSD, "USD", decimalPlaces)}</TableCell>
+                <TableCell className="text-right font-mono">
+                    {formatCurrency(
+                        quote.totalLocal, 
+                        localCurrencyCode,
+                        localCurrencyCode === 'CLP' || localCurrencyCode === 'PYG' ? 0 : decimalPlaces, 
+                        'symbol'
+                    )}
+                </TableCell>
                 <TableCell>
                   {format(new Date(quote.createdAt), "d MMM yyyy", { locale: es })}
                 </TableCell>
@@ -119,7 +136,10 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, isH
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        onClick={() => onDelete(quote.id)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(quote.id);
+                        }}
                         className="text-destructive focus:text-destructive"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
@@ -133,8 +153,8 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, isH
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center">
-                No hay presupuestos. Comienza creando uno.
+              <TableCell colSpan={7} className="h-24 text-center">
+                No hay presupuestos que coincidan con el filtro.
               </TableCell>
             </TableRow>
           )}
