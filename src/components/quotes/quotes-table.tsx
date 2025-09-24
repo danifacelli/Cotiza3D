@@ -31,7 +31,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Pencil, Trash2, CheckCircle, XCircle, FileText } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, CheckCircle, XCircle, FileText, Copy } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn, formatCurrency } from "@/lib/utils"
@@ -45,6 +45,7 @@ export type QuoteWithTotals = Quote & {
 interface QuotesTableProps {
   quotes: QuoteWithTotals[]
   onDelete: (id: string) => void
+  onDuplicate: (id: string) => void
   onUpdateStatus: (id: string, status: Quote['status']) => void;
   settings: Settings | null;
   isHydrated: boolean
@@ -56,7 +57,7 @@ const statusConfig = {
     canceled: { label: 'Cancelado', icon: XCircle, badgeClass: "bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30" }
 }
 
-export function QuotesTable({ quotes, onDelete, onUpdateStatus, settings, isHydrated }: QuotesTableProps) {
+export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, settings, isHydrated }: QuotesTableProps) {
   const router = useRouter()
 
   if (!isHydrated) {
@@ -134,6 +135,10 @@ export function QuotesTable({ quotes, onDelete, onUpdateStatus, settings, isHydr
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
                         <Pencil className="h-4 w-4" />
                         <span className="sr-only">Editar</span>
+                    </Button>
+                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onDuplicate(quote.id)}>
+                        <Copy className="h-4 w-4" />
+                        <span className="sr-only">Duplicar</span>
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>

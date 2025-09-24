@@ -201,6 +201,7 @@ export default function QuotesPage() {
                 quotes={paginatedQuotes}
                 onDelete={handleDeleteQuote}
                 onUpdateStatus={handleUpdateStatus}
+                onDuplicate={handleDuplicateQuote}
                 settings={settings}
                 isHydrated={isHydrated}
               />
