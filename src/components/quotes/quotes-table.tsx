@@ -17,9 +17,19 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button"
 import { MoreHorizontal, Pencil, Trash2, Copy, CheckCircle, XCircle, FileText } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -75,7 +85,7 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
             <TableHead className="text-right">Total (USD)</TableHead>
             <TableHead className="text-right">Total (Local)</TableHead>
             <TableHead>Fecha</TableHead>
-            <TableHead className="w-[50px]"></TableHead>
+            <TableHead className="w-[120px] text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -83,9 +93,9 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
             quotes.map((quote) => {
               const currentStatus = statusConfig[quote.status] || statusConfig.draft;
               return (
-              <TableRow key={quote.id} onClick={() => router.push(`/quotes/${quote.id}/edit`)} className="cursor-pointer">
-                <TableCell className="font-medium">{quote.name}</TableCell>
-                <TableCell>{quote.clientName || "-"}</TableCell>
+              <TableRow key={quote.id}>
+                <TableCell className="font-medium" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{quote.name}</TableCell>
+                <TableCell onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{quote.clientName || "-"}</TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -107,9 +117,9 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </TableCell>
-                <TableCell className="text-right font-mono">{formatCurrency(quote.costUSD, "USD", decimalPlaces)}</TableCell>
-                <TableCell className="text-right font-mono">{formatCurrency(quote.totalUSD, "USD", decimalPlaces)}</TableCell>
-                <TableCell className="text-right font-mono">
+                <TableCell className="text-right font-mono" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{formatCurrency(quote.costUSD, "USD", decimalPlaces)}</TableCell>
+                <TableCell className="text-right font-mono" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{formatCurrency(quote.totalUSD, "USD", decimalPlaces)}</TableCell>
+                <TableCell className="text-right font-mono" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
                     {formatCurrency(
                         quote.totalLocal, 
                         localCurrencyCode,
@@ -117,39 +127,42 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
                         'symbol'
                     )}
                 </TableCell>
-                <TableCell>
+                <TableCell onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
                   {format(new Date(quote.createdAt), "d MMM yyyy", { locale: es })}
                 </TableCell>
-                <TableCell onClick={(e) => e.stopPropagation()}>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Abrir menú</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Editar
-                      </DropdownMenuItem>
-                       <DropdownMenuItem onClick={() => onDuplicate(quote.id)}>
-                        <Copy className="mr-2 h-4 w-4" />
-                        Duplicar
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete(quote.id);
-                        }}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Eliminar
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
+                        <Pencil className="h-4 w-4" />
+                        <span className="sr-only">Editar</span>
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onDuplicate(quote.id)}>
+                        <Copy className="h-4 w-4" />
+                        <span className="sr-only">Duplicar</span>
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Eliminar</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                          <AlertDialogHeader>
+                          <AlertDialogTitle>¿Estás seguro que deseas eliminar?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                              Esta acción no se puede deshacer. Esto eliminará permanentemente el presupuesto.
+                          </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction asChild>
+                              <Button variant="destructive" onClick={() => onDelete(quote.id)}>Sí, eliminar</Button>
+                          </AlertDialogAction>
+                          </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </TableCell>
               </TableRow>
               )
@@ -166,3 +179,5 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
     </div>
   )
 }
+
+    
