@@ -576,6 +576,11 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle>Materiales</CardTitle>
+                         {form.formState.errors.parts && partFields.length === 0 && (
+                            <p className="text-sm font-medium text-destructive">
+                                {form.formState.errors.parts.root?.message || form.formState.errors.parts.message}
+                            </p>
+                        )}
                         <Dialog open={isPartFormOpen} onOpenChange={setIsPartFormOpen}>
                             <DialogTrigger asChild>
                                 <Button type="button" size="sm">
@@ -594,11 +599,6 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                 </CardHeader>
                 <CardContent>
                     <QuotePartsTable parts={partsWithNames} onRemove={removePart} />
-                     {form.formState.errors.parts && partFields.length === 0 && (
-                        <p className="text-sm font-medium text-destructive mt-2">
-                            {form.formState.errors.parts.root?.message || form.formState.errors.parts.message}
-                        </p>
-                    )}
                     {materialSummary.totalGrams > 0 && (
                         <Alert variant="default" className="mt-4">
                             <AlertDescription className="flex justify-between items-center text-sm">
@@ -695,5 +695,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    
