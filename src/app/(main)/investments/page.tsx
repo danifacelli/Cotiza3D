@@ -33,6 +33,12 @@ import { InvestmentsTable } from "@/components/investments/investments-table"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils"
 
+type InvestmentFormData = {
+    name: string;
+    amount: number;
+    createdAt: Date;
+}
+
 export default function InvestmentsPage() {
   const [investments, setInvestments, isHydrated] = useLocalStorage<Investment[]>(
     LOCAL_STORAGE_KEYS.INVESTMENTS,
@@ -68,11 +74,15 @@ export default function InvestmentsPage() {
     })
   }
 
-  const handleSaveInvestment = (data: Omit<Investment, 'id' | 'createdAt'>) => {
+  const handleSaveInvestment = (data: InvestmentFormData) => {
+    const investmentData = {
+        ...data,
+        createdAt: data.createdAt.toISOString(),
+    }
     if (selectedInvestment) {
       setInvestments(
         investments.map((i) =>
-          i.id === selectedInvestment.id ? { ...i, ...data } : i
+          i.id === selectedInvestment.id ? { ...i, ...investmentData } : i
         )
       )
       toast({
@@ -82,8 +92,7 @@ export default function InvestmentsPage() {
     } else {
       const newInvestment: Investment = {
         id: generateId(),
-        ...data,
-        createdAt: new Date().toISOString(),
+        ...investmentData,
       }
       setInvestments([newInvestment, ...investments])
        toast({
