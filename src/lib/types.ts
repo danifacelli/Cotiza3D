@@ -19,6 +19,7 @@ export interface Settings {
   profitMargin: number; // percentage
   companyName: string;
   companyContact: string;
+  companyInstagram?: string;
   currencyDecimalPlaces: number;
   localCurrency: string; // e.g. 'UYU'
   peakEnergyCostKwh: number; // in USD

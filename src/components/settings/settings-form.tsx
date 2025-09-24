@@ -24,6 +24,7 @@ import { LATAM_CURRENCIES } from "@/lib/constants"
 export const SettingsSchema = z.object({
   companyName: z.string().min(1, "El nombre es requerido"),
   companyContact: z.string().email("Debe ser un email válido"),
+  companyInstagram: z.string().optional(),
   laborCostPerHour: z.coerce.number().min(0, "Debe ser un número positivo"),
   profitMargin: z.coerce.number().min(0, "Debe ser un número positivo"),
   currencyDecimalPlaces: z.coerce.number().min(0, "Puede ser entre 0 y 4").max(4),
@@ -48,6 +49,7 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
       ...defaultValues,
       companyName: defaultValues?.companyName ?? '',
       companyContact: defaultValues?.companyContact ?? '',
+      companyInstagram: defaultValues?.companyInstagram ?? '',
       laborCostPerHour: defaultValues?.laborCostPerHour ?? 0,
       profitMargin: defaultValues?.profitMargin ?? 0,
       currencyDecimalPlaces: defaultValues?.currencyDecimalPlaces ?? 2,
@@ -95,6 +97,19 @@ export function SettingsForm({ defaultValues, onSave }: SettingsFormProps) {
                       <FormLabel>Email de Contacto</FormLabel>
                       <FormControl>
                         <Input placeholder="contacto@empresa.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="companyInstagram"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Instagram (usuario)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="tu_usuario_de_instagram" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

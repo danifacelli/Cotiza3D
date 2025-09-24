@@ -5,6 +5,7 @@ import { nanoid } from 'nanoid';
 export const DEFAULT_SETTINGS: Settings = {
   companyName: '',
   companyContact: '',
+  companyInstagram: '',
   laborCostPerHour: 0,
   profitMargin: 0,
   currencyDecimalPlaces: 2,
