@@ -17,7 +17,7 @@ export default function EditQuotePage() {
     const [initialQuote, setInitialQuote] = useState<Quote | null>(null);
 
     useEffect(() => {
-        if (isHydrated && !initialQuote) { // Only run if hydrated and quote not set
+        if (isHydrated) {
             const foundQuote = quotes.find(q => q.id === id);
             if (foundQuote) {
                 
@@ -60,10 +60,16 @@ export default function EditQuotePage() {
                     updatedQuote.tariffType = 'off-peak';
                 }
 
-                setInitialQuote(updatedQuote);
+                setInitialQuote(current => {
+                    // Only update if the quote is actually different to prevent loops
+                    if (JSON.stringify(current) !== JSON.stringify(updatedQuote)) {
+                        return updatedQuote;
+                    }
+                    return current;
+                });
             }
         }
-    }, [id, quotes, isHydrated, initialQuote]);
+    }, [id, quotes, isHydrated]);
 
 
     if (!isHydrated) {
