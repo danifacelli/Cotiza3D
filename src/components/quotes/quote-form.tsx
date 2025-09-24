@@ -7,7 +7,7 @@ import * as z from "zod"
 import { useRouter } from "next/navigation"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
-import type { Quote, Machine, Material, Settings, ExtraCost, QuotePart } from "@/lib/types"
+import type { Quote, Machine, Material, Settings, ExtraCost } from "@/lib/types"
 import { DEFAULT_MACHINES, DEFAULT_MATERIALS, DEFAULT_SETTINGS, generateId } from "@/lib/defaults"
 import { Button } from "@/components/ui/button"
 import {
@@ -24,11 +24,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Trash2, PlusCircle, FileDown, Info, Instagram } from "lucide-react"
+import { PlusCircle, FileDown, Info, Instagram, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { calculateCosts, CostBreakdown } from "@/lib/calculations"
 import { CostSummary } from "@/components/quotes/cost-summary"
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { formatCurrency } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { getExchangeRate } from "@/services/exchange-rate-service"
@@ -37,6 +37,9 @@ import { QuotePartForm, PartFormValues } from "./quote-part-form"
 import { QuotePartsTable } from "./quote-parts-table"
 import { QuoteExtraCostForm, ExtraCostFormValues } from "./quote-extra-cost-form"
 import { QuoteExtraCostsTable } from "./quote-extra-costs-table"
+import jsPDF from "jspdf"
+import html2canvas from "html2canvas"
+import { QuotePDF } from "./quote-pdf"
 
 const PartSchema = z.object({
   id: z.string(),
@@ -94,6 +97,9 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(true);
   const [isPartFormOpen, setIsPartFormOpen] = useState(false);
   const [isExtraCostFormOpen, setIsExtraCostFormOpen] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const pdfRef = useRef<HTMLDivElement>(null);
+
 
   const form = useForm<QuoteFormValues>({
     resolver: zodResolver(QuoteSchema),
@@ -299,12 +305,59 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     router.push("/quotes")
   }
 
-  const handleGeneratePdf = () => {
-    toast({
-      title: "Funcionalidad no disponible",
-      description: "La generación de PDF se implementará en el futuro.",
-      variant: "destructive"
-    })
+  const handleGeneratePdf = async () => {
+    const quoteName = watchedValues.name || 'presupuesto';
+    if (!pdfRef.current || !calculationResult.breakdown) {
+      toast({
+        title: "Error",
+        description: "No hay datos suficientes para generar el PDF.",
+        variant: "destructive"
+      })
+      return;
+    }
+
+    setIsGeneratingPdf(true);
+
+    try {
+      const canvas = await html2canvas(pdfRef.current, {
+        scale: 2, 
+        useCORS: true,
+        backgroundColor: null, 
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'px',
+        format: 'a4'
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      const ratio = canvasWidth / canvasHeight;
+      const widthInPdf = pdfWidth - 40; // With padding
+      const heightInPdf = widthInPdf / ratio;
+      
+      let finalHeight = heightInPdf;
+      if (heightInPdf > pdfHeight - 40) {
+        finalHeight = pdfHeight - 40;
+      }
+
+      pdf.addImage(imgData, 'PNG', 20, 20, widthInPdf, finalHeight);
+      pdf.save(`presupuesto_${quoteName.replace(/ /g, '_')}.pdf`);
+
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Error al generar PDF",
+        description: "Hubo un problema al crear el archivo PDF.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   }
   
   const energyTariffDescription = useMemo(() => {
@@ -658,7 +711,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                             <CardTitle>Materiales Utilizados</CardTitle>
                              {form.formState.errors.parts && partFields.length === 0 && (
                                 <p className="text-sm font-medium text-destructive mt-2">
-                                    {form.formState.errors.parts.message}
+                                    Debes añadir al menos un material.
                                 </p>
                              )}
                         </div>
@@ -747,9 +800,9 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                      <Button type="submit" className="w-full">
                        {quote ? "Guardar Cambios" : "Guardar Presupuesto"}
                      </Button>
-                     <Button type="button" variant="secondary" className="w-full" onClick={handleGeneratePdf}>
-                       <FileDown className="mr-2" />
-                       Generar PDF
+                     <Button type="button" variant="secondary" className="w-full" onClick={handleGeneratePdf} disabled={isGeneratingPdf}>
+                       {isGeneratingPdf ? <Loader2 className="animate-spin mr-2" /> : <FileDown className="mr-2" />}
+                       {isGeneratingPdf ? "Generando..." : "Generar PDF"}
                      </Button>
                   </>
                 }
@@ -757,6 +810,24 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           </div>
         </div>
       </form>
+      
+      {/* Hidden element for PDF generation */}
+      <div className="fixed -z-50 -left-[10000px] top-0">
+          <div ref={pdfRef} className="w-[800px] bg-background text-foreground">
+             {calculationResult.breakdown && (
+                <QuotePDF
+                    quote={{...watchedValues, id: quote?.id, createdAt: quote?.createdAt} as Quote}
+                    parts={partsWithNames}
+                    settings={settings}
+                    machine={selectedMachine}
+                    breakdown={calculationResult.breakdown}
+                    exchangeRate={exchangeRate}
+                    isExchangeRateLoading={isExchangeRateLoading}
+                />
+             )}
+          </div>
+      </div>
+
     </Form>
   )
 }
