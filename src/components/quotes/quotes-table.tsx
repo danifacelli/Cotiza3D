@@ -94,9 +94,9 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
             quotes.map((quote) => {
               const currentStatus = statusConfig[quote.status] || statusConfig.draft;
               return (
-              <TableRow key={quote.id} className="cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
-                <TableCell className="font-medium">{quote.name}</TableCell>
-                <TableCell>{quote.clientName || "-"}</TableCell>
+              <TableRow key={quote.id}>
+                <TableCell className="font-medium cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{quote.name}</TableCell>
+                <TableCell className="cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{quote.clientName || "-"}</TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -118,14 +118,14 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </TableCell>
-                <TableCell className="text-right font-mono">{formatCurrency(quote.costUSD, "USD", decimalPlaces)}</TableCell>
-                <TableCell className="text-right font-mono">
+                <TableCell className="text-right font-mono cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{formatCurrency(quote.costUSD, "USD", decimalPlaces)}</TableCell>
+                <TableCell className="text-right font-mono cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
                     <div className="flex items-center justify-end gap-2">
                          {quote.isManualPrice && <Tag className="h-3 w-3 text-muted-foreground" title="Precio manual"/>}
                          {formatCurrency(quote.totalUSD, "USD", decimalPlaces)}
                     </div>
                 </TableCell>
-                <TableCell className="text-right font-mono">
+                <TableCell className="text-right font-mono cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
                     {formatCurrency(
                         quote.totalLocal, 
                         localCurrencyCode,
@@ -133,7 +133,7 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
                         'symbol'
                     )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
                   {format(new Date(quote.createdAt), "d MMM yyyy", { locale: es })}
                 </TableCell>
                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
@@ -142,10 +142,28 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
                         <Pencil className="h-4 w-4" />
                         <span className="sr-only">Editar</span>
                     </Button>
-                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onDuplicate(quote.id)}>
-                        <Copy className="h-4 w-4" />
-                        <span className="sr-only">Duplicar</span>
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                         <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Copy className="h-4 w-4" />
+                            <span className="sr-only">Duplicar</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                          <AlertDialogHeader>
+                          <AlertDialogTitle>¿Estás seguro que deseas duplicar?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                              Se creará una copia del presupuesto <strong>{quote.name}</strong> en estado "Borrador".
+                          </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction asChild>
+                              <Button onClick={() => onDuplicate(quote.id)}>Sí, duplicar</Button>
+                          </AlertDialogAction>
+                          </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
