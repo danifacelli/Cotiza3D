@@ -575,12 +575,14 @@ export function QuoteForm({ quote }: QuoteFormProps) {
             <Card>
                 <CardHeader>
                     <div className="flex items-center justify-between">
-                        <CardTitle>Materiales</CardTitle>
-                         {form.formState.errors.parts && partFields.length === 0 && (
-                            <p className="text-sm font-medium text-destructive">
-                                {form.formState.errors.parts.root?.message || form.formState.errors.parts.message}
-                            </p>
-                        )}
+                        <div>
+                            <CardTitle>Materiales</CardTitle>
+                            {form.formState.errors.parts && partFields.length === 0 && (
+                                <p className="text-sm font-medium text-destructive mt-2">
+                                    {form.formState.errors.parts.root?.message || form.formState.errors.parts.message}
+                                </p>
+                            )}
+                        </div>
                         <Dialog open={isPartFormOpen} onOpenChange={setIsPartFormOpen}>
                             <DialogTrigger asChild>
                                 <Button type="button" size="sm">
@@ -603,7 +605,9 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                         <Alert variant="default" className="mt-4">
                             <AlertDescription className="flex justify-between items-center text-sm">
                                 <span>Total Gramos: <strong>{materialSummary.totalGrams.toFixed(2)} g</strong></span>
-                                {calculationResult.breakdown && <span>Costo Total de Material: <strong>{formatCurrency(calculationResult.breakdown.materialCost, "USD", settings.currencyDecimalPlaces)}</strong></span>}
+                                {calculationResult.breakdown && (
+                                    <span>Costo Material: <strong>{formatCurrency(calculationResult.breakdown.materialCost, "USD", settings.currencyDecimalPlaces)}</strong></span>
+                                )}
                             </AlertDescription>
                         </Alert>
                     )}
