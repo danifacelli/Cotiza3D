@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import { useForm, useFieldArray } from "react-hook-form"
@@ -632,7 +631,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                   <CardTitle>Costos Adicionales y Notas</CardTitle>
                   <Dialog open={isExtraCostFormOpen} onOpenChange={setIsExtraCostFormOpen}>
                       <DialogTrigger asChild>
-                          <Button type="button" size="sm" variant="outline">
+                          <Button type="button" size="sm">
                               <PlusCircle className="mr-2" />
                               Añadir Costo
                           </Button>
@@ -693,3 +692,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
