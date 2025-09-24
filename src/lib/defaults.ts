@@ -19,6 +19,9 @@ export const DEFAULT_SETTINGS: Settings = {
 
 export const DEFAULT_MATERIALS: Material[] = [
   { id: 'pla_default_black', name: 'PLA Estándar Negro', type: 'PLA', cost: 20 },
+  { id: 'pla_default_white', name: 'PLA Estándar Blanco', type: 'PLA', cost: 20 },
+  { id: 'petg_default_clear', name: 'PETG Transparente', type: 'PETG', cost: 25 },
+  { id: 'abs_default_gray', name: 'ABS Gris', type: 'ABS', cost: 22 },
 ];
 
 export const DEFAULT_MACHINES: Machine[] = [
