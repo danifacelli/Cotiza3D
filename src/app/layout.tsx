@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'Cotiza3D por Daniel Facelli',
+  title: 'Cotiza3D - Calculadora de costos para impresión 3D',
   description: 'Calculadora de costos para impresión 3D',
 };
 

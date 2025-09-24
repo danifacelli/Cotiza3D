@@ -3,8 +3,8 @@ import type { Settings, Material, Machine, Quote } from './types';
 import { nanoid } from 'nanoid';
 
 export const DEFAULT_SETTINGS: Settings = {
-  companyName: 'Daniel Facelli',
-  companyContact: 'danielfacelli@ejemplo.com',
+  companyName: '',
+  companyContact: '',
   laborCostPerHour: 10,
   profitMargin: 50,
   currencyDecimalPlaces: 2,
