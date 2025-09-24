@@ -66,4 +66,5 @@ export interface Quote {
 
   extraCosts: ExtraCost[];
   notes: string;
+  deliveryDate?: string;
 }

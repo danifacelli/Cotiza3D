@@ -24,12 +24,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { PlusCircle, FileDown, Info, Instagram, Loader2 } from "lucide-react"
+import { PlusCircle, FileDown, Info, Instagram, Loader2, CalendarIcon } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { calculateCosts, CostBreakdown } from "@/lib/calculations"
 import { CostSummary } from "@/components/quotes/cost-summary"
 import { useState, useEffect, useMemo, useRef } from "react"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, cn } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { getExchangeRate } from "@/services/exchange-rate-service"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -40,6 +40,10 @@ import { QuoteExtraCostsTable } from "./quote-extra-costs-table"
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
 import { QuotePDF } from "./quote-pdf"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
 
 const PartSchema = z.object({
   id: z.string(),
@@ -53,6 +57,7 @@ const QuoteSchema = z.object({
   parts: z.array(PartSchema).min(1, "Debes añadir al menos un material."),
   machineId: z.string().min(1, "Debes seleccionar una máquina."),
   designCost: z.coerce.number().optional(),
+  deliveryDate: z.date().optional(),
   width: z.coerce.number().optional(),
   height: z.coerce.number().optional(),
   depth: z.coerce.number().optional(),
@@ -109,6 +114,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       parts: quote?.parts?.length ? quote.parts : [],
       machineId: quote?.machineId || "",
       designCost: quote?.designCost || 0,
+      deliveryDate: quote?.deliveryDate ? new Date(quote.deliveryDate) : undefined,
       width: quote?.width || 0,
       height: quote?.height || 0,
       depth: quote?.depth || 0,
@@ -144,6 +150,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         printSeconds,
         laborHours,
         laborMinutes,
+        deliveryDate: quote.deliveryDate ? new Date(quote.deliveryDate) : undefined,
         parts: quote.parts || [],
         extraCosts: quote.extraCosts || [],
         designCost: quote.designCost || 0,
@@ -161,6 +168,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           parts: [],
           machineId: machines.length > 0 ? machines[0].id : "",
           designCost: 0,
+          deliveryDate: undefined,
           width: 0,
           height: 0,
           depth: 0,
@@ -284,6 +292,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       parts: data.parts,
       machineId: data.machineId,
       designCost: data.designCost || 0,
+      deliveryDate: data.deliveryDate ? data.deliveryDate.toISOString() : undefined,
       width: data.width || 0,
       height: data.height || 0,
       depth: data.depth || 0,
@@ -701,6 +710,52 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                       )}
                     />
                   </div>
+                  <div className="space-y-2">
+                      <FormField
+                        control={form.control}
+                        name="deliveryDate"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>Fecha de Entrega</FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "w-full pl-3 text-left font-normal",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    {field.value ? (
+                                      format(field.value, "PPP", { locale: es })
+                                    ) : (
+                                      <span>Selecciona una fecha</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  disabled={(date) =>
+                                    date < new Date(new Date().setHours(0, 0, 0, 0))
+                                  }
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormDescription>
+                              Fecha estimada en que estará listo el trabajo.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                  </div>
               </CardContent>
             </Card>
             
@@ -816,7 +871,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
           <div ref={pdfRef} className="w-[800px] bg-white text-black">
              {calculationResult.breakdown && (
                 <QuotePDF
-                    quote={{...watchedValues, id: quote?.id, createdAt: quote?.createdAt} as Quote}
+                    quote={{...watchedValues, id: quote?.id, createdAt: quote?.createdAt, deliveryDate: watchedValues.deliveryDate?.toISOString()} as Quote}
                     parts={partsWithNames}
                     settings={settings}
                     machine={selectedMachine}
@@ -831,5 +886,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    

@@ -98,16 +98,18 @@ export const QuotePDF = ({ quote, parts, settings, machine, breakdown, exchangeR
                                     <td className="p-2 text-right font-mono">{`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} hs`}</td>
                                 </tr>
                             )}
-                             <tr className="border-b">
-                                <td className="p-2 font-medium">Material Utilizado</td>
-                                <td></td>
-                             </tr>
                              {parts.map(part => (
                                  <tr key={part.id} className="border-b">
                                     <td className="p-2 pl-6 text-muted-foreground">{part.name}</td>
                                     <td className="p-2 text-right font-mono">{part.materialGrams} g</td>
                                  </tr>
                              ))}
+                             {quote.deliveryDate && (
+                                <tr className="border-b">
+                                    <td className="p-2">Fecha de Entrega Estimada</td>
+                                    <td className="p-2 text-right font-mono">{format(new Date(quote.deliveryDate), "dd/MM/yyyy")}</td>
+                                </tr>
+                             )}
                         </tbody>
                     </table>
                  </div>
