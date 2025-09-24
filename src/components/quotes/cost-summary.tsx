@@ -152,6 +152,11 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
                 value={formatCurrency(breakdown.totalExtraCosts, "USD", decimalPlaces)}
             />
         )}
+        
+        <SummaryRow
+          label={`Ganancia (${isManualPrice ? 'Ajustada' : `${settings.profitMargin}%`})`}
+          value={formatCurrency(breakdown.profitAmount, "USD", decimalPlaces)}
+        />
 
         <SummaryRow
           label="Subtotal General"
@@ -163,11 +168,6 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
           className="font-semibold"
         />
         
-        <SummaryRow
-          label={`Ganancia (${isManualPrice ? 'Ajustada' : `${settings.profitMargin}%`})`}
-          value={formatCurrency(breakdown.profitAmount, "USD", decimalPlaces)}
-        />
-
         <Separator />
 
         <div className="pt-4 space-y-4">
