@@ -35,9 +35,7 @@ export const QuotePDF = ({ quote, parts, settings, machine, breakdown, exchangeR
         return LATAM_CURRENCIES.find(c => c.value === settings.localCurrency);
     }, [settings.localCurrency]);
     
-    const totalPrintHours = quote.printHours || 0;
-    const hours = Math.floor(totalPrintHours);
-    const minutes = Math.round((totalPrintHours - hours) * 60);
+    const localCurrencyDecimalPlaces = localCurrencyInfo?.value === 'CLP' || localCurrencyInfo?.value === 'PYG' ? 0 : settings.currencyDecimalPlaces;
 
     return (
         <div className="p-8 font-sans">
@@ -117,7 +115,7 @@ export const QuotePDF = ({ quote, parts, settings, machine, breakdown, exchangeR
                     <PDFRow label="TOTAL (USD)" value={formatCurrency(breakdown.total, 'USD', settings.currencyDecimalPlaces)} isTotal={true} className="bg-muted/50" />
                     {exchangeRate && localCurrencyInfo && (
                         <div className="text-right px-4 py-4">
-                             <p className="text-2xl font-bold">{formatCurrency(breakdown.total * exchangeRate, localCurrencyInfo.value, localCurrencyInfo.value === 'CLP' || localCurrencyInfo.value === 'PYG' ? 0 : settings.currencyDecimalPlaces, 'symbol', localCurrencyInfo.locale)}</p>
+                             <p className="text-2xl font-bold">{formatCurrency(breakdown.total * exchangeRate, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale)}</p>
                             <p className="text-xs text-muted-foreground mt-1">
                                 Tasa de cambio (aprox): 1 USD ≈ {exchangeRate.toFixed(2)} {localCurrencyInfo.value}
                             </p>

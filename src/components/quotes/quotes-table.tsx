@@ -45,7 +45,6 @@ export type QuoteWithTotals = Quote & {
 interface QuotesTableProps {
   quotes: QuoteWithTotals[]
   onDelete: (id: string) => void
-  onDuplicate: (id: string) => void
   onUpdateStatus: (id: string, status: Quote['status']) => void;
   settings: Settings | null;
   isHydrated: boolean
@@ -57,7 +56,7 @@ const statusConfig = {
     canceled: { label: 'Cancelado', icon: XCircle, badgeClass: "bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30" }
 }
 
-export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, settings, isHydrated }: QuotesTableProps) {
+export function QuotesTable({ quotes, onDelete, onUpdateStatus, settings, isHydrated }: QuotesTableProps) {
   const router = useRouter()
 
   if (!isHydrated) {

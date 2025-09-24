@@ -16,7 +16,6 @@ interface CostSummaryProps {
   machine: Machine | undefined
   quoteInput: Partial<Quote>
   actions?: React.ReactNode
-  logs?: string[]
   exchangeRate?: number | null
   isExchangeRateLoading?: boolean
 }
@@ -31,7 +30,7 @@ const SummaryRow = ({ label, value, className = "", description }: { label: stri
   </div>
 )
 
-export function CostSummary({ breakdown, settings, machine, quoteInput, actions, logs, exchangeRate, isExchangeRateLoading }: CostSummaryProps) {
+export function CostSummary({ breakdown, settings, machine, quoteInput, actions, exchangeRate, isExchangeRateLoading }: CostSummaryProps) {
   
   const localCurrencyInfo = useMemo(() => {
     return LATAM_CURRENCIES.find(c => c.value === settings.localCurrency);
@@ -84,6 +83,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
     return `(${powerInKw.toFixed(2)}kW) ${details.join(' + ')}`;
   }
 
+  const localCurrencyDecimalPlaces = localCurrencyInfo?.value === 'CLP' || localCurrencyInfo?.value === 'PYG' ? 0 : decimalPlaces;
 
   return (
     <Card>
@@ -119,7 +119,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
               <span>{formatCurrency(breakdown.subtotal, "USD", decimalPlaces)}</span>
               {exchangeRate && localCurrencyInfo && (
                 <span className="text-xs text-muted-foreground">
-                  {formatCurrency(breakdown.subtotal * exchangeRate, localCurrencyInfo.value, 0, 'symbol', localCurrencyInfo.locale)}
+                  {formatCurrency(breakdown.subtotal * exchangeRate, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale)}
                 </span>
               )}
             </div>
@@ -161,7 +161,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
             {isExchangeRateLoading && <p className="text-xs text-muted-foreground">Obteniendo cambio...</p>}
             {exchangeRate && localCurrencyInfo && (
                 <>
-                    <p className="text-lg font-bold">{formatCurrency(breakdown.total * exchangeRate, localCurrencyInfo.value, 0, 'symbol', localCurrencyInfo.locale)}</p>
+                    <p className="text-lg font-bold">{formatCurrency(breakdown.total * exchangeRate, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale)}</p>
                     <p className="text-xs text-muted-foreground">
                         Tasa de cambio: 1 USD ≈ {exchangeRate.toFixed(2)} {localCurrencyInfo.value}
                     </p>
