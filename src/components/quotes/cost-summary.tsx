@@ -56,6 +56,8 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
   }
   
   const decimalPlaces = settings.currencyDecimalPlaces;
+  const highPrecisionDecimalPlaces = Math.max(4, decimalPlaces);
+
 
   const getEnergyCostDetails = () => {
     if (!machine || !quoteInput.printHours || !settings) return "";
@@ -97,12 +99,12 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
         />
         <SummaryRow
           label="Costo de Energía"
-          value={formatCurrency(breakdown.energyCost, "USD", decimalPlaces)}
+          value={formatCurrency(breakdown.energyCost, "USD", highPrecisionDecimalPlaces)}
           description={getEnergyCostDetails()}
         />
         <SummaryRow
           label="Depreciación Máquina"
-          value={formatCurrency(breakdown.machineDepreciationCost, "USD", decimalPlaces)}
+          value={formatCurrency(breakdown.machineDepreciationCost, "USD", highPrecisionDecimalPlaces)}
         />
         <SummaryRow
           label="Mano de Obra"
