@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { useForm, useFieldArray } from "react-hook-form"
@@ -28,7 +29,7 @@ import { Trash2, PlusCircle, FileDown, Info } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { calculateCosts, CostBreakdown } from "@/lib/calculations"
 import { CostSummary } from "@/components/quotes/cost-summary"
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { formatCurrency } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { getExchangeRate } from "@/services/exchange-rate-service"
@@ -535,64 +536,74 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                     <CardTitle>Materiales</CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-6">
-                     {partFields.map((field, index) => (
-                        <div key={field.id} className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-4 items-start p-4 border rounded-md relative">
-                             <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="absolute top-2 right-2 h-7 w-7 text-destructive hover:bg-destructive/10"
-                                onClick={() => removePart(index)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
+                     {partFields.map((field, index) => {
+                        const watchedPart = watchedValues.parts?.[index];
+                        const material = materials.find(m => m.id === watchedPart?.materialId);
+                        const grams = Number(watchedPart?.materialGrams) || 0;
+                        const cost = material && grams > 0 ? (grams / 1000) * material.cost : 0;
 
-                            <FormField
-                            control={form.control}
-                            name={`parts.${index}.materialId`}
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Material</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
+                        return (
+                            <div key={field.id} className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-4 items-start p-4 border rounded-md relative">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute top-2 right-2 h-7 w-7 text-destructive hover:bg-destructive/10"
+                                    onClick={() => removePart(index)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+
+                                <FormField
+                                control={form.control}
+                                name={`parts.${index}.materialId`}
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Material</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecciona un material" />
+                                        </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                        {materials.map((m) => (
+                                            <SelectItem key={m.id} value={m.id}>
+                                            {m.name} ({m.type})
+                                            </SelectItem>
+                                        ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormDescription>
+                                        {cost > 0 ? `Costo: ${formatCurrency(cost, 'USD', settings.currencyDecimalPlaces)}` : ''}
+                                    </FormDescription>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                                />
+                                <FormField
+                                control={form.control}
+                                name={`parts.${index}.materialGrams`}
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Gramos</FormLabel>
                                     <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecciona un material" />
-                                    </SelectTrigger>
+                                        <Input type="number" step="0.1" placeholder="Ej: 150" {...field} className="w-28" onFocus={(e) => e.target.select()} />
                                     </FormControl>
-                                    <SelectContent>
-                                    {materials.map((m) => (
-                                        <SelectItem key={m.id} value={m.id}>
-                                        {m.name} ({m.type})
-                                        </SelectItem>
-                                    ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                            />
-                            <FormField
-                            control={form.control}
-                            name={`parts.${index}.materialGrams`}
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Gramos</FormLabel>
-                                <FormControl>
-                                    <Input type="number" step="0.1" placeholder="Ej: 150" {...field} className="w-28" onFocus={(e) => e.target.select()} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                            />
-                        </div>
-                    ))}
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                                />
+                            </div>
+                        )
+                    })}
                     <FormMessage>{form.formState.errors.parts?.root?.message}</FormMessage>
 
                     {materialSummary.totalGrams > 0 && (
                         <Alert variant="default" className="mt-4">
                             <AlertDescription className="flex justify-between items-center text-sm">
                                 <span>Total Gramos: <strong>{materialSummary.totalGrams.toFixed(2)} g</strong></span>
-                                {calculationResult.breakdown && <span>Costo de Material: <strong>{formatCurrency(calculationResult.breakdown.materialCost, "USD", settings.currencyDecimalPlaces)}</strong></span>}
+                                {calculationResult.breakdown && <span>Costo Total de Material: <strong>{formatCurrency(calculationResult.breakdown.materialCost, "USD", settings.currencyDecimalPlaces)}</strong></span>}
                             </AlertDescription>
                         </Alert>
                     )}
@@ -695,3 +706,5 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
+
+    
