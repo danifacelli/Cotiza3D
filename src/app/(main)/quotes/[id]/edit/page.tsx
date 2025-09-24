@@ -8,21 +8,21 @@ import { QuoteForm } from "@/components/quotes/quote-form";
 import { useParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 export default function EditQuotePage() {
     const params = useParams();
     const { id } = params;
     const [quotes, _, isHydrated] = useLocalStorage<Quote[]>(LOCAL_STORAGE_KEYS.QUOTES, []);
-    const [quote, setQuote] = useState<Quote | undefined>(undefined);
+    const [initialQuote, setInitialQuote] = useState<Quote | null>(null);
 
     useEffect(() => {
         if (isHydrated) {
             const foundQuote = quotes.find(q => q.id === id);
-            
             if (foundQuote) {
+                // Create a stable, memoized version of the quote object.
                 const updatedQuote: Quote = { ...foundQuote };
-                
+                 
                 // Backwards compatibility for old quotes without 'parts'
                 if (!updatedQuote.parts) {
                     updatedQuote.parts = [];
@@ -56,7 +56,6 @@ export default function EditQuotePage() {
                     })
                 }
 
-
                 // Handle other legacy fields
                 if (updatedQuote.laborHours === undefined) {
                     updatedQuote.laborHours = updatedQuote.printHours;
@@ -64,11 +63,16 @@ export default function EditQuotePage() {
                 if (updatedQuote.tariffType === undefined) {
                     updatedQuote.tariffType = 'off-peak';
                 }
-                
-                setQuote(updatedQuote);
+
+                // Only update state if the derived quote is different
+                if (JSON.stringify(initialQuote) !== JSON.stringify(updatedQuote)) {
+                    setInitialQuote(updatedQuote);
+                }
+            } else {
+                setInitialQuote(null);
             }
         }
-    }, [id, quotes, isHydrated]);
+    }, [id, quotes, isHydrated, initialQuote]);
 
 
     if (!isHydrated) {
@@ -82,9 +86,9 @@ export default function EditQuotePage() {
         )
     }
 
-    if (!quote) {
+    if (isHydrated && !initialQuote) {
         return <div className="text-center py-10">Presupuesto no encontrado.</div>;
     }
 
-    return <QuoteForm quote={quote} />;
+    return initialQuote ? <QuoteForm quote={initialQuote} /> : null;
 }
