@@ -34,6 +34,10 @@ export const QuotePDF = ({ quote, parts, settings, machine, breakdown, exchangeR
     const localCurrencyInfo = useMemo(() => {
         return LATAM_CURRENCIES.find(c => c.value === settings.localCurrency);
     }, [settings.localCurrency]);
+    
+    const totalPrintHours = quote.printHours || 0;
+    const hours = Math.floor(totalPrintHours);
+    const minutes = Math.round((totalPrintHours - hours) * 60);
 
     return (
         <div className="p-8 font-sans">
@@ -72,18 +76,40 @@ export const QuotePDF = ({ quote, parts, settings, machine, breakdown, exchangeR
 
             {/* Details Table */}
             <section>
-                 <h3 className="text-sm font-semibold text-muted-foreground mb-2 px-4">DETALLES DEL PROYECTO</h3>
+                 <h3 className="text-sm font-semibold text-muted-foreground mb-2 px-1">DETALLES DEL PROYECTO</h3>
                  <div className="border rounded-lg overflow-hidden">
-                    <div className="grid grid-cols-2 bg-muted/50 font-semibold text-sm">
-                        <div className="p-2 border-b">Descripción</div>
-                        <div className="p-2 border-b text-right">Valor</div>
-                    </div>
-                    {(quote.width || quote.height || quote.depth) ? (
-                        <div className="grid grid-cols-2 text-sm">
-                            <div className="p-2 border-b">Dimensiones (Ancho x Alto x Largo)</div>
-                            <div className="p-2 border-b text-right font-mono">{quote.width || 0} x {quote.height || 0} x {quote.depth || 0} mm</div>
-                        </div>
-                    ) : null}
+                    <table className="w-full text-sm">
+                        <thead className="bg-muted/50 font-semibold">
+                            <tr>
+                                <th className="p-2 text-left w-2/3">Descripción</th>
+                                <th className="p-2 text-right">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {(quote.width || quote.height || quote.depth) ? (
+                                <tr className="border-b">
+                                    <td className="p-2">Dimensiones (Ancho x Alto x Largo)</td>
+                                    <td className="p-2 text-right font-mono">{quote.width || 0} x {quote.height || 0} x {quote.depth || 0} mm</td>
+                                </tr>
+                            ) : null}
+                            {totalPrintHours > 0 && (
+                                <tr className="border-b">
+                                    <td className="p-2">Tiempo de Impresión</td>
+                                    <td className="p-2 text-right font-mono">{`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} hs`}</td>
+                                </tr>
+                            )}
+                             <tr className="border-b">
+                                <td className="p-2 font-medium">Material Utilizado</td>
+                                <td></td>
+                             </tr>
+                             {parts.map(part => (
+                                 <tr key={part.id} className="border-b">
+                                    <td className="p-2 pl-6 text-muted-foreground">{part.name}</td>
+                                    <td className="p-2 text-right font-mono">{part.materialGrams} g</td>
+                                 </tr>
+                             ))}
+                        </tbody>
+                    </table>
                  </div>
             </section>
 
