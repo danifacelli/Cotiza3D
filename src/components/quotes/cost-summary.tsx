@@ -22,13 +22,13 @@ interface CostSummaryProps {
   isExchangeRateLoading?: boolean
 }
 
-const SummaryRow = ({ label, value, className = "", description }: { label: string, value: string, className?: string, description?: string }) => (
+const SummaryRow = ({ label, value, className = "", description }: { label: string, value: React.ReactNode, className?: string, description?: string }) => (
   <div className={`flex justify-between items-start text-sm ${className}`}>
     <div className="text-muted-foreground">
         <p>{label}</p>
         {description && <p className="text-xs text-muted-foreground/80">{description}</p>}
     </div>
-    <span className="font-medium text-right">{value}</span>
+    <div className="font-medium text-right">{value}</div>
   </div>
 )
 
@@ -115,7 +115,16 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
         
         <SummaryRow
           label="Subtotal Producción"
-          value={formatCurrency(breakdown.subtotal, "USD", decimalPlaces)}
+          value={
+            <div className="flex flex-col">
+              <span>{formatCurrency(breakdown.subtotal, "USD", decimalPlaces)}</span>
+              {exchangeRate && localCurrencyInfo && (
+                <span className="text-xs text-muted-foreground">
+                  {formatCurrency(breakdown.subtotal * exchangeRate, localCurrencyInfo.value, 0, 'symbol', localCurrencyInfo.locale)}
+                </span>
+              )}
+            </div>
+          }
           className="font-semibold"
         />
         
