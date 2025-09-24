@@ -32,35 +32,6 @@ type StatusFilter = "all" | Quote["status"];
 
 const ITEMS_PER_PAGE = 10;
 
-function QuotesSummary({ quotes, settings, exchangeRate }: { quotes: QuoteWithTotals[], settings: Settings, exchangeRate: number | null }) {
-    const totals = useMemo(() => {
-        return quotes.reduce((acc, quote) => {
-            acc.totalUSD += quote.totalUSD;
-            acc.totalLocal += quote.totalLocal;
-            return acc;
-        }, { totalUSD: 0, totalLocal: 0 });
-    }, [quotes]);
-
-    return (
-        <Card>
-            <CardContent className="space-y-2 pt-6">
-                 <div className="flex justify-between font-semibold text-sm">
-                    <span>Total General (USD):</span>
-                    <span>{formatCurrency(totals.totalUSD, 'USD', settings.currencyDecimalPlaces)}</span>
-                </div>
-                 <div className="flex justify-between font-semibold text-sm">
-                    <span>Total General ({settings.localCurrency}):</span>
-                    <span>{formatCurrency(totals.totalLocal, settings.localCurrency, settings.localCurrency === 'CLP' || settings.localCurrency === 'PYG' ? 0 : settings.currencyDecimalPlaces, 'symbol')}</span>
-                </div>
-                <p className="text-xs text-muted-foreground pt-2">
-                    {`Calculado sobre ${quotes.length} presupuesto(s) del filtro actual.`}
-                    {exchangeRate && ` Tasa de cambio: 1 USD ≈ ${exchangeRate.toFixed(2)} ${settings.localCurrency}`}
-                </p>
-            </CardContent>
-        </Card>
-    );
-}
-
 export default function QuotesPage() {
   const [quotes, setQuotes, isQuotesHydrated] = useLocalStorage<Quote[]>(
     LOCAL_STORAGE_KEYS.QUOTES,
@@ -124,6 +95,15 @@ export default function QuotesPage() {
 
   const totalPages = Math.ceil(filteredQuotes.length / ITEMS_PER_PAGE);
   
+  const generalTotals = useMemo(() => {
+    return filteredQuotes.reduce((acc, quote) => {
+        acc.totalUSD += quote.totalUSD;
+        acc.totalLocal += quote.totalLocal;
+        return acc;
+    }, { totalUSD: 0, totalLocal: 0 });
+  }, [filteredQuotes]);
+
+
   useEffect(() => {
     setCurrentPage(1);
   }, [statusFilter]);
@@ -260,15 +240,23 @@ export default function QuotesPage() {
                 settings={settings}
                 isHydrated={isHydrated}
               />
-              <div className="grid md:grid-cols-2 items-start gap-4">
-                <div className="w-full">
-                    <QuotesSummary quotes={filteredQuotes} settings={settings} exchangeRate={exchangeRate} />
+              <div className="flex items-center justify-between pt-2">
+                <div className="text-sm text-muted-foreground space-x-4">
+                    <span>
+                        <span className="font-semibold">{filteredQuotes.length}</span> {`presupuesto(s)`}
+                    </span>
+                    <span>
+                       Total: <span className="font-semibold">{formatCurrency(generalTotals.totalUSD, "USD", settings.currencyDecimalPlaces)}</span>
+                       {` / `}
+                       <span className="font-semibold">{formatCurrency(generalTotals.totalLocal, settings.localCurrency, settings.localCurrency === 'CLP' || settings.localCurrency === 'PYG' ? 0 : settings.currencyDecimalPlaces, 'symbol')}</span>
+                    </span>
                 </div>
-                <div className="flex items-center justify-end gap-2 self-end pb-1">
+                <div className="flex items-center gap-2 self-end">
                     <Button
                         variant="outline"
                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                         disabled={currentPage === 1}
+                        size="sm"
                     >
                         Anterior
                     </Button>
@@ -279,6 +267,7 @@ export default function QuotesPage() {
                         variant="outline"
                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                         disabled={currentPage === totalPages}
+                        size="sm"
                     >
                         Siguiente
                     </Button>
