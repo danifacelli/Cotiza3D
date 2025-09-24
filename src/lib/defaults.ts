@@ -5,29 +5,23 @@ import { nanoid } from 'nanoid';
 export const DEFAULT_SETTINGS: Settings = {
   companyName: '',
   companyContact: '',
-  laborCostPerHour: 10,
-  profitMargin: 50,
+  laborCostPerHour: 0,
+  profitMargin: 0,
   currencyDecimalPlaces: 2,
   localCurrency: 'UYU',
-  peakEnergyCostKwh: 0.351,
-  offPeakEnergyCostKwh: 0.139,
-  tariffSource: 'UTE, Enero 2024',
+  peakEnergyCostKwh: 0,
+  offPeakEnergyCostKwh: 0,
+  tariffSource: '',
   tariffLastUpdated: new Date().toISOString().split('T')[0],
   peakTariffStartTime: '17:00',
   peakTariffEndTime: '23:00',
 };
 
 export const DEFAULT_MATERIALS: Material[] = [
-  { id: 'pla_default_black', name: 'PLA Estándar Negro', type: 'PLA', cost: 20 },
-  { id: 'pla_default_white', name: 'PLA Estándar Blanco', type: 'PLA', cost: 20 },
-  { id: 'petg_default_clear', name: 'PETG Transparente', type: 'PETG', cost: 25 },
-  { id: 'abs_default_gray', name: 'ABS Gris', type: 'ABS', cost: 22 },
+  { id: 'pla_default', name: 'PLA Estándar', type: 'PLA', cost: 0 },
 ];
 
-export const DEFAULT_MACHINES: Machine[] = [
-  { id: 'ender3_default', name: 'Creality Ender 3', costPerHour: 0.5, powerConsumption: 150 },
-  { id: 'prusa_mk3', name: 'Prusa i3 MK3S+', costPerHour: 0.8, powerConsumption: 200 },
-];
+export const DEFAULT_MACHINES: Machine[] = [];
 
 export const DEFAULT_QUOTES: Quote[] = [];
 
