@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { Investment } from "@/lib/types"
+import type { Investment, Settings } from "@/lib/types"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,9 +32,11 @@ interface InvestmentsTableProps {
   onEdit: (investment: Investment) => void
   onDelete: (id: string) => void
   isHydrated: boolean
+  settings: Settings | null
+  exchangeRate: number | null
 }
 
-export function InvestmentsTable({ investments, onEdit, onDelete, isHydrated }: InvestmentsTableProps) {
+export function InvestmentsTable({ investments, onEdit, onDelete, isHydrated, settings, exchangeRate }: InvestmentsTableProps) {
   
   if (!isHydrated) {
     return (
@@ -46,6 +48,12 @@ export function InvestmentsTable({ investments, onEdit, onDelete, isHydrated }: 
     )
   }
 
+  const formatLocal = (amount: number) => {
+    if (!exchangeRate || !settings?.localCurrency) return null;
+    const decimalPlaces = settings.localCurrency === 'CLP' || settings.localCurrency === 'PYG' ? 0 : settings.currencyDecimalPlaces;
+    return formatCurrency(amount * exchangeRate, settings.localCurrency, decimalPlaces, 'symbol');
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -53,7 +61,7 @@ export function InvestmentsTable({ investments, onEdit, onDelete, isHydrated }: 
           <TableRow>
             <TableHead>Nombre</TableHead>
             <TableHead>Fecha</TableHead>
-            <TableHead className="text-right">Monto (USD)</TableHead>
+            <TableHead className="text-right">Monto</TableHead>
             <TableHead className="w-[50px]"></TableHead>
           </TableRow>
         </TableHeader>
@@ -63,7 +71,10 @@ export function InvestmentsTable({ investments, onEdit, onDelete, isHydrated }: 
               <TableRow key={investment.id}>
                 <TableCell className="font-medium">{investment.name}</TableCell>
                 <TableCell>{format(new Date(investment.createdAt), "d MMM yyyy", { locale: es })}</TableCell>
-                <TableCell className="text-right font-mono">{formatCurrency(investment.amount, 'USD', 2)}</TableCell>
+                <TableCell className="text-right font-mono">
+                    <div>{formatCurrency(investment.amount, 'USD', settings?.currencyDecimalPlaces ?? 2)}</div>
+                    <div className="text-xs text-muted-foreground">{formatLocal(investment.amount)}</div>
+                </TableCell>
                 <TableCell>
                   <AlertDialog>
                     <DropdownMenu>

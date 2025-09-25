@@ -94,12 +94,6 @@ export default function Dashboard() {
       icon: SettingsIcon
     },
     {
-      label: "Registra tus inversiones",
-      href: "/investments",
-      isComplete: (investments?.length ?? 0) > 0,
-      icon: Banknote,
-    },
-    {
       label: "Añade tus máquinas",
       href: "/machines",
       isComplete: (dashboardData?.machineCount ?? 0) > 0,
@@ -110,6 +104,12 @@ export default function Dashboard() {
       href: "/materials",
       isComplete: (dashboardData?.materialCount ?? 0) > 0,
       icon: Layers
+    },
+     {
+      label: "Registra tus inversiones",
+      href: "/investments",
+      isComplete: (investments?.length ?? 0) > 0,
+      icon: Banknote,
     },
     {
       label: "Crea tu primer presupuesto",

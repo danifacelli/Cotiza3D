@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
 import { DEFAULT_INVESTMENTS, generateId, DEFAULT_QUOTES, DEFAULT_MATERIALS, DEFAULT_MACHINES, DEFAULT_SETTINGS } from "@/lib/defaults"
@@ -34,6 +34,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { formatCurrency } from "@/lib/utils"
 import { calculateCosts } from "@/lib/calculations"
 import { Progress } from "@/components/ui/progress"
+import { getExchangeRate } from "@/services/exchange-rate-service"
 
 type InvestmentFormData = {
     name: string;
@@ -53,9 +54,30 @@ export default function InvestmentsPage() {
 
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [selectedInvestment, setSelectedInvestment] = useState<Investment | null>(null)
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
+  const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(true);
   const { toast } = useToast()
 
-  const isHydrated = isInvestmentsHydrated && isQuotesHydrated && isMaterialsHydrated && isMachinesHydrated && isSettingsHydrated;
+  useEffect(() => {
+    async function fetchRate() {
+      if (!settings?.localCurrency) return;
+      setIsExchangeRateLoading(true);
+      try {
+        const rate = await getExchangeRate(settings.localCurrency);
+        setExchangeRate(rate);
+      } catch (error) {
+        console.error(error);
+        setExchangeRate(null);
+      } finally {
+        setIsExchangeRateLoading(false);
+      }
+    }
+    if (isSettingsHydrated) {
+        fetchRate();
+    }
+  }, [settings?.localCurrency, isSettingsHydrated]);
+
+  const isHydrated = isInvestmentsHydrated && isQuotesHydrated && isMaterialsHydrated && isMachinesHydrated && isSettingsHydrated && !isExchangeRateLoading;
 
   const investmentData = useMemo(() => {
     if (!isHydrated) return { totalInvested: 0, totalProfit: 0, amountToRecover: 0, recoveryPercentage: 0 };
@@ -136,6 +158,12 @@ export default function InvestmentsPage() {
     setSelectedInvestment(null)
   }
 
+  const formatLocal = (amount: number) => {
+    if (!exchangeRate || !settings?.localCurrency) return null;
+    const decimalPlaces = settings.localCurrency === 'CLP' || settings.localCurrency === 'PYG' ? 0 : settings.currencyDecimalPlaces;
+    return formatCurrency(amount * exchangeRate, settings.localCurrency, decimalPlaces, 'symbol');
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -206,20 +234,23 @@ export default function InvestmentsPage() {
                                 <TrendingDown className="h-4 w-4 text-red-500"/>
                                 <span>Total Invertido</span>
                             </div>
-                            <p className="text-2xl font-bold">{formatCurrency(investmentData.totalInvested, "USD", 2)}</p>
+                            <p className="text-2xl font-bold">{formatCurrency(investmentData.totalInvested, "USD", settings.currencyDecimalPlaces)}</p>
+                            <p className="text-sm text-muted-foreground">{formatLocal(investmentData.totalInvested)}</p>
                         </div>
                         <div className="p-4 bg-muted/50 rounded-lg">
                             <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-muted-foreground">
                                <TrendingUp className="h-4 w-4 text-green-500"/>
                                <span>Ganancia Neta</span>
                             </div>
-                            <p className="text-2xl font-bold">{formatCurrency(investmentData.totalProfit, "USD", 2)}</p>
+                            <p className="text-2xl font-bold">{formatCurrency(investmentData.totalProfit, "USD", settings.currencyDecimalPlaces)}</p>
+                            <p className="text-sm text-muted-foreground">{formatLocal(investmentData.totalProfit)}</p>
                         </div>
                         <div className="p-4 bg-muted/50 rounded-lg">
                              <div className="text-sm text-muted-foreground">
                                 {investmentData.recoveryPercentage >= 100 ? "¡Inversión Recuperada!" : "Falta por recuperar"}
                             </div>
-                            <p className="text-2xl font-bold">{formatCurrency(investmentData.amountToRecover, "USD", 2)}</p>
+                            <p className="text-2xl font-bold">{formatCurrency(investmentData.amountToRecover, "USD", settings.currencyDecimalPlaces)}</p>
+                            <p className="text-sm text-muted-foreground">{formatLocal(investmentData.amountToRecover)}</p>
                         </div>
                     </div>
                     {investmentData.totalInvested > 0 && (
@@ -234,7 +265,7 @@ export default function InvestmentsPage() {
                 </>
             ) : (
                 <div className="space-y-4">
-                    <div className="h-16 w-full bg-muted animate-pulse rounded-md" />
+                    <div className="h-24 w-full bg-muted animate-pulse rounded-md" />
                     <div className="h-4 w-1/2 bg-muted animate-pulse rounded-md" />
                 </div>
             )}
@@ -245,6 +276,8 @@ export default function InvestmentsPage() {
         investments={investments}
         onEdit={handleEditInvestment}
         onDelete={handleDeleteInvestment}
+        settings={settings}
+        exchangeRate={exchangeRate}
         isHydrated={isHydrated}
       />
     </div>
