@@ -110,25 +110,33 @@ export function FuturePurchasesTable({ purchases, onEdit, onDelete, onDuplicate,
                         {purchase.status === 'pending' && (
                             <>
                                 <DropdownMenuItem onClick={() => onMarkAsPurchased(purchase)}>
-                                    <ShoppingCart className="mr-2 h-4 w-4" />
-                                    <span>Marcar como Comprado</span>
+                                    <div className="flex items-center">
+                                      <ShoppingCart className="mr-2 h-4 w-4" />
+                                      <span>Marcar como Comprado</span>
+                                    </div>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                             </>
                         )}
                         <DropdownMenuItem onClick={() => onEdit(purchase)}>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          <span>Editar</span>
+                          <div className="flex items-center">
+                            <Pencil className="mr-2 h-4 w-4" />
+                            <span>Editar</span>
+                          </div>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onDuplicate(purchase.id)}>
-                            <Copy className="mr-2 h-4 w-4" />
-                            <span>Duplicar</span>
+                            <div className="flex items-center">
+                                <Copy className="mr-2 h-4 w-4" />
+                                <span>Duplicar</span>
+                            </div>
                         </DropdownMenuItem>
                          <DropdownMenuSeparator />
                         <AlertDialogTrigger asChild>
                           <DropdownMenuItem className="text-destructive focus:text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Eliminar</span>
+                            <div className="flex items-center">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                <span>Eliminar</span>
+                            </div>
                           </DropdownMenuItem>
                         </AlertDialogTrigger>
                       </DropdownMenuContent>
