@@ -8,6 +8,8 @@ import type { Quote, Material, Machine, Settings, Investment } from "@/lib/types
 import { DEFAULT_QUOTES, DEFAULT_MATERIALS, DEFAULT_MACHINES, DEFAULT_SETTINGS, DEFAULT_INVESTMENTS } from "@/lib/defaults"
 import { calculateCosts } from "@/lib/calculations"
 import { formatCurrency, cn } from "@/lib/utils"
+import { getExchangeRate } from "@/services/exchange-rate-service"
+import { useState, useEffect } from "react"
 
 import {
   FileText,
@@ -41,7 +43,29 @@ export default function Dashboard() {
   const [settings, ____, isSettingsHydrated] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
   const [investments, _____, isInvestmentsHydrated] = useLocalStorage<Investment[]>(LOCAL_STORAGE_KEYS.INVESTMENTS, DEFAULT_INVESTMENTS);
 
-  const isHydrated = isQuotesHydrated && isMaterialsHydrated && isMachinesHydrated && isSettingsHydrated && isInvestmentsHydrated;
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
+  const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchRate() {
+      if (!settings?.localCurrency) return;
+      setIsExchangeRateLoading(true);
+      try {
+        const rate = await getExchangeRate(settings.localCurrency);
+        setExchangeRate(rate);
+      } catch (error) {
+        console.error(error);
+        setExchangeRate(null);
+      } finally {
+        setIsExchangeRateLoading(false);
+      }
+    }
+    if (isSettingsHydrated) {
+        fetchRate();
+    }
+  }, [settings?.localCurrency, isSettingsHydrated]);
+
+  const isHydrated = isQuotesHydrated && isMaterialsHydrated && isMachinesHydrated && isSettingsHydrated && isInvestmentsHydrated && !isExchangeRateLoading;
 
   const dashboardData = ((): {
     totalRevenue: number;
@@ -119,8 +143,14 @@ export default function Dashboard() {
       icon: FileText
     }
   ]
+  
+  const formatLocal = (amount: number) => {
+    if (!exchangeRate || !settings?.localCurrency) return null;
+    const decimalPlaces = settings.localCurrency === 'CLP' || settings.localCurrency === 'PYG' ? 0 : settings.currencyDecimalPlaces;
+    return formatCurrency(amount * exchangeRate, settings.localCurrency, decimalPlaces, 'symbol');
+  };
 
-  const renderMetricCard = (title: string, value: string, description: string, icon: React.ReactNode, isLoading: boolean) => (
+  const renderMetricCard = (title: string, value: string, localValue: string | null, description: string, icon: React.ReactNode, isLoading: boolean) => (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
@@ -135,7 +165,8 @@ export default function Dashboard() {
         ) : (
             <>
                 <div className="text-2xl font-bold">{value}</div>
-                <p className="text-xs text-muted-foreground">{description}</p>
+                {localValue && <div className="text-sm text-muted-foreground">{localValue}</div>}
+                <p className="text-xs text-muted-foreground mt-1">{description}</p>
             </>
         )}
       </CardContent>
@@ -148,6 +179,7 @@ export default function Dashboard() {
         {renderMetricCard(
             "Ingresos Totales",
             formatCurrency(dashboardData?.totalRevenue ?? 0, 'USD', settings.currencyDecimalPlaces),
+            formatLocal(dashboardData?.totalRevenue ?? 0),
             `Basado en ${dashboardData?.acceptedQuotes ?? 0} presupuestos confirmados`,
             <DollarSign className="h-4 w-4 text-muted-foreground" />,
             !isHydrated
@@ -155,6 +187,7 @@ export default function Dashboard() {
         {renderMetricCard(
             "Ganancia Neta",
             formatCurrency(dashboardData?.totalProfit ?? 0, 'USD', settings.currencyDecimalPlaces),
+            formatLocal(dashboardData?.totalProfit ?? 0),
             `Costo total: ${formatCurrency(dashboardData?.totalCost ?? 0, 'USD', settings.currencyDecimalPlaces)}`,
             <TrendingUp className="h-4 w-4 text-muted-foreground" />,
             !isHydrated
@@ -162,6 +195,7 @@ export default function Dashboard() {
         {renderMetricCard(
             "Presupuestos Confirmados",
             dashboardData?.acceptedQuotes.toString() ?? "0",
+            null,
             "Aceptados, en preparación o entregados",
             <CheckCircle className="h-4 w-4 text-muted-foreground" />,
             !isHydrated
@@ -169,6 +203,7 @@ export default function Dashboard() {
          {renderMetricCard(
             "Presupuestos Pendientes",
             dashboardData?.draftQuotes.toString() ?? "0",
+            null,
             "Presupuestos en estado de borrador",
             <FileClock className="h-4 w-4 text-muted-foreground" />,
             !isHydrated
@@ -221,17 +256,25 @@ export default function Dashboard() {
                   {isHydrated ? (
                       <>
                           <Progress value={dashboardData?.investmentRecoveryPercentage ?? 0} className="w-full" />
-                          <div className="flex justify-between text-sm mt-2">
-                              <span className="font-bold text-green-500">
-                                  {formatCurrency(dashboardData?.totalProfit ?? 0, 'USD', settings.currencyDecimalPlaces)}
-                              </span>
-                              <span className="font-bold text-red-500">
-                                  {formatCurrency(dashboardData?.totalInvestments ?? 0, 'USD', settings.currencyDecimalPlaces)}
-                              </span>
-                          </div>
-                          <div className="flex justify-between text-xs text-muted-foreground">
-                              <span>Ganancia Neta</span>
-                              <span>Inversión Total</span>
+                          <div className="grid grid-cols-2 gap-4 mt-4">
+                              <div>
+                                  <div className="text-xs text-muted-foreground">Ganancia Neta</div>
+                                  <div className="font-bold text-green-500">
+                                      {formatCurrency(dashboardData?.totalProfit ?? 0, 'USD', settings.currencyDecimalPlaces)}
+                                  </div>
+                                  <div className="text-xs font-mono text-muted-foreground">
+                                      {formatLocal(dashboardData?.totalProfit ?? 0)}
+                                  </div>
+                              </div>
+                              <div className="text-right">
+                                  <div className="text-xs text-muted-foreground">Inversión Total</div>
+                                  <div className="font-bold text-red-500">
+                                      {formatCurrency(dashboardData?.totalInvestments ?? 0, 'USD', settings.currencyDecimalPlaces)}
+                                  </div>
+                                  <div className="text-xs font-mono text-muted-foreground">
+                                      {formatLocal(dashboardData?.totalInvestments ?? 0)}
+                                  </div>
+                              </div>
                           </div>
                            {(dashboardData?.totalInvestments ?? 0) > 0 && 
                               <div className="text-center mt-4">
