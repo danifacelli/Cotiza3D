@@ -54,7 +54,7 @@ const PartSchema = z.object({
 const QuoteSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
   clientName: z.string().optional(),
-  status: z.enum(["draft", "accepted", "canceled"]),
+  status: z.enum(["draft", "accepted", "in_preparation", "delivered", "canceled"]),
   parts: z.array(PartSchema).min(1, "Debes añadir al menos un material."),
   machineId: z.string().min(1, "Debes seleccionar una máquina."),
   designCost: z.coerce.number().optional(),
@@ -473,6 +473,8 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                             <SelectContent>
                               <SelectItem value="draft">Borrador</SelectItem>
                               <SelectItem value="accepted">Aceptado</SelectItem>
+                              <SelectItem value="in_preparation">En Preparación</SelectItem>
+                              <SelectItem value="delivered">Entregado</SelectItem>
                               <SelectItem value="canceled">Cancelado</SelectItem>
                             </SelectContent>
                           </Select>
@@ -890,5 +892,3 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     </Form>
   )
 }
-
-    

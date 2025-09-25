@@ -57,9 +57,10 @@ export default function Dashboard() {
   } | null => {
     if (!isHydrated) return null;
 
-    const accepted = quotes.filter(q => q.status === 'accepted');
+    const acceptedStatuses: Quote['status'][] = ['accepted', 'in_preparation', 'delivered'];
+    const confirmedQuotes = quotes.filter(q => acceptedStatuses.includes(q.status));
     
-    const totals = accepted.reduce((acc, quote) => {
+    const totals = confirmedQuotes.reduce((acc, quote) => {
         const { breakdown } = calculateCosts(quote, materials, machines, settings);
         if (breakdown) {
             acc.revenue += breakdown.total;
@@ -76,7 +77,7 @@ export default function Dashboard() {
       totalRevenue: totals.revenue,
       totalCost: totals.cost,
       totalProfit: totalProfit,
-      acceptedQuotes: accepted.length,
+      acceptedQuotes: confirmedQuotes.length,
       draftQuotes: quotes.filter(q => q.status === 'draft').length,
       materialCount: materials.length,
       machineCount: machines.length,
@@ -147,7 +148,7 @@ export default function Dashboard() {
         {renderMetricCard(
             "Ingresos Totales",
             formatCurrency(dashboardData?.totalRevenue ?? 0, 'USD', settings.currencyDecimalPlaces),
-            `Basado en ${dashboardData?.acceptedQuotes ?? 0} presupuestos aceptados`,
+            `Basado en ${dashboardData?.acceptedQuotes ?? 0} presupuestos confirmados`,
             <DollarSign className="h-4 w-4 text-muted-foreground" />,
             !isHydrated
         )}
@@ -159,9 +160,9 @@ export default function Dashboard() {
             !isHydrated
         )}
         {renderMetricCard(
-            "Presupuestos Aceptados",
+            "Presupuestos Confirmados",
             dashboardData?.acceptedQuotes.toString() ?? "0",
-            "Presupuestos que han sido aprobados",
+            "Aceptados, en preparación o entregados",
             <CheckCircle className="h-4 w-4 text-muted-foreground" />,
             !isHydrated
         )}

@@ -27,6 +27,8 @@ import { getExchangeRate } from "@/services/exchange-rate-service"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+
 
 type StatusFilter = "all" | Quote["status"];
 
@@ -76,7 +78,7 @@ export default function QuotesPage() {
       const { breakdown } = calculateCosts(quote, materials, machines, settings);
       const totalUSD = breakdown?.total ?? 0;
       const totalLocal = exchangeRate ? totalUSD * exchangeRate : 0;
-      const costUSD = breakdown?.subtotal ?? 0;
+      const costUSD = breakdown?.costSubtotal ?? 0;
       const isManualPrice = breakdown?.isManualPrice ?? false;
       return { ...quote, totalUSD, totalLocal, costUSD, isManualPrice };
     }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -140,17 +142,26 @@ export default function QuotesPage() {
     setQuotes(
       quotes.map((q) => (q.id === id ? { ...q, status } : q))
     );
+    const statusMap: Record<Quote['status'], string> = {
+        draft: 'Borrador',
+        accepted: 'Aceptado',
+        in_preparation: 'En Preparación',
+        delivered: 'Entregado',
+        canceled: 'Cancelado'
+    }
     toast({
       title: "Estado actualizado",
-      description: `El presupuesto ha sido marcado como ${status === 'accepted' ? 'aceptado' : status === 'canceled' ? 'cancelado' : 'borrador'}.`,
+      description: `El presupuesto ha sido marcado como ${statusMap[status]}.`,
     });
   };
 
   const statusCounts = useMemo(() => {
-    const counts: Record<StatusFilter, number> = {
+    const counts = {
       all: quotes.length,
       draft: 0,
       accepted: 0,
+      in_preparation: 0,
+      delivered: 0,
       canceled: 0,
     };
     quotes.forEach(quote => {
@@ -182,14 +193,19 @@ export default function QuotesPage() {
       </div>
       
       <div className="flex flex-col gap-4">
-        <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="all">Todos ({statusCounts.all})</TabsTrigger>
-            <TabsTrigger value="draft">Borrador ({statusCounts.draft})</TabsTrigger>
-            <TabsTrigger value="accepted">Aceptados ({statusCounts.accepted})</TabsTrigger>
-            <TabsTrigger value="canceled">Cancelados ({statusCounts.canceled})</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <ScrollArea className="w-full whitespace-nowrap">
+            <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
+            <TabsList>
+                <TabsTrigger value="all">Todos ({statusCounts.all})</TabsTrigger>
+                <TabsTrigger value="draft">Borrador ({statusCounts.draft})</TabsTrigger>
+                <TabsTrigger value="accepted">Aceptados ({statusCounts.accepted})</TabsTrigger>
+                <TabsTrigger value="in_preparation">En Preparación ({statusCounts.in_preparation})</TabsTrigger>
+                <TabsTrigger value="delivered">Entregados ({statusCounts.delivered})</TabsTrigger>
+                <TabsTrigger value="canceled">Cancelados ({statusCounts.canceled})</TabsTrigger>
+            </TabsList>
+            </Tabs>
+             <ScrollBar orientation="horizontal" />
+        </ScrollArea>
         
         {(isExchangeRateLoading || !isHydrated) ? (
             <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-md">

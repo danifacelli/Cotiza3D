@@ -31,7 +31,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Pencil, Trash2, CheckCircle, XCircle, FileText, Copy, Edit, Tag } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, CheckCircle, XCircle, FileText, Copy, Edit, Tag, ClipboardList, PackageCheck } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn, formatCurrency } from "@/lib/utils"
@@ -55,6 +55,8 @@ interface QuotesTableProps {
 const statusConfig = {
     draft: { label: 'Borrador', icon: FileText, badgeClass: "bg-secondary text-secondary-foreground hover:bg-secondary/80" },
     accepted: { label: 'Aceptado', icon: CheckCircle, badgeClass: "bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30" },
+    in_preparation: { label: 'En Preparación', icon: ClipboardList, badgeClass: "bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/30" },
+    delivered: { label: 'Entregado', icon: PackageCheck, badgeClass: "bg-violet-500/20 text-violet-700 dark:text-violet-400 border-violet-500/30" },
     canceled: { label: 'Cancelado', icon: XCircle, badgeClass: "bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30" }
 }
 
@@ -111,6 +113,12 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => onUpdateStatus(quote.id, 'accepted')}>
                                 <CheckCircle className="mr-2"/> Marcar como Aceptado
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onUpdateStatus(quote.id, 'in_preparation')}>
+                                <ClipboardList className="mr-2"/> Marcar como En Preparación
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onUpdateStatus(quote.id, 'delivered')}>
+                                <PackageCheck className="mr-2"/> Marcar como Entregado
                             </DropdownMenuItem>
                              <DropdownMenuItem onClick={() => onUpdateStatus(quote.id, 'canceled')}>
                                 <XCircle className="mr-2"/> Marcar como Cancelado

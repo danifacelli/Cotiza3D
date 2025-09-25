@@ -63,7 +63,7 @@ export interface Quote {
   id: string;
   name: string;
   clientName: string;
-  status: 'draft' | 'accepted' | 'canceled';
+  status: 'draft' | 'accepted' | 'in_preparation' | 'delivered' | 'canceled';
   createdAt: string; // ISO date string
 
   parts: QuotePart[];
