@@ -30,6 +30,7 @@ export function BackupRestore() {
         [LOCAL_STORAGE_KEYS.MATERIALS]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIALS) || "[]"),
         [LOCAL_STORAGE_KEYS.MACHINES]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.MACHINES) || "[]"),
         [LOCAL_STORAGE_KEYS.QUOTES]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.QUOTES) || "[]"),
+        [LOCAL_STORAGE_KEYS.INVESTMENTS]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.INVESTMENTS) || "[]"),
       };
 
       const jsonString = JSON.stringify(dataToExport, null, 2);
@@ -91,7 +92,8 @@ export function BackupRestore() {
             !importedData[LOCAL_STORAGE_KEYS.SETTINGS] ||
             !Array.isArray(importedData[LOCAL_STORAGE_KEYS.MATERIALS]) ||
             !Array.isArray(importedData[LOCAL_STORAGE_KEYS.MACHINES]) ||
-            !Array.isArray(importedData[LOCAL_STORAGE_KEYS.QUOTES])
+            !Array.isArray(importedData[LOCAL_STORAGE_KEYS.QUOTES]) ||
+            !Array.isArray(importedData[LOCAL_STORAGE_KEYS.INVESTMENTS])
         ) {
             throw new Error("El formato del archivo JSON no es válido.");
         }
