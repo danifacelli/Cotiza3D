@@ -23,6 +23,7 @@ import {
   Circle,
   Banknote,
   TrendingDown,
+  ClipboardList,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -71,7 +72,8 @@ export default function Dashboard() {
     totalRevenue: number;
     totalCost: number;
     totalProfit: number;
-    acceptedQuotes: number;
+    confirmedQuotesCount: number;
+    inPreparationQuotes: number;
     draftQuotes: number;
     materialCount: number;
     machineCount: number;
@@ -101,7 +103,8 @@ export default function Dashboard() {
       totalRevenue: totals.revenue,
       totalCost: totals.cost,
       totalProfit: totalProfit,
-      acceptedQuotes: confirmedQuotes.length,
+      confirmedQuotesCount: confirmedQuotes.length,
+      inPreparationQuotes: quotes.filter(q => q.status === 'in_preparation').length,
       draftQuotes: quotes.filter(q => q.status === 'draft').length,
       materialCount: materials.length,
       machineCount: machines.length,
@@ -180,7 +183,7 @@ export default function Dashboard() {
             "Ingresos Totales",
             formatCurrency(dashboardData?.totalRevenue ?? 0, 'USD', settings.currencyDecimalPlaces),
             formatLocal(dashboardData?.totalRevenue ?? 0),
-            `Basado en ${dashboardData?.acceptedQuotes ?? 0} presupuestos confirmados`,
+            `Basado en ${dashboardData?.confirmedQuotesCount ?? 0} presupuestos confirmados`,
             <DollarSign className="h-4 w-4 text-muted-foreground" />,
             !isHydrated
         )}
@@ -193,11 +196,11 @@ export default function Dashboard() {
             !isHydrated
         )}
         {renderMetricCard(
-            "Presupuestos Confirmados",
-            dashboardData?.acceptedQuotes.toString() ?? "0",
+            "En Preparación",
+            dashboardData?.inPreparationQuotes.toString() ?? "0",
             null,
-            "Aceptados, en preparación o entregados",
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />,
+            "Presupuestos que se están trabajando actualmente",
+            <ClipboardList className="h-4 w-4 text-muted-foreground" />,
             !isHydrated
         )}
          {renderMetricCard(
@@ -296,3 +299,5 @@ export default function Dashboard() {
     </div>
   )
 }
+
+    
