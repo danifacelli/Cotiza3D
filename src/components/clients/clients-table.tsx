@@ -13,12 +13,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -30,7 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Pencil, Trash2, Instagram, Facebook, Phone } from "lucide-react"
+import { Pencil, Trash2, Instagram, Facebook, Phone } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
 
@@ -63,7 +57,7 @@ export function ClientsTable({ clients, onEdit, onDelete, isHydrated }: ClientsT
             <TableHead>Nombre</TableHead>
             <TableHead>Contacto</TableHead>
             <TableHead>Fecha de Registro</TableHead>
-            <TableHead className="w-[50px] text-right"></TableHead>
+            <TableHead className="w-[120px] text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -101,46 +95,34 @@ export function ClientsTable({ clients, onEdit, onDelete, isHydrated }: ClientsT
                   {format(new Date(client.createdAt), "d MMM yyyy", { locale: es })}
                 </TableCell>
                 <TableCell className="text-right">
-                  <AlertDialog>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Más acciones</span>
+                  <div className="flex justify-end gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(client)}>
+                        <Pencil className="h-4 w-4" />
+                        <span className="sr-only">Editar</span>
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Eliminar</span>
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onEdit(client)}>
-                            <div className="flex items-center">
-                                <Pencil className="mr-2 h-4 w-4" />
-                                <span>Editar</span>
-                            </div>
-                        </DropdownMenuItem>
-                        <AlertDialogTrigger asChild>
-                            <DropdownMenuItem className="text-destructive focus:text-destructive">
-                                <div className="flex items-center">
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    <span>Eliminar</span>
-                                </div>
-                            </DropdownMenuItem>
-                        </AlertDialogTrigger>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>¿Estás seguro que deseas eliminar?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Esta acción no se puede deshacer. Esto eliminará permanentemente al cliente <strong>{client.name}</strong>.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction asChild>
-                          <Button variant="destructive" onClick={() => onDelete(client.id)}>Sí, eliminar</Button>
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>¿Estás seguro que deseas eliminar?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente al cliente <strong>{client.name}</strong>.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction asChild>
+                            <Button variant="destructive" onClick={() => onDelete(client.id)}>Sí, eliminar</Button>
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </TableCell>
               </TableRow>
             ))
