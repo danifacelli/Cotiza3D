@@ -24,7 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button"
-import { Pencil, Trash2, Instagram, Facebook, Phone } from "lucide-react"
+import { Pencil, Trash2, Instagram, Facebook, Phone, History } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
 import { formatCurrency } from "@/lib/utils"
@@ -41,10 +41,11 @@ interface ClientsTableProps {
   clients: ClientWithStats[]
   onEdit: (client: Client) => void
   onDelete: (id: string) => void
+  onViewHistory: (client: Client) => void
   isHydrated: boolean
 }
 
-export function ClientsTable({ clients, onEdit, onDelete, isHydrated }: ClientsTableProps) {
+export function ClientsTable({ clients, onEdit, onDelete, onViewHistory, isHydrated }: ClientsTableProps) {
   const [settings] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
   
   if (!isHydrated) {
@@ -69,7 +70,7 @@ export function ClientsTable({ clients, onEdit, onDelete, isHydrated }: ClientsT
             <TableHead>Último Trabajo</TableHead>
             <TableHead className="text-right">Total Comprado (USD)</TableHead>
             <TableHead>Fecha de Registro</TableHead>
-            <TableHead className="w-[120px] text-right">Acciones</TableHead>
+            <TableHead className="w-[160px] text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -112,6 +113,10 @@ export function ClientsTable({ clients, onEdit, onDelete, isHydrated }: ClientsT
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onViewHistory(client)}>
+                        <History className="h-4 w-4" />
+                        <span className="sr-only">Ver Historial</span>
+                    </Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(client)}>
                         <Pencil className="h-4 w-4" />
                         <span className="sr-only">Editar</span>
@@ -127,7 +132,7 @@ export function ClientsTable({ clients, onEdit, onDelete, isHydrated }: ClientsT
                         <AlertDialogHeader>
                           <AlertDialogTitle>¿Estás seguro que deseas eliminar?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Esta acción no se puede deshacer. Esto eliminará permanentemente al cliente <strong>{client.name}</strong>.
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente al cliente <strong>{client.name}</strong> y lo desvinculará de los presupuestos existentes.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

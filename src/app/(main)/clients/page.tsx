@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
 import { DEFAULT_CLIENTS, generateId, DEFAULT_QUOTES, DEFAULT_MATERIALS, DEFAULT_MACHINES, DEFAULT_SETTINGS } from "@/lib/defaults"
@@ -31,22 +31,48 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { ClientsTable, type ClientWithStats } from "@/components/clients/clients-table"
 import { calculateCosts } from "@/lib/calculations"
+import { ClientHistoryDialog } from "@/components/clients/client-history-dialog"
+import { getExchangeRate } from "@/services/exchange-rate-service"
 
 export default function ClientsPage() {
   const [clients, setClients, isClientsHydrated] = useLocalStorage<Client[]>(
     LOCAL_STORAGE_KEYS.CLIENTS,
     DEFAULT_CLIENTS
   )
-  const [quotes, _, isQuotesHydrated] = useLocalStorage<Quote[]>(LOCAL_STORAGE_KEYS.QUOTES, DEFAULT_QUOTES)
-  const [materials, __, isMaterialsHydrated] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS)
-  const [machines, ___, isMachinesHydrated] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES)
-  const [settings, ____, isSettingsHydrated] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
+  const [quotes, setQuotes, isQuotesHydrated] = useLocalStorage<Quote[]>(LOCAL_STORAGE_KEYS.QUOTES, DEFAULT_QUOTES)
+  const [materials, _, isMaterialsHydrated] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS)
+  const [machines, __, isMachinesHydrated] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES)
+  const [settings, ___, isSettingsHydrated] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
   
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
+  const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(true);
+
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
+  const [historyClient, setHistoryClient] = useState<Client | null>(null)
   const { toast } = useToast()
+  
+  useEffect(() => {
+    async function fetchRate() {
+      if (!settings?.localCurrency) return;
+      setIsExchangeRateLoading(true);
+      try {
+        const rate = await getExchangeRate(settings.localCurrency);
+        setExchangeRate(rate);
+      } catch (error) {
+        console.error(error);
+        setExchangeRate(null);
+      } finally {
+        setIsExchangeRateLoading(false);
+      }
+    }
+    if (isSettingsHydrated) {
+        fetchRate();
+    }
+  }, [settings?.localCurrency, isSettingsHydrated]);
 
-  const isHydrated = isClientsHydrated && isQuotesHydrated && isMaterialsHydrated && isMachinesHydrated && isSettingsHydrated;
+
+  const isHydrated = isClientsHydrated && isQuotesHydrated && isMaterialsHydrated && isMachinesHydrated && isSettingsHydrated && !isExchangeRateLoading;
 
   const clientsWithStats: ClientWithStats[] = useMemo(() => {
     if (!isHydrated) return [];
@@ -82,9 +108,16 @@ export default function ClientsPage() {
     setSelectedClient(client)
     setIsFormOpen(true)
   }
+  
+  const handleViewHistory = (client: Client) => {
+    setHistoryClient(client);
+  }
 
   const handleDeleteClient = (id: string) => {
     setClients(clients.filter((c) => c.id !== id))
+    // Also, optionally unlink from quotes
+    setQuotes(quotes.map(q => q.clientId === id ? {...q, clientId: undefined} : q))
+
     toast({
       title: "Cliente eliminado",
       description: "El cliente ha sido eliminado correctamente.",
@@ -93,6 +126,7 @@ export default function ClientsPage() {
   
   const handleDeleteAllClients = () => {
     setClients([])
+    setQuotes(quotes.map(q => ({...q, clientId: undefined})))
     toast({
       title: "Todos los clientes han sido eliminados",
       description: "Tu lista de clientes está ahora vacía.",
@@ -125,6 +159,21 @@ export default function ClientsPage() {
     setIsFormOpen(false)
     setSelectedClient(null)
   }
+  
+  const clientHistoryQuotes = useMemo(() => {
+    if (!historyClient) return [];
+    return quotes
+      .filter(q => q.clientId === historyClient.id)
+      .map(quote => {
+        const { breakdown } = calculateCosts(quote, materials, machines, settings);
+        return {
+          ...quote,
+          totalUSD: breakdown?.total ?? 0,
+        };
+      })
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [historyClient, quotes, materials, machines, settings]);
+
 
   return (
     <div className="flex flex-col gap-6">
@@ -147,7 +196,7 @@ export default function ClientsPage() {
                         <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
                         <AlertDialogDescription>
                             Esta acción no se puede deshacer. Esto eliminará permanentemente todos
-                            tus clientes y cualquier vínculo con los presupuestos.
+                            tus clientes y los desvinculará de los presupuestos existentes.
                         </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -192,9 +241,19 @@ export default function ClientsPage() {
                 clients={clientsWithStats}
                 onEdit={handleEditClient}
                 onDelete={handleDeleteClient}
+                onViewHistory={handleViewHistory}
                 isHydrated={isHydrated}
               />
         )}
+
+        <ClientHistoryDialog 
+            client={historyClient}
+            quotes={clientHistoryQuotes}
+            settings={settings}
+            exchangeRate={exchangeRate}
+            isOpen={!!historyClient}
+            onOpenChange={(isOpen) => !isOpen && setHistoryClient(null)}
+        />
     </div>
   )
 }
