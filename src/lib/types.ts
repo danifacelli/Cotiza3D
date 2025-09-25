@@ -51,7 +51,8 @@ export interface Investment {
 
 export interface FuturePurchase {
   id: string;
-  description: string;
+  name: string;
+  description?: string;
   link?: string;
   priceUSD: number;
   status: 'pending' | 'purchased';

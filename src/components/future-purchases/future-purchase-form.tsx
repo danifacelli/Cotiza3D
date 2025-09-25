@@ -7,10 +7,12 @@ import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import type { FuturePurchase } from "@/lib/types"
 
 const FormSchema = z.object({
-  description: z.string().min(2, "La descripción debe tener al menos 2 caracteres."),
+  name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
+  description: z.string().optional(),
   link: z.string().url("Debe ser una URL válida.").optional().or(z.literal('')),
   priceUSD: z.coerce.number().min(0, "El precio no puede ser negativo."),
 })
@@ -20,13 +22,14 @@ export type FuturePurchaseFormValues = z.infer<typeof FormSchema>
 interface FuturePurchaseFormProps {
   onSubmit: (data: FuturePurchaseFormValues) => void
   onCancel: () => void
-  defaultValues?: FuturePurchase | null
+  defaultValues?: Partial<FuturePurchase> | null
 }
 
 export function FuturePurchaseForm({ onSubmit, onCancel, defaultValues }: FuturePurchaseFormProps) {
   const form = useForm<FuturePurchaseFormValues>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
+      name: defaultValues?.name || "",
       description: defaultValues?.description || "",
       link: defaultValues?.link || "",
       priceUSD: defaultValues?.priceUSD || 0,
@@ -38,12 +41,25 @@ export function FuturePurchaseForm({ onSubmit, onCancel, defaultValues }: Future
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nombre del Artículo</FormLabel>
+              <FormControl>
+                <Input placeholder="Ej: Filamento PETG Negro" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+         <FormField
+          control={form.control}
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Descripción del Artículo</FormLabel>
+              <FormLabel>Descripción Adicional (Opcional)</FormLabel>
               <FormControl>
-                <Input placeholder="Ej: Filamento PETG Negro" {...field} />
+                <Textarea placeholder="Anota detalles importantes, especificaciones, etc." {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

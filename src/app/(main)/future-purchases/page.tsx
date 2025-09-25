@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
 import { DEFAULT_FUTURE_PURCHASES, DEFAULT_SETTINGS, generateId, DEFAULT_INVESTMENTS } from "@/lib/defaults"
@@ -66,13 +66,30 @@ export default function FuturePurchasesPage() {
       description: "El artículo ha sido eliminado de tu lista de compras.",
     })
   }
+
+  const handleDuplicatePurchase = (id: string) => {
+    const purchaseToDuplicate = purchases.find((p) => p.id === id);
+    if (purchaseToDuplicate) {
+      const newPurchase: FuturePurchase = {
+        ...purchaseToDuplicate,
+        id: generateId(),
+        name: `${purchaseToDuplicate.name} (Copia)`,
+        createdAt: new Date().toISOString(),
+      };
+      setPurchases([newPurchase, ...purchases]);
+      toast({
+        title: "Artículo duplicado",
+        description: "Se ha creado una copia del artículo en tu lista.",
+      });
+    }
+  };
   
   const handleSavePurchase = (data: FuturePurchaseFormValues) => {
     if (selectedPurchase) {
       // Editing
       setPurchases(
         purchases.map((p) =>
-          p.id === selectedPurchase.id ? { ...p, ...data } : p
+          p.id === selectedPurchase.id ? { ...p, ...data, name: data.name, description: data.description } : p
         )
       )
       toast({
@@ -84,6 +101,8 @@ export default function FuturePurchasesPage() {
       const newPurchase: FuturePurchase = {
         id: generateId(),
         ...data,
+        name: data.name,
+        description: data.description || '',
         status: 'pending',
         createdAt: new Date().toISOString(),
       }
@@ -107,7 +126,7 @@ export default function FuturePurchasesPage() {
     // 1. Add to investments
     const newInvestment: Investment = {
         id: generateId(),
-        name: purchaseToConvert.description,
+        name: purchaseToConvert.name,
         amount: purchaseToConvert.priceUSD,
         createdAt: new Date().toISOString(),
     };
@@ -118,7 +137,7 @@ export default function FuturePurchasesPage() {
 
     toast({
         title: "¡Compra realizada!",
-        description: `${purchaseToConvert.description} ha sido movido a tus inversiones.`,
+        description: `${purchaseToConvert.name} ha sido movido a tus inversiones.`,
     });
 
     setPurchaseToConvert(null);
@@ -141,7 +160,7 @@ export default function FuturePurchasesPage() {
                 Añadir Artículo
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                 <DialogTitle>{selectedPurchase ? "Editar Artículo" : "Nuevo Artículo"}</DialogTitle>
                 <DialogDescription>
@@ -161,6 +180,7 @@ export default function FuturePurchasesPage() {
         purchases={purchases}
         onEdit={handleEditPurchase}
         onDelete={handleDeletePurchase}
+        onDuplicate={handleDuplicatePurchase}
         onMarkAsPurchased={handleMarkAsPurchased}
         settings={settings}
         exchangeRate={exchangeRate}
@@ -172,7 +192,7 @@ export default function FuturePurchasesPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Convertir en Inversión?</AlertDialogTitle>
             <AlertDialogDescription>
-              Has marcado <strong>{purchaseToConvert?.description}</strong> como comprado. ¿Deseas moverlo a tu lista de inversiones?
+              Has marcado <strong>{purchaseToConvert?.name}</strong> como comprado. ¿Deseas moverlo a tu lista de inversiones?
               Se creará una nueva inversión con el nombre y el precio del artículo.
             </AlertDialogDescription>
           </AlertDialogHeader>

@@ -1,4 +1,5 @@
 
+"use "
 "use client"
 
 import type { FuturePurchase, Settings } from "@/lib/types"
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { MoreHorizontal, Pencil, Trash2, Link as LinkIcon, ShoppingCart } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, Link as LinkIcon, ShoppingCart, Copy } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency, cn } from "@/lib/utils"
 import Link from "next/link"
@@ -32,13 +33,14 @@ interface FuturePurchasesTableProps {
   purchases: FuturePurchase[]
   onEdit: (purchase: FuturePurchase) => void
   onDelete: (id: string) => void
+  onDuplicate: (id: string) => void
   onMarkAsPurchased: (purchase: FuturePurchase) => void
   isHydrated: boolean
   settings: Settings | null
   exchangeRate: number | null
 }
 
-export function FuturePurchasesTable({ purchases, onEdit, onDelete, onMarkAsPurchased, isHydrated, settings, exchangeRate }: FuturePurchasesTableProps) {
+export function FuturePurchasesTable({ purchases, onEdit, onDelete, onDuplicate, onMarkAsPurchased, isHydrated, settings, exchangeRate }: FuturePurchasesTableProps) {
   
   if (!isHydrated) {
     return (
@@ -63,7 +65,7 @@ export function FuturePurchasesTable({ purchases, onEdit, onDelete, onMarkAsPurc
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Descripción</TableHead>
+            <TableHead>Artículo</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead className="text-right">Precio</TableHead>
             <TableHead className="w-[50px]"></TableHead>
@@ -73,8 +75,11 @@ export function FuturePurchasesTable({ purchases, onEdit, onDelete, onMarkAsPurc
           {sortedPurchases.length > 0 ? (
             sortedPurchases.map((purchase) => (
               <TableRow key={purchase.id}>
-                <TableCell className="font-medium">
-                    <div>{purchase.description}</div>
+                <TableCell className="font-medium align-top">
+                    <div className="font-semibold">{purchase.name}</div>
+                    {purchase.description && (
+                        <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap max-w-md">{purchase.description}</p>
+                    )}
                     {purchase.link && (
                         <Button variant="link" size="sm" asChild className="p-0 h-auto mt-1 text-xs">
                             <Link href={purchase.link} target="_blank" rel="noopener noreferrer">
@@ -84,16 +89,16 @@ export function FuturePurchasesTable({ purchases, onEdit, onDelete, onMarkAsPurc
                         </Button>
                     )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="align-top">
                     <Badge variant={purchase.status === 'purchased' ? 'default' : 'secondary'}>
                         {purchase.status === 'purchased' ? 'Comprado' : 'Pendiente'}
                     </Badge>
                 </TableCell>
-                <TableCell className="text-right font-mono">
+                <TableCell className="text-right font-mono align-top">
                     <div>{formatCurrency(purchase.priceUSD, 'USD', settings?.currencyDecimalPlaces ?? 2)}</div>
                     <div className="text-xs text-muted-foreground">{formatLocal(purchase.priceUSD)}</div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="align-top">
                   <AlertDialog>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -113,6 +118,10 @@ export function FuturePurchasesTable({ purchases, onEdit, onDelete, onMarkAsPurc
                           <Pencil className="mr-2 h-4 w-4" />
                           <span>Editar</span>
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onDuplicate(purchase.id)}>
+                            <Copy className="mr-2 h-4 w-4" />
+                            <span>Duplicar</span>
+                        </DropdownMenuItem>
                          <DropdownMenuSeparator />
                         <AlertDialogTrigger asChild>
                           <DropdownMenuItem className="text-destructive focus:text-destructive">
@@ -126,7 +135,7 @@ export function FuturePurchasesTable({ purchases, onEdit, onDelete, onMarkAsPurc
                       <AlertDialogHeader>
                         <AlertDialogTitle>¿Estás seguro que deseas eliminar?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Esta acción no se puede deshacer. Esto eliminará permanentemente el artículo <strong>{purchase.description}</strong>.
+                          Esta acción no se puede deshacer. Esto eliminará permanentemente el artículo <strong>{purchase.name}</strong>.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
