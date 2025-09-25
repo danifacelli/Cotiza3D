@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { Client } from "@/lib/types"
+import type { Client, Settings } from "@/lib/types"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import {
@@ -27,15 +27,25 @@ import { Button } from "@/components/ui/button"
 import { Pencil, Trash2, Instagram, Facebook, Phone } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
+import { formatCurrency } from "@/lib/utils"
+import { useLocalStorage } from "@/hooks/use-local-storage"
+import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
+import { DEFAULT_SETTINGS } from "@/lib/defaults"
+
+export type ClientWithStats = Client & {
+    lastJobName?: string;
+    totalPurchased: number;
+}
 
 interface ClientsTableProps {
-  clients: Client[]
+  clients: ClientWithStats[]
   onEdit: (client: Client) => void
   onDelete: (id: string) => void
   isHydrated: boolean
 }
 
 export function ClientsTable({ clients, onEdit, onDelete, isHydrated }: ClientsTableProps) {
+  const [settings] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
   
   if (!isHydrated) {
     return (
@@ -56,6 +66,8 @@ export function ClientsTable({ clients, onEdit, onDelete, isHydrated }: ClientsT
           <TableRow>
             <TableHead>Nombre</TableHead>
             <TableHead>Contacto</TableHead>
+            <TableHead>Último Trabajo</TableHead>
+            <TableHead className="text-right">Total Comprado (USD)</TableHead>
             <TableHead>Fecha de Registro</TableHead>
             <TableHead className="w-[120px] text-right">Acciones</TableHead>
           </TableRow>
@@ -66,7 +78,7 @@ export function ClientsTable({ clients, onEdit, onDelete, isHydrated }: ClientsT
               <TableRow key={client.id}>
                 <TableCell className="font-medium">{client.name}</TableCell>
                 <TableCell>
-                  <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex flex-col items-start gap-2">
                     {client.phone && (
                       <div className="flex items-center gap-2">
                         <Phone className="h-4 w-4 text-muted-foreground" />
@@ -90,6 +102,10 @@ export function ClientsTable({ clients, onEdit, onDelete, isHydrated }: ClientsT
                       </div>
                     )}
                   </div>
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">{client.lastJobName || 'N/A'}</TableCell>
+                 <TableCell className="text-right font-mono">
+                    {formatCurrency(client.totalPurchased, 'USD', settings.currencyDecimalPlaces)}
                 </TableCell>
                 <TableCell>
                   {format(new Date(client.createdAt), "d MMM yyyy", { locale: es })}
@@ -128,7 +144,7 @@ export function ClientsTable({ clients, onEdit, onDelete, isHydrated }: ClientsT
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={4} className="h-24 text-center">
+              <TableCell colSpan={6} className="h-24 text-center">
                 No tienes clientes registrados.
               </TableCell>
             </TableRow>

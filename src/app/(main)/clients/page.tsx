@@ -1,13 +1,13 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
-import { DEFAULT_CLIENTS, generateId } from "@/lib/defaults"
+import { DEFAULT_CLIENTS, generateId, DEFAULT_QUOTES, DEFAULT_MATERIALS, DEFAULT_MACHINES, DEFAULT_SETTINGS } from "@/lib/defaults"
 import { Button } from "@/components/ui/button"
-import { PlusCircle, Trash2 } from "lucide-react"
-import type { Client } from "@/lib/types"
+import { PlusCircle, Trash2, Loader2 } from "lucide-react"
+import type { Client, Quote, Material, Machine, Settings } from "@/lib/types"
 import { ClientForm, type ClientFormValues } from "@/components/clients/client-form"
 import {
   Dialog,
@@ -29,16 +29,49 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
-import { ClientsTable } from "@/components/clients/clients-table"
+import { ClientsTable, type ClientWithStats } from "@/components/clients/clients-table"
+import { calculateCosts } from "@/lib/calculations"
 
 export default function ClientsPage() {
-  const [clients, setClients, isHydrated] = useLocalStorage<Client[]>(
+  const [clients, setClients, isClientsHydrated] = useLocalStorage<Client[]>(
     LOCAL_STORAGE_KEYS.CLIENTS,
     DEFAULT_CLIENTS
   )
+  const [quotes, _, isQuotesHydrated] = useLocalStorage<Quote[]>(LOCAL_STORAGE_KEYS.QUOTES, DEFAULT_QUOTES)
+  const [materials, __, isMaterialsHydrated] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS)
+  const [machines, ___, isMachinesHydrated] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES)
+  const [settings, ____, isSettingsHydrated] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
+  
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
   const { toast } = useToast()
+
+  const isHydrated = isClientsHydrated && isQuotesHydrated && isMaterialsHydrated && isMachinesHydrated && isSettingsHydrated;
+
+  const clientsWithStats: ClientWithStats[] = useMemo(() => {
+    if (!isHydrated) return [];
+    
+    return clients.map(client => {
+      const clientQuotes = quotes.filter(q => q.clientId === client.id);
+      
+      const lastJob = clientQuotes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+      
+      const confirmedStatuses: Quote['status'][] = ['accepted', 'in_preparation', 'delivered'];
+      const totalPurchased = clientQuotes
+        .filter(q => confirmedStatuses.includes(q.status))
+        .reduce((sum, quote) => {
+          const { breakdown } = calculateCosts(quote, materials, machines, settings);
+          return sum + (breakdown?.total ?? 0);
+        }, 0);
+
+      return {
+        ...client,
+        lastJobName: lastJob?.name,
+        totalPurchased: totalPurchased,
+      };
+    });
+  }, [clients, quotes, materials, machines, settings, isHydrated]);
+
 
   const handleNewClient = () => {
     setSelectedClient(null)
@@ -149,13 +182,19 @@ export default function ClientsPage() {
             </Dialog>
         </div>
       </div>
-
-      <ClientsTable
-        clients={clients}
-        onEdit={handleEditClient}
-        onDelete={handleDeleteClient}
-        isHydrated={isHydrated}
-      />
+        {!isHydrated ? (
+             <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-md">
+                <Loader2 className="animate-spin mr-3" />
+                <p>Cargando clientes...</p>
+            </div>
+        ) : (
+             <ClientsTable
+                clients={clientsWithStats}
+                onEdit={handleEditClient}
+                onDelete={handleDeleteClient}
+                isHydrated={isHydrated}
+              />
+        )}
     </div>
   )
 }

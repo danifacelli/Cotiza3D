@@ -68,6 +68,11 @@ export interface Client {
   createdAt: string; // ISO date string
 }
 
+export type ClientWithStats = Client & {
+  lastJobName?: string;
+  totalPurchased: number;
+};
+
 export interface Quote {
   id: string;
   name: string;
