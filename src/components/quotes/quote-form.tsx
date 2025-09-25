@@ -32,7 +32,7 @@ import { useState, useEffect, useMemo, useRef } from "react"
 import { formatCurrency, cn } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { getExchangeRate } from "@/services/exchange-rate-service"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { QuotePartForm, PartFormValues } from "./quote-part-form"
 import { QuotePartsTable } from "./quote-parts-table"
 import { QuoteExtraCostForm, ExtraCostFormValues } from "./quote-extra-cost-form"
@@ -56,7 +56,7 @@ const PartSchema = z.object({
 const QuoteSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
   clientId: z.string().optional(),
-  status: z.enum(["draft", "accepted", "in_preparation", "delivered", "canceled"]),
+  status: z.enum(["draft", "accepted", "in_preparation", "ready_to_deliver", "delivered", "canceled"]),
   parts: z.array(PartSchema).min(1, "Debes añadir al menos un material."),
   machineId: z.string().min(1, "Debes seleccionar una máquina."),
   designCost: z.coerce.number().optional(),
@@ -544,6 +544,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                               <SelectItem value="draft">Borrador</SelectItem>
                               <SelectItem value="accepted">Aceptado</SelectItem>
                               <SelectItem value="in_preparation">En Preparación</SelectItem>
+                              <SelectItem value="ready_to_deliver">Listo para entregar</SelectItem>
                               <SelectItem value="delivered">Entregado</SelectItem>
                               <SelectItem value="canceled">Cancelado</SelectItem>
                             </SelectContent>

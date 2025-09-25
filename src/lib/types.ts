@@ -77,7 +77,7 @@ export interface Quote {
   id: string;
   name: string;
   clientId?: string;
-  status: 'draft' | 'accepted' | 'in_preparation' | 'delivered' | 'canceled';
+  status: 'draft' | 'accepted' | 'in_preparation' | 'ready_to_deliver' | 'delivered' | 'canceled';
   createdAt: string; // ISO date string
 
   parts: QuotePart[];

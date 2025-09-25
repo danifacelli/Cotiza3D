@@ -82,7 +82,7 @@ export default function ClientsPage() {
       
       const lastJob = clientQuotes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
       
-      const confirmedStatuses: Quote['status'][] = ['accepted', 'in_preparation', 'delivered'];
+      const confirmedStatuses: Quote['status'][] = ['accepted', 'in_preparation', 'ready_to_deliver', 'delivered'];
       const totalPurchased = clientQuotes
         .filter(q => confirmedStatuses.includes(q.status))
         .reduce((sum, quote) => {

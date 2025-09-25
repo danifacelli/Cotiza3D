@@ -82,7 +82,7 @@ export default function InvestmentsPage() {
   const investmentData = useMemo(() => {
     if (!isHydrated) return { totalInvested: 0, totalProfit: 0, amountToRecover: 0, recoveryPercentage: 0 };
     
-    const acceptedStatuses: Quote['status'][] = ['accepted', 'in_preparation', 'delivered'];
+    const acceptedStatuses: Quote['status'][] = ['accepted', 'in_preparation', 'ready_to_deliver', 'delivered'];
     const confirmedQuotes = quotes.filter(q => acceptedStatuses.includes(q.status));
     
     const totals = confirmedQuotes.reduce((acc, quote) => {

@@ -21,6 +21,7 @@ const statusConfig = {
     draft: { label: 'Borrador', icon: FileText, badgeClass: "bg-secondary text-secondary-foreground hover:bg-secondary/80" },
     accepted: { label: 'Aceptado', icon: CheckCircle, badgeClass: "bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30" },
     in_preparation: { label: 'En Preparación', icon: ClipboardList, badgeClass: "bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/30" },
+    ready_to_deliver: { label: 'Listo para Entregar', icon: PackageCheck, badgeClass: "bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-500/30" },
     delivered: { label: 'Entregado', icon: PackageCheck, badgeClass: "bg-violet-500/20 text-violet-700 dark:text-violet-400 border-violet-500/30" },
     canceled: { label: 'Cancelado', icon: XCircle, badgeClass: "bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30" }
 }
@@ -34,7 +35,7 @@ export function ClientHistoryDialog({ client, quotes, settings, exchangeRate, is
         return formatCurrency(amount * exchangeRate, settings.localCurrency, decimalPlaces, 'symbol');
     };
     
-    const confirmedStatuses: Quote['status'][] = ['accepted', 'in_preparation', 'delivered'];
+    const confirmedStatuses: Quote['status'][] = ['accepted', 'in_preparation', 'ready_to_deliver', 'delivered'];
     const totalBilled = quotes
         .filter(q => confirmedStatuses.includes(q.status))
         .reduce((sum, quote) => sum + quote.totalUSD, 0);

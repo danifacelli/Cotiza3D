@@ -5,7 +5,7 @@ import type { CostBreakdown } from "@/lib/calculations"
 import type { Settings, Machine, Quote, Client } from "@/lib/types"
 import { formatCurrency, cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
-import { Instagram, Mail, Globe, Phone } from 'lucide-react'
+import { Instagram, Mail, Globe, Phone, PackageCheck, FileText, CheckCircle, XCircle, ClipboardList } from 'lucide-react'
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { LATAM_CURRENCIES } from "@/lib/constants"
@@ -23,6 +23,15 @@ interface QuotePDFProps {
   isExchangeRateLoading: boolean
 }
 
+const statusConfig = {
+    draft: { label: 'Borrador', icon: FileText, className: "text-gray-600 bg-gray-100" },
+    accepted: { label: 'Aceptado', icon: CheckCircle, className: "text-green-600 bg-green-100" },
+    in_preparation: { label: 'En Preparación', icon: ClipboardList, className: "text-amber-600 bg-amber-100" },
+    ready_to_deliver: { label: 'Listo para Entregar', icon: PackageCheck, className: "text-blue-600 bg-blue-100" },
+    delivered: { label: 'Entregado', icon: PackageCheck, className: "text-violet-600 bg-violet-100" },
+    canceled: { label: 'Cancelado', icon: XCircle, className: "text-red-600 bg-red-100" }
+}
+
 const PDFRow = ({ label, value, className = "", isTotal = false }: { label: string; value: string | React.ReactNode; className?: string; isTotal?: boolean }) => (
     <div className={cn("flex justify-between items-center py-2 px-4 text-sm", className, !isTotal && "border-b border-border")}>
         <p className={cn("text-muted-foreground", isTotal && "font-bold text-base text-foreground")}>{label}</p>
@@ -37,6 +46,8 @@ export const QuotePDF = ({ quote, client, parts, settings, machine, breakdown, e
     }, [settings.localCurrency]);
     
     const localCurrencyDecimalPlaces = localCurrencyInfo?.value === 'CLP' || localCurrencyInfo?.value === 'PYG' ? 0 : settings.currencyDecimalPlaces;
+
+    const currentStatus = statusConfig[quote.status] || statusConfig.draft;
 
     return (
         <div className="p-8 font-sans">
@@ -58,6 +69,10 @@ export const QuotePDF = ({ quote, client, parts, settings, machine, breakdown, e
                 <div className="text-right">
                     <h2 className="text-xl font-semibold text-muted-foreground">Presupuesto</h2>
                     <p className="text-sm mt-1">Fecha: {format(new Date(quote.createdAt || new Date()), "d 'de' MMMM, yyyy", { locale: es })}</p>
+                    <div className={cn("mt-2 text-xs font-semibold inline-flex items-center gap-2 px-3 py-1 rounded-full", currentStatus.className)}>
+                        <currentStatus.icon className="w-4 h-4" />
+                        <span>{currentStatus.label}</span>
+                    </div>
                 </div>
             </header>
 

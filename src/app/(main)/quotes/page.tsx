@@ -148,6 +148,7 @@ export default function QuotesPage() {
         draft: 'Borrador',
         accepted: 'Aceptado',
         in_preparation: 'En Preparación',
+        ready_to_deliver: 'Listo para Entregar',
         delivered: 'Entregado',
         canceled: 'Cancelado'
     }
@@ -158,11 +159,12 @@ export default function QuotesPage() {
   };
 
   const statusCounts = useMemo(() => {
-    const counts = {
+    const counts: Record<StatusFilter, number> & { all: number } = {
       all: quotes.length,
       draft: 0,
       accepted: 0,
       in_preparation: 0,
+      ready_to_deliver: 0,
       delivered: 0,
       canceled: 0,
     };
@@ -202,6 +204,7 @@ export default function QuotesPage() {
                 <TabsTrigger value="draft">Borrador ({statusCounts.draft})</TabsTrigger>
                 <TabsTrigger value="accepted">Aceptados ({statusCounts.accepted})</TabsTrigger>
                 <TabsTrigger value="in_preparation">En Preparación ({statusCounts.in_preparation})</TabsTrigger>
+                <TabsTrigger value="ready_to_deliver">Listos p/ Entregar ({statusCounts.ready_to_deliver})</TabsTrigger>
                 <TabsTrigger value="delivered">Entregados ({statusCounts.delivered})</TabsTrigger>
                 <TabsTrigger value="canceled">Cancelados ({statusCounts.canceled})</TabsTrigger>
             </TabsList>
