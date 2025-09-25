@@ -67,7 +67,7 @@ export function FuturePurchasesTable({ purchases, onEdit, onDelete, onDuplicate,
             <TableHead>Artículo</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead className="text-right">Precio</TableHead>
-            <TableHead className="w-[50px]"></TableHead>
+            <TableHead className="w-[180px] text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -97,65 +97,45 @@ export function FuturePurchasesTable({ purchases, onEdit, onDelete, onDuplicate,
                     <div>{formatCurrency(purchase.priceUSD, 'USD', settings?.currencyDecimalPlaces ?? 2)}</div>
                     <div className="text-xs text-muted-foreground">{formatLocal(purchase.priceUSD)}</div>
                 </TableCell>
-                <TableCell className="align-top">
-                  <AlertDialog>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Más acciones</span>
+                <TableCell className="align-top text-right">
+                  <div className="flex justify-end gap-1">
+                    {purchase.status === 'pending' && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onMarkAsPurchased(purchase)}>
+                            <ShoppingCart className="h-4 w-4" />
+                            <span className="sr-only">Marcar como comprado</span>
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {purchase.status === 'pending' && (
-                            <>
-                                <DropdownMenuItem onClick={() => onMarkAsPurchased(purchase)}>
-                                    <div className="flex items-center">
-                                      <ShoppingCart className="mr-2 h-4 w-4" />
-                                      <span>Marcar como Comprado</span>
-                                    </div>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                            </>
-                        )}
-                        <DropdownMenuItem onClick={() => onEdit(purchase)}>
-                          <div className="flex items-center">
-                            <Pencil className="mr-2 h-4 w-4" />
-                            <span>Editar</span>
-                          </div>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onDuplicate(purchase.id)}>
-                            <div className="flex items-center">
-                                <Copy className="mr-2 h-4 w-4" />
-                                <span>Duplicar</span>
-                            </div>
-                        </DropdownMenuItem>
-                         <DropdownMenuSeparator />
-                        <AlertDialogTrigger asChild>
-                          <DropdownMenuItem className="text-destructive focus:text-destructive">
-                            <div className="flex items-center">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                <span>Eliminar</span>
-                            </div>
-                          </DropdownMenuItem>
-                        </AlertDialogTrigger>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>¿Estás seguro que deseas eliminar?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Esta acción no se puede deshacer. Esto eliminará permanentemente el artículo <strong>{purchase.name}</strong>.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction asChild>
-                          <Button variant="destructive" onClick={() => onDelete(purchase.id)}>Sí, eliminar</Button>
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                    )}
+                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(purchase)}>
+                        <Pencil className="h-4 w-4" />
+                        <span className="sr-only">Editar</span>
+                    </Button>
+                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onDuplicate(purchase.id)}>
+                        <Copy className="h-4 w-4" />
+                        <span className="sr-only">Duplicar</span>
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Eliminar</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>¿Estás seguro que deseas eliminar?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente el artículo <strong>{purchase.name}</strong>.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction asChild>
+                            <Button variant="destructive" onClick={() => onDelete(purchase.id)}>Sí, eliminar</Button>
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </TableCell>
               </TableRow>
             ))
