@@ -111,13 +111,17 @@ export function ClientsTable({ clients, onEdit, onDelete, isHydrated }: ClientsT
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => onEdit(client)}>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            <span>Editar</span>
+                            <div className="flex items-center">
+                                <Pencil className="mr-2 h-4 w-4" />
+                                <span>Editar</span>
+                            </div>
                         </DropdownMenuItem>
                         <AlertDialogTrigger asChild>
                             <DropdownMenuItem className="text-destructive focus:text-destructive">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                <span>Eliminar</span>
+                                <div className="flex items-center">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    <span>Eliminar</span>
+                                </div>
                             </DropdownMenuItem>
                         </AlertDialogTrigger>
                       </DropdownMenuContent>
