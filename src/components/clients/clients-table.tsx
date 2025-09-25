@@ -139,8 +139,7 @@ export function ClientsTable({ clients, onEdit, onDelete, isHydrated }: ClientsT
                   </AlertDialog>
                 </TableCell>
               </TableRow>
-              )
-            })
+            ))
           ) : (
             <TableRow>
               <TableCell colSpan={4} className="h-24 text-center">
