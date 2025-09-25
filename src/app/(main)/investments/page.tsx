@@ -121,14 +121,6 @@ export default function InvestmentsPage() {
     })
   }
 
-  const handleDeleteAll = () => {
-    setInvestments([])
-    toast({
-      title: "Todas las inversiones han sido eliminadas",
-      description: "Tu lista de inversiones está ahora vacía.",
-    })
-  }
-
   const handleSaveInvestment = (data: InvestmentFormData) => {
     const investmentData = {
         ...data,
@@ -173,30 +165,6 @@ export default function InvestmentsPage() {
             <p className="text-muted-foreground">Administra tus gastos de capital y compras de equipo.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-            {isHydrated && investments.length > 0 && (
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button variant="destructive-outline">
-                            <Trash2 className="mr-2" />
-                            Eliminar Todo
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                        <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Esta acción no se puede deshacer. Esto eliminará permanentemente todas tus inversiones.
-                        </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteAll} asChild>
-                            <Button variant="destructive">Sí, eliminar todo</Button>
-                        </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-            )}
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogTrigger asChild>
                 <Button onClick={handleNewInvestment}>

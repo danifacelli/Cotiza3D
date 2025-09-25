@@ -58,14 +58,6 @@ export default function MaterialsPage() {
       description: "El material ha sido eliminado correctamente.",
     })
   }
-  
-  const handleDeleteAllMaterials = () => {
-    setMaterials([])
-    toast({
-      title: "Todos los materiales han sido eliminados",
-      description: "Tu lista de insumos está ahora vacía.",
-    })
-  }
 
   const handleSaveMaterial = (data: Omit<Material, 'id'>) => {
     if (selectedMaterial) {
@@ -107,31 +99,6 @@ export default function MaterialsPage() {
             <p className="text-muted-foreground">Administra tus filamentos de impresión.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-            {isHydrated && materials.length > 0 && (
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button variant="destructive-outline">
-                            <Trash2 className="mr-2" />
-                            Eliminar Todo
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                        <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Esta acción no se puede deshacer. Esto eliminará permanentemente todos
-                            tus materiales.
-                        </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteAllMaterials} asChild>
-                           <Button variant="destructive">Sí, eliminar todo</Button>
-                        </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-            )}
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogTrigger asChild>
                 <Button onClick={handleNewMaterial}>

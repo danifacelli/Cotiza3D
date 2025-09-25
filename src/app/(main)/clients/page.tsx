@@ -123,15 +123,6 @@ export default function ClientsPage() {
       description: "El cliente ha sido eliminado correctamente.",
     })
   }
-  
-  const handleDeleteAllClients = () => {
-    setClients([])
-    setQuotes(quotes.map(q => ({...q, clientId: undefined})))
-    toast({
-      title: "Todos los clientes han sido eliminados",
-      description: "Tu lista de clientes está ahora vacía.",
-    })
-  }
 
   const handleSaveClient = (data: ClientFormValues) => {
     if (selectedClient) {
@@ -183,31 +174,6 @@ export default function ClientsPage() {
             <p className="text-muted-foreground">Administra tu lista de clientes.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-            {isHydrated && clients.length > 0 && (
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button variant="destructive-outline">
-                            <Trash2 className="mr-2" />
-                            Eliminar Todo
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                        <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Esta acción no se puede deshacer. Esto eliminará permanentemente todos
-                            tus clientes y los desvinculará de los presupuestos existentes.
-                        </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteAllClients} asChild>
-                           <Button variant="destructive">Sí, eliminar todo</Button>
-                        </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-            )}
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogTrigger asChild>
                 <Button onClick={handleNewClient}>

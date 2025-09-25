@@ -57,14 +57,6 @@ export default function MachinesPage() {
       description: "La máquina ha sido eliminada correctamente.",
     })
   }
-  
-  const handleDeleteAllMachines = () => {
-    setMachines([])
-    toast({
-      title: "Todas las máquinas han sido eliminadas",
-      description: "Tu lista de máquinas está ahora vacía.",
-    })
-  }
 
   const handleSaveMachine = (data: Omit<Machine, 'id'>) => {
     if (selectedMachine) {
@@ -98,31 +90,6 @@ export default function MachinesPage() {
             <p className="text-muted-foreground">Administra tus impresoras 3D.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-            {isHydrated && machines.length > 0 && (
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button variant="destructive-outline">
-                            <Trash2 className="mr-2" />
-                            Eliminar Todo
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                        <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Esta acción no se puede deshacer. Esto eliminará permanentemente todas
-                            tus máquinas.
-                        </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteAllMachines} asChild>
-                            <Button variant="destructive">Sí, eliminar todo</Button>
-                        </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-            )}
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogTrigger asChild>
                 <Button onClick={handleNewMachine}>
