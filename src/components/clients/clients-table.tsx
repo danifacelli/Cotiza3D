@@ -43,10 +43,11 @@ interface ClientsTableProps {
   onDelete: (id: string) => void
   onViewHistory: (client: Client) => void
   isHydrated: boolean
+  settings: Settings | null
+  exchangeRate: number | null
 }
 
-export function ClientsTable({ clients, onEdit, onDelete, onViewHistory, isHydrated }: ClientsTableProps) {
-  const [settings] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
+export function ClientsTable({ clients, onEdit, onDelete, onViewHistory, isHydrated, settings, exchangeRate }: ClientsTableProps) {
   
   if (!isHydrated) {
     return (
@@ -58,6 +59,12 @@ export function ClientsTable({ clients, onEdit, onDelete, onViewHistory, isHydra
     )
   }
 
+  const formatLocal = (amount: number) => {
+    if (!exchangeRate || !settings?.localCurrency) return null;
+    const decimalPlaces = settings.localCurrency === 'CLP' || settings.localCurrency === 'PYG' ? 0 : settings.currencyDecimalPlaces;
+    return formatCurrency(amount * exchangeRate, settings.localCurrency, decimalPlaces, 'symbol');
+  };
+
   const sortedClients = [...clients].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   return (
@@ -68,7 +75,7 @@ export function ClientsTable({ clients, onEdit, onDelete, onViewHistory, isHydra
             <TableHead>Nombre</TableHead>
             <TableHead>Contacto</TableHead>
             <TableHead>Último Trabajo</TableHead>
-            <TableHead className="text-right">Total Comprado (USD)</TableHead>
+            <TableHead className="text-right">Total Comprado</TableHead>
             <TableHead>Fecha de Registro</TableHead>
             <TableHead className="w-[160px] text-right">Acciones</TableHead>
           </TableRow>
@@ -106,7 +113,8 @@ export function ClientsTable({ clients, onEdit, onDelete, onViewHistory, isHydra
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">{client.lastJobName || 'N/A'}</TableCell>
                  <TableCell className="text-right font-mono">
-                    {formatCurrency(client.totalPurchased, 'USD', settings.currencyDecimalPlaces)}
+                    <div>{formatCurrency(client.totalPurchased, 'USD', settings?.currencyDecimalPlaces ?? 2)}</div>
+                    <div className="text-xs text-muted-foreground">{formatLocal(client.totalPurchased)}</div>
                 </TableCell>
                 <TableCell>
                   {format(new Date(client.createdAt), "d MMM yyyy", { locale: es })}

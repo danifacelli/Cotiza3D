@@ -209,6 +209,8 @@ export default function ClientsPage() {
                 onDelete={handleDeleteClient}
                 onViewHistory={handleViewHistory}
                 isHydrated={isHydrated}
+                settings={settings}
+                exchangeRate={exchangeRate}
               />
         )}
 
