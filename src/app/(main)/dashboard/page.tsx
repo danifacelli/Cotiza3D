@@ -4,12 +4,13 @@
 import Link from "next/link"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
-import type { Quote, Material, Machine, Settings, Investment } from "@/lib/types"
-import { DEFAULT_QUOTES, DEFAULT_MATERIALS, DEFAULT_MACHINES, DEFAULT_SETTINGS, DEFAULT_INVESTMENTS } from "@/lib/defaults"
+import type { Quote, Material, Machine, Settings, Investment, Client } from "@/lib/types"
+import { DEFAULT_QUOTES, DEFAULT_MATERIALS, DEFAULT_MACHINES, DEFAULT_SETTINGS, DEFAULT_INVESTMENTS, DEFAULT_CLIENTS } from "@/lib/defaults"
 import { calculateCosts } from "@/lib/calculations"
 import { formatCurrency, cn } from "@/lib/utils"
 import { getExchangeRate } from "@/services/exchange-rate-service"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 import {
   FileText,
@@ -36,16 +37,19 @@ import {
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Progress } from "@/components/ui/progress"
+import { ActiveQuotes } from "@/components/dashboard/active-quotes"
 
 export default function Dashboard() {
-  const [quotes, _, isQuotesHydrated] = useLocalStorage<Quote[]>(LOCAL_STORAGE_KEYS.QUOTES, DEFAULT_QUOTES);
+  const [quotes, setQuotes, isQuotesHydrated] = useLocalStorage<Quote[]>(LOCAL_STORAGE_KEYS.QUOTES, DEFAULT_QUOTES);
   const [materials, __, isMaterialsHydrated] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS);
   const [machines, ___, isMachinesHydrated] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES);
   const [settings, ____, isSettingsHydrated] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
   const [investments, _____, isInvestmentsHydrated] = useLocalStorage<Investment[]>(LOCAL_STORAGE_KEYS.INVESTMENTS, DEFAULT_INVESTMENTS);
+  const [clients, ______, isClientsHydrated] = useLocalStorage<Client[]>(LOCAL_STORAGE_KEYS.CLIENTS, DEFAULT_CLIENTS);
 
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(true);
+  const { toast } = useToast()
 
   useEffect(() => {
     async function fetchRate() {
@@ -66,7 +70,7 @@ export default function Dashboard() {
     }
   }, [settings?.localCurrency, isSettingsHydrated]);
 
-  const isHydrated = isQuotesHydrated && isMaterialsHydrated && isMachinesHydrated && isSettingsHydrated && isInvestmentsHydrated && !isExchangeRateLoading;
+  const isHydrated = isQuotesHydrated && isMaterialsHydrated && isMachinesHydrated && isSettingsHydrated && isInvestmentsHydrated && isClientsHydrated && !isExchangeRateLoading;
 
   const dashboardData = ((): {
     totalRevenue: number;
@@ -80,11 +84,15 @@ export default function Dashboard() {
     hasQuotes: boolean;
     totalInvestments: number;
     investmentRecoveryPercentage: number;
+    activeQuotes: Quote[];
   } | null => {
     if (!isHydrated) return null;
 
     const acceptedStatuses: Quote['status'][] = ['accepted', 'in_preparation', 'ready_to_deliver', 'delivered'];
     const confirmedQuotes = quotes.filter(q => acceptedStatuses.includes(q.status));
+    
+    const activeStatuses: Quote['status'][] = ['accepted', 'in_preparation', 'ready_to_deliver'];
+    const activeQuotes = quotes.filter(q => activeStatuses.includes(q.status));
     
     const totals = confirmedQuotes.reduce((acc, quote) => {
         const { breakdown } = calculateCosts(quote, materials, machines, settings);
@@ -111,6 +119,7 @@ export default function Dashboard() {
       hasQuotes: quotes.length > 0,
       totalInvestments: totalInvestments,
       investmentRecoveryPercentage: investmentRecoveryPercentage,
+      activeQuotes,
     };
   })();
 
@@ -176,6 +185,24 @@ export default function Dashboard() {
     </Card>
   );
 
+  const handleUpdateStatus = (id: string, status: Quote['status']) => {
+    setQuotes(
+      quotes.map((q) => (q.id === id ? { ...q, status } : q))
+    );
+    const statusMap: Record<Quote['status'], string> = {
+        draft: 'Borrador',
+        accepted: 'Aceptado',
+        in_preparation: 'En Preparación',
+        ready_to_deliver: 'Listo para Entregar',
+        delivered: 'Entregado',
+        canceled: 'Cancelado'
+    }
+    toast({
+      title: "Estado actualizado",
+      description: `El presupuesto ha sido marcado como ${statusMap[status]}.`,
+    });
+  };
+
   return (
     <div className="flex flex-1 flex-col gap-4 md:gap-8">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -212,90 +239,100 @@ export default function Dashboard() {
             !isHydrated
         )}
       </div>
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-2">
-        <Card className="lg:col-span-1">
-          <CardHeader>
-             <CardTitle>¡Bienvenido a Cotiza3D!</CardTitle>
-             <CardDescription>Sigue estos pasos para empezar a calcular los costos de tus impresiones 3D.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {setupSteps.map((step, index) => (
-                <Link href={step.href} key={index} className="block group">
-                  <div className="flex items-center gap-4 p-3 rounded-md hover:bg-muted transition-colors">
-                    {isHydrated ? (
-                      step.isComplete ? (
-                        <CheckCircle className="h-6 w-6 text-green-500" />
-                      ) : (
-                        <Circle className="h-6 w-6 text-muted-foreground" />
-                      )
-                    ) : (
-                      <Skeleton className="h-6 w-6 rounded-full" />
-                    )}
-                    <div>
-                      <p className={cn("font-semibold group-hover:text-primary", step.isComplete && "line-through text-muted-foreground")}>
-                        {step.label}
-                      </p>
-                    </div>
-                    <step.icon className="h-5 w-5 text-muted-foreground ml-auto" />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="xl:col-span-2">
+            <ActiveQuotes 
+                quotes={dashboardData?.activeQuotes ?? []}
+                clients={clients}
+                onUpdateStatus={handleUpdateStatus}
+                isHydrated={isHydrated}
+            />
+        </div>
+        <div className="space-y-4 xl:col-span-1">
             <Card>
-              <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                      <TrendingDown className="h-5 w-5" />
-                      <span>Recuperación de Inversión</span>
-                  </CardTitle>
-                  <CardDescription>
-                      Progreso de tus ganancias para cubrir el costo de tus inversiones.
-                  </CardDescription>
-              </CardHeader>
-              <CardContent>
-                  {isHydrated ? (
-                      <>
-                          <Progress value={dashboardData?.investmentRecoveryPercentage ?? 0} className="w-full" />
-                          <div className="grid grid-cols-2 gap-4 mt-4">
-                              <div>
-                                  <div className="text-xs text-muted-foreground">Ganancia Neta</div>
-                                  <div className="font-bold text-green-500">
-                                      {formatCurrency(dashboardData?.totalProfit ?? 0, 'USD', settings.currencyDecimalPlaces)}
-                                  </div>
-                                  <div className="text-xs font-mono text-muted-foreground">
-                                      {formatLocal(dashboardData?.totalProfit ?? 0)}
-                                  </div>
-                              </div>
-                              <div className="text-right">
-                                  <div className="text-xs text-muted-foreground">Inversión Total</div>
-                                  <div className="font-bold text-red-500">
-                                      {formatCurrency(dashboardData?.totalInvestments ?? 0, 'USD', settings.currencyDecimalPlaces)}
-                                  </div>
-                                  <div className="text-xs font-mono text-muted-foreground">
-                                      {formatLocal(dashboardData?.totalInvestments ?? 0)}
-                                  </div>
-                              </div>
-                          </div>
-                           {(dashboardData?.totalInvestments ?? 0) > 0 && 
-                              <div className="text-center mt-4">
-                                <p className="text-2xl font-bold">{dashboardData?.investmentRecoveryPercentage.toFixed(2)}%</p>
-                                <p className="text-xs text-muted-foreground">recuperado</p>
-                              </div>
-                           }
-                      </>
-                  ) : (
-                    <div className="space-y-2">
-                       <Skeleton className="h-4 w-full" />
-                       <Skeleton className="h-6 w-1/2" />
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <TrendingDown className="h-5 w-5" />
+                    <span>Recuperación de Inversión</span>
+                </CardTitle>
+                <CardDescription>
+                    Progreso de tus ganancias para cubrir el costo de tus inversiones.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                {isHydrated ? (
+                    <>
+                        <Progress value={dashboardData?.investmentRecoveryPercentage ?? 0} className="w-full" />
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <div className="text-xs text-muted-foreground">Ganancia Neta</div>
+                                <div className="font-bold text-green-500">
+                                    {formatCurrency(dashboardData?.totalProfit ?? 0, 'USD', settings.currencyDecimalPlaces)}
+                                </div>
+                                <div className="text-xs font-mono text-muted-foreground">
+                                    {formatLocal(dashboardData?.totalProfit ?? 0)}
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-xs text-muted-foreground">Inversión Total</div>
+                                <div className="font-bold text-red-500">
+                                    {formatCurrency(dashboardData?.totalInvestments ?? 0, 'USD', settings.currencyDecimalPlaces)}
+                                </div>
+                                <div className="text-xs font-mono text-muted-foreground">
+                                    {formatLocal(dashboardData?.totalInvestments ?? 0)}
+                                </div>
+                            </div>
+                        </div>
+                        {(dashboardData?.totalInvestments ?? 0) > 0 && 
+                            <div className="text-center mt-4">
+                            <p className="text-2xl font-bold">{dashboardData?.investmentRecoveryPercentage.toFixed(2)}%</p>
+                            <p className="text-xs text-muted-foreground">recuperado</p>
+                            </div>
+                        }
+                    </>
+                ) : (
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-6 w-1/2" />
+                </div>
+                )}
+            </CardContent>
+            </Card>
+             <Card>
+            <CardHeader>
+                <CardTitle>¡Bienvenido a Cotiza3D!</CardTitle>
+                <CardDescription>Sigue estos pasos para empezar a calcular los costos de tus impresiones 3D.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-4">
+                {setupSteps.map((step, index) => (
+                    <Link href={step.href} key={index} className="block group">
+                    <div className="flex items-center gap-4 p-3 rounded-md hover:bg-muted transition-colors">
+                        {isHydrated ? (
+                        step.isComplete ? (
+                            <CheckCircle className="h-6 w-6 text-green-500" />
+                        ) : (
+                            <Circle className="h-6 w-6 text-muted-foreground" />
+                        )
+                        ) : (
+                        <Skeleton className="h-6 w-6 rounded-full" />
+                        )}
+                        <div>
+                        <p className={cn("font-semibold group-hover:text-primary", step.isComplete && "line-through text-muted-foreground")}>
+                            {step.label}
+                        </p>
+                        </div>
+                        <step.icon className="h-5 w-5 text-muted-foreground ml-auto" />
                     </div>
-                  )}
-              </CardContent>
+                    </Link>
+                ))}
+                </div>
+            </CardContent>
             </Card>
         </div>
       </div>
     </div>
   )
 }
+
+    
