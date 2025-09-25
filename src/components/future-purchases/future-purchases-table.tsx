@@ -1,0 +1,154 @@
+
+"use client"
+
+import type { FuturePurchase, Settings } from "@/lib/types"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { MoreHorizontal, Pencil, Trash2, Link as LinkIcon, ShoppingCart } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { formatCurrency, cn } from "@/lib/utils"
+import Link from "next/link"
+import { Badge } from "@/components/ui/badge"
+
+interface FuturePurchasesTableProps {
+  purchases: FuturePurchase[]
+  onEdit: (purchase: FuturePurchase) => void
+  onDelete: (id: string) => void
+  onMarkAsPurchased: (purchase: FuturePurchase) => void
+  isHydrated: boolean
+  settings: Settings | null
+  exchangeRate: number | null
+}
+
+export function FuturePurchasesTable({ purchases, onEdit, onDelete, onMarkAsPurchased, isHydrated, settings, exchangeRate }: FuturePurchasesTableProps) {
+  
+  if (!isHydrated) {
+    return (
+      <div className="rounded-md border p-4 space-y-2">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+      </div>
+    )
+  }
+
+  const formatLocal = (amount: number) => {
+    if (!exchangeRate || !settings?.localCurrency) return null;
+    const decimalPlaces = settings.localCurrency === 'CLP' || settings.localCurrency === 'PYG' ? 0 : settings.currencyDecimalPlaces;
+    return formatCurrency(amount * exchangeRate, settings.localCurrency, decimalPlaces, 'symbol');
+  };
+  
+  const sortedPurchases = [...purchases].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Descripción</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead className="text-right">Precio</TableHead>
+            <TableHead className="w-[50px]"></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sortedPurchases.length > 0 ? (
+            sortedPurchases.map((purchase) => (
+              <TableRow key={purchase.id}>
+                <TableCell className="font-medium">
+                    <div>{purchase.description}</div>
+                    {purchase.link && (
+                        <Button variant="link" size="sm" asChild className="p-0 h-auto mt-1 text-xs">
+                            <Link href={purchase.link} target="_blank" rel="noopener noreferrer">
+                                <LinkIcon className="mr-1" />
+                                Ver producto
+                            </Link>
+                        </Button>
+                    )}
+                </TableCell>
+                <TableCell>
+                    <Badge variant={purchase.status === 'purchased' ? 'default' : 'secondary'}>
+                        {purchase.status === 'purchased' ? 'Comprado' : 'Pendiente'}
+                    </Badge>
+                </TableCell>
+                <TableCell className="text-right font-mono">
+                    <div>{formatCurrency(purchase.priceUSD, 'USD', settings?.currencyDecimalPlaces ?? 2)}</div>
+                    <div className="text-xs text-muted-foreground">{formatLocal(purchase.priceUSD)}</div>
+                </TableCell>
+                <TableCell>
+                  <AlertDialog>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Más acciones</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {purchase.status === 'pending' && (
+                            <DropdownMenuItem onClick={() => onMarkAsPurchased(purchase)}>
+                                <ShoppingCart className="mr-2 h-4 w-4" />
+                                <span>Marcar como Comprado</span>
+                            </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem onClick={() => onEdit(purchase)}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          <span>Editar</span>
+                        </DropdownMenuItem>
+                         <DropdownMenuSeparator />
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem className="text-destructive focus:text-destructive">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            <span>Eliminar</span>
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>¿Estás seguro que deseas eliminar?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Esta acción no se puede deshacer. Esto eliminará permanentemente el artículo <strong>{purchase.description}</strong>.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction asChild>
+                          <Button variant="destructive" onClick={() => onDelete(purchase.id)}>Sí, eliminar</Button>
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={4} className="h-24 text-center">
+                No tienes compras futuras en tu lista.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
+  )
+}

@@ -31,6 +31,7 @@ export function BackupRestore() {
         [LOCAL_STORAGE_KEYS.MACHINES]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.MACHINES) || "[]"),
         [LOCAL_STORAGE_KEYS.QUOTES]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.QUOTES) || "[]"),
         [LOCAL_STORAGE_KEYS.INVESTMENTS]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.INVESTMENTS) || "[]"),
+        [LOCAL_STORAGE_KEYS.FUTURE_PURCHASES]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.FUTURE_PURCHASES) || "[]"),
       };
 
       const jsonString = JSON.stringify(dataToExport, null, 2);
@@ -93,9 +94,15 @@ export function BackupRestore() {
             !Array.isArray(importedData[LOCAL_STORAGE_KEYS.MATERIALS]) ||
             !Array.isArray(importedData[LOCAL_STORAGE_KEYS.MACHINES]) ||
             !Array.isArray(importedData[LOCAL_STORAGE_KEYS.QUOTES]) ||
-            !Array.isArray(importedData[LOCAL_STORAGE_KEYS.INVESTMENTS])
+            !Array.isArray(importedData[LOCAL_STORAGE_KEYS.INVESTMENTS]) ||
+            !Array.isArray(importedData[LOCAL_STORAGE_KEYS.FUTURE_PURCHASES])
         ) {
-            throw new Error("El formato del archivo JSON no es válido.");
+            // For backwards compatibility, check if future_purchases is missing
+            if (importedData[LOCAL_STORAGE_KEYS.FUTURE_PURCHASES] === undefined) {
+              importedData[LOCAL_STORAGE_KEYS.FUTURE_PURCHASES] = [];
+            } else {
+              throw new Error("El formato del archivo JSON no es válido.");
+            }
         }
 
         // Import data

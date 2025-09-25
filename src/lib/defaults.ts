@@ -1,5 +1,5 @@
 
-import type { Settings, Material, Machine, Quote, Investment } from './types';
+import type { Settings, Material, Machine, Quote, Investment, FuturePurchase } from './types';
 import { nanoid } from 'nanoid';
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -27,6 +27,8 @@ export const DEFAULT_MACHINES: Machine[] = [];
 export const DEFAULT_QUOTES: Quote[] = [];
 
 export const DEFAULT_INVESTMENTS: Investment[] = [];
+
+export const DEFAULT_FUTURE_PURCHASES: FuturePurchase[] = [];
 
 // Helper to generate a unique ID
 export const generateId = () => nanoid();

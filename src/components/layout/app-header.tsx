@@ -9,6 +9,7 @@ import {
   FileText,
   Printer,
   Banknote,
+  ShoppingCart,
 } from "lucide-react"
 
 import {
@@ -26,6 +27,7 @@ const navLinks = [
     { href: "/materials", icon: Layers, label: "Insumos", className: "text-muted-foreground hover:text-foreground" },
     { href: "/machines", icon: Printer, label: "Máquinas", className: "text-muted-foreground hover:text-foreground" },
     { href: "/investments", icon: Banknote, label: "Inversiones", className: "text-muted-foreground hover:text-foreground" },
+    { href: "/future-purchases", icon: ShoppingCart, label: "Futuras Compras", className: "text-muted-foreground hover:text-foreground" },
     { href: "/settings", icon: Settings, label: "Configuración", className: "text-muted-foreground hover:text-foreground" },
 ]
 

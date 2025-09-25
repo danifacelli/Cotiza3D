@@ -49,6 +49,15 @@ export interface Investment {
   createdAt: string; // ISO date string
 }
 
+export interface FuturePurchase {
+  id: string;
+  description: string;
+  link?: string;
+  priceUSD: number;
+  status: 'pending' | 'purchased';
+  createdAt: string; // ISO date string
+}
+
 export interface Quote {
   id: string;
   name: string;
