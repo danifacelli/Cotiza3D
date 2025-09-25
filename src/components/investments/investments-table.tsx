@@ -13,15 +13,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { Pencil, Trash2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency } from "@/lib/utils"
 import { format } from "date-fns"
@@ -62,7 +56,7 @@ export function InvestmentsTable({ investments, onEdit, onDelete, isHydrated, se
             <TableHead>Nombre</TableHead>
             <TableHead>Fecha</TableHead>
             <TableHead className="text-right">Monto</TableHead>
-            <TableHead className="w-[50px]"></TableHead>
+            <TableHead className="w-[120px] text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -75,43 +69,35 @@ export function InvestmentsTable({ investments, onEdit, onDelete, isHydrated, se
                     <div>{formatCurrency(investment.amount, 'USD', settings?.currencyDecimalPlaces ?? 2)}</div>
                     <div className="text-xs text-muted-foreground">{formatLocal(investment.amount)}</div>
                 </TableCell>
-                <TableCell>
-                  <AlertDialog>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Más acciones</span>
+                <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(investment)}>
+                            <Pencil className="h-4 w-4" />
+                            <span className="sr-only">Editar</span>
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onEdit(investment)}>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          <span>Editar</span>
-                        </DropdownMenuItem>
-                        <AlertDialogTrigger asChild>
-                          <DropdownMenuItem className="text-destructive focus:text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Eliminar</span>
-                          </DropdownMenuItem>
-                        </AlertDialogTrigger>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>¿Estás seguro que deseas eliminar?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Esta acción no se puede deshacer. Esto eliminará permanentemente la inversión <strong>{investment.name}</strong>.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction asChild>
-                          <Button variant="destructive" onClick={() => onDelete(investment.id)}>Sí, eliminar</Button>
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Eliminar</span>
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>¿Estás seguro que deseas eliminar?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                    Esta acción no se puede deshacer. Esto eliminará permanentemente la inversión <strong>{investment.name}</strong>.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction asChild>
+                                    <Button variant="destructive" onClick={() => onDelete(investment.id)}>Sí, eliminar</Button>
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
                 </TableCell>
               </TableRow>
             ))
