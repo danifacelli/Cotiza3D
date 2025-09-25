@@ -1,5 +1,4 @@
 
-"use "
 "use client"
 
 import type { FuturePurchase, Settings } from "@/lib/types"
@@ -109,10 +108,13 @@ export function FuturePurchasesTable({ purchases, onEdit, onDelete, onDuplicate,
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         {purchase.status === 'pending' && (
-                            <DropdownMenuItem onClick={() => onMarkAsPurchased(purchase)}>
-                                <ShoppingCart className="mr-2 h-4 w-4" />
-                                <span>Marcar como Comprado</span>
-                            </DropdownMenuItem>
+                            <>
+                                <DropdownMenuItem onClick={() => onMarkAsPurchased(purchase)}>
+                                    <ShoppingCart className="mr-2 h-4 w-4" />
+                                    <span>Marcar como Comprado</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                            </>
                         )}
                         <DropdownMenuItem onClick={() => onEdit(purchase)}>
                           <Pencil className="mr-2 h-4 w-4" />
