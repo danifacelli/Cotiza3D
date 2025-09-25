@@ -82,8 +82,8 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[30%]">Nombre</TableHead>
             <TableHead>Cliente</TableHead>
+            <TableHead className="w-[30%]">Nombre</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead className="text-right">Costo (USD)</TableHead>
             <TableHead className="text-right">Total (USD)</TableHead>
@@ -98,8 +98,8 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
               const currentStatus = statusConfig[quote.status] || statusConfig.draft;
               return (
               <TableRow key={quote.id}>
-                <TableCell className="font-medium cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{quote.name}</TableCell>
                 <TableCell className="cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{quote.clientName || "-"}</TableCell>
+                <TableCell className="font-medium cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{quote.name}</TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
