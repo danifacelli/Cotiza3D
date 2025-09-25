@@ -10,6 +10,7 @@ import {
   Printer,
   Banknote,
   ShoppingCart,
+  Users,
 } from "lucide-react"
 
 import {
@@ -24,6 +25,7 @@ import { Logo } from "@/components/icons/logo"
 const navLinks = [
     { href: "/dashboard", icon: Home, label: "Dashboard", className: "text-muted-foreground hover:text-foreground" },
     { href: "/quotes", icon: FileText, label: "Presupuestos", className: "text-muted-foreground hover:text-foreground" },
+    { href: "/clients", icon: Users, label: "Clientes", className: "text-muted-foreground hover:text-foreground" },
     { href: "/materials", icon: Layers, label: "Insumos", className: "text-muted-foreground hover:text-foreground" },
     { href: "/machines", icon: Printer, label: "Máquinas", className: "text-muted-foreground hover:text-foreground" },
     { href: "/investments", icon: Banknote, label: "Inversiones", className: "text-muted-foreground hover:text-foreground" },

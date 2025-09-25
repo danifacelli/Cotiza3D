@@ -2,7 +2,7 @@
 "use client"
 
 import type { CostBreakdown } from "@/lib/calculations"
-import type { Settings, Machine, Quote } from "@/lib/types"
+import type { Settings, Machine, Quote, Client } from "@/lib/types"
 import { formatCurrency, cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
 import { Instagram, Mail, Globe, Phone } from 'lucide-react'
@@ -14,6 +14,7 @@ import { Logo } from "@/components/icons/logo"
 
 interface QuotePDFProps {
   quote: Quote
+  client?: Client
   parts: (Quote['parts'][0] & { name: string })[]
   settings: Settings
   machine: Machine | undefined
@@ -29,7 +30,7 @@ const PDFRow = ({ label, value, className = "", isTotal = false }: { label: stri
     </div>
 )
 
-export const QuotePDF = ({ quote, parts, settings, machine, breakdown, exchangeRate }: QuotePDFProps) => {
+export const QuotePDF = ({ quote, client, parts, settings, machine, breakdown, exchangeRate }: QuotePDFProps) => {
 
     const localCurrencyInfo = useMemo(() => {
         return LATAM_CURRENCIES.find(c => c.value === settings.localCurrency);
@@ -64,7 +65,7 @@ export const QuotePDF = ({ quote, parts, settings, machine, breakdown, exchangeR
             <section className="grid grid-cols-2 gap-8 my-6">
                 <div>
                     <h3 className="text-sm font-semibold text-muted-foreground mb-2">CLIENTE</h3>
-                    <p className="font-medium">{quote.clientName || 'Cliente sin especificar'}</p>
+                    <p className="font-medium">{client?.name || 'Cliente sin especificar'}</p>
                 </div>
                 <div className="text-right">
                     <h3 className="text-sm font-semibold text-muted-foreground mb-2">PROYECTO</h3>

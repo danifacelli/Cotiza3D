@@ -32,6 +32,7 @@ export function BackupRestore() {
         [LOCAL_STORAGE_KEYS.QUOTES]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.QUOTES) || "[]"),
         [LOCAL_STORAGE_KEYS.INVESTMENTS]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.INVESTMENTS) || "[]"),
         [LOCAL_STORAGE_KEYS.FUTURE_PURCHASES]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.FUTURE_PURCHASES) || "[]"),
+        [LOCAL_STORAGE_KEYS.CLIENTS]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.CLIENTS) || "[]"),
       };
 
       const jsonString = JSON.stringify(dataToExport, null, 2);
@@ -88,24 +89,22 @@ export function BackupRestore() {
         }
         const importedData = JSON.parse(text);
         
-        // Basic validation
-        if (
-            !importedData[LOCAL_STORAGE_KEYS.SETTINGS] ||
-            !Array.isArray(importedData[LOCAL_STORAGE_KEYS.MATERIALS]) ||
-            !Array.isArray(importedData[LOCAL_STORAGE_KEYS.MACHINES]) ||
-            !Array.isArray(importedData[LOCAL_STORAGE_KEYS.QUOTES]) ||
-            !Array.isArray(importedData[LOCAL_STORAGE_KEYS.INVESTMENTS]) ||
-            !Array.isArray(importedData[LOCAL_STORAGE_KEYS.FUTURE_PURCHASES])
-        ) {
-            // For backwards compatibility, check if future_purchases is missing
-            if (importedData[LOCAL_STORAGE_KEYS.FUTURE_PURCHASES] === undefined) {
-              importedData[LOCAL_STORAGE_KEYS.FUTURE_PURCHASES] = [];
-            } else {
-              throw new Error("El formato del archivo JSON no es válido.");
-            }
-        }
+        const requiredKeys = Object.values(LOCAL_STORAGE_KEYS);
 
-        // Import data
+        // For backward compatibility, some keys might not exist in old backups
+        const allKeysPresent = requiredKeys.every(key => {
+            if (importedData[key] === undefined) {
+                // If a key is missing, we add it with a default empty value
+                if (key === LOCAL_STORAGE_KEYS.SETTINGS) {
+                    importedData[key] = {};
+                } else {
+                    importedData[key] = [];
+                }
+            }
+            return true;
+        });
+
+        // Now, we can safely import
         Object.keys(LOCAL_STORAGE_KEYS).forEach(key => {
             const storageKey = (LOCAL_STORAGE_KEYS as any)[key];
             if (importedData[storageKey]) {

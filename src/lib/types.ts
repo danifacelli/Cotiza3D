@@ -59,10 +59,19 @@ export interface FuturePurchase {
   createdAt: string; // ISO date string
 }
 
+export interface Client {
+  id: string;
+  name: string;
+  instagram?: string;
+  facebook?: string;
+  phone?: string;
+  createdAt: string; // ISO date string
+}
+
 export interface Quote {
   id: string;
   name: string;
-  clientName: string;
+  clientId?: string;
   status: 'draft' | 'accepted' | 'in_preparation' | 'delivered' | 'canceled';
   createdAt: string; // ISO date string
 

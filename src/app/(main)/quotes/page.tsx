@@ -5,8 +5,8 @@ import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
-import type { Quote, Material, Machine, Settings } from "@/lib/types"
-import { DEFAULT_QUOTES, generateId, DEFAULT_MATERIALS, DEFAULT_MACHINES, DEFAULT_SETTINGS } from "@/lib/defaults"
+import type { Quote, Material, Machine, Settings, Client } from "@/lib/types"
+import { DEFAULT_QUOTES, generateId, DEFAULT_MATERIALS, DEFAULT_MACHINES, DEFAULT_SETTINGS, DEFAULT_CLIENTS } from "@/lib/defaults"
 import { Button } from "@/components/ui/button"
 import { PlusCircle, Trash2, CheckCircle, XCircle, FileText, Loader2 } from "lucide-react"
 import {
@@ -42,7 +42,8 @@ export default function QuotesPage() {
   const [materials, _, isMaterialsHydrated] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS)
   const [machines, __, isMachinesHydrated] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES)
   const [settings, ___, isSettingsHydrated] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
-  
+  const [clients, ____, isClientsHydrated] = useLocalStorage<Client[]>(LOCAL_STORAGE_KEYS.CLIENTS, DEFAULT_CLIENTS);
+
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -69,7 +70,7 @@ export default function QuotesPage() {
     }
   }, [settings?.localCurrency, isSettingsHydrated]);
 
-  const isHydrated = isQuotesHydrated && isMaterialsHydrated && isMachinesHydrated && isSettingsHydrated;
+  const isHydrated = isQuotesHydrated && isMaterialsHydrated && isMachinesHydrated && isSettingsHydrated && isClientsHydrated;
 
   const quotesWithTotals = useMemo((): QuoteWithTotals[] => {
     if (!isHydrated) return [];
@@ -80,9 +81,10 @@ export default function QuotesPage() {
       const totalLocal = exchangeRate ? totalUSD * exchangeRate : 0;
       const costUSD = breakdown?.costSubtotal ?? 0;
       const isManualPrice = breakdown?.isManualPrice ?? false;
-      return { ...quote, totalUSD, totalLocal, costUSD, isManualPrice };
+      const client = clients.find(c => c.id === quote.clientId);
+      return { ...quote, clientName: client?.name, totalUSD, totalLocal, costUSD, isManualPrice };
     }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [quotes, materials, machines, settings, exchangeRate, isHydrated]);
+  }, [quotes, materials, machines, settings, exchangeRate, isHydrated, clients]);
   
   const filteredQuotes = useMemo(() => {
     if (statusFilter === 'all') {

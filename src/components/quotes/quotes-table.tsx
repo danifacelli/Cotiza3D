@@ -37,6 +37,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { cn, formatCurrency } from "@/lib/utils"
 
 export type QuoteWithTotals = Quote & {
+  clientName?: string;
   totalUSD: number;
   totalLocal: number;
   costUSD: number;

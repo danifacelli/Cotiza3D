@@ -6,6 +6,7 @@ export const LOCAL_STORAGE_KEYS = {
   QUOTES: 'cotiza3d_quotes',
   INVESTMENTS: 'cotiza3d_investments',
   FUTURE_PURCHASES: 'cotiza3d_future_purchases',
+  CLIENTS: 'cotiza3d_clients',
 };
 
 export const FILAMENT_TYPES = [

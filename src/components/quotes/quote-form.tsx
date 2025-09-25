@@ -7,8 +7,8 @@ import * as z from "zod"
 import { useRouter } from "next/navigation"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
-import type { Quote, Machine, Material, Settings, ExtraCost } from "@/lib/types"
-import { DEFAULT_MACHINES, DEFAULT_MATERIALS, DEFAULT_SETTINGS, generateId } from "@/lib/defaults"
+import type { Quote, Machine, Material, Settings, ExtraCost, Client } from "@/lib/types"
+import { DEFAULT_MACHINES, DEFAULT_MATERIALS, DEFAULT_SETTINGS, DEFAULT_CLIENTS, generateId } from "@/lib/defaults"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { PlusCircle, FileDown, Info, Instagram, Loader2, CalendarIcon } from "lucide-react"
+import { PlusCircle, FileDown, Info, Instagram, Loader2, CalendarIcon, ChevronsUpDown, UserPlus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { calculateCosts, CostBreakdown } from "@/lib/calculations"
 import { CostSummary } from "@/components/quotes/cost-summary"
@@ -36,7 +36,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { QuotePartForm, PartFormValues } from "./quote-part-form"
 import { QuotePartsTable } from "./quote-parts-table"
 import { QuoteExtraCostForm, ExtraCostFormValues } from "./quote-extra-cost-form"
-import { QuoteExtraCostsTable } from "./quote-extra-costs-table"
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
 import { QuotePDF } from "./quote-pdf"
@@ -44,6 +43,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { ClientForm, type ClientFormValues } from "../clients/client-form"
 
 const PartSchema = z.object({
   id: z.string(),
@@ -53,7 +54,7 @@ const PartSchema = z.object({
 
 const QuoteSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
-  clientName: z.string().optional(),
+  clientId: z.string().optional(),
   status: z.enum(["draft", "accepted", "in_preparation", "delivered", "canceled"]),
   parts: z.array(PartSchema).min(1, "Debes añadir al menos un material."),
   machineId: z.string().min(1, "Debes seleccionar una máquina."),
@@ -98,13 +99,15 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const [machines, setMachines, isMachinesHydrated] = useLocalStorage<Machine[]>(LOCAL_STORAGE_KEYS.MACHINES, DEFAULT_MACHINES)
   const [materials, __, isMaterialsHydrated] = useLocalStorage<Material[]>(LOCAL_STORAGE_KEYS.MATERIALS, DEFAULT_MATERIALS)
   const [settings, setSettings, isSettingsHydrated] = useLocalStorage<Settings>(LOCAL_STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
-  
+  const [clients, setClients, isClientsHydrated] = useLocalStorage<Client[]>(LOCAL_STORAGE_KEYS.CLIENTS, DEFAULT_CLIENTS);
+
   const [calculationResult, setCalculationResult] = useState<{ breakdown: CostBreakdown | null }>({ breakdown: null });
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(true);
   const [isPartFormOpen, setIsPartFormOpen] = useState(false);
   const [isExtraCostFormOpen, setIsExtraCostFormOpen] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isClientFormOpen, setIsClientFormOpen] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
 
 
@@ -120,7 +123,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         deliveryDate: quote.deliveryDate ? new Date(quote.deliveryDate) : undefined,
     } : {
         name: "",
-        clientName: "",
+        clientId: "",
         status: "draft",
         parts: [],
         machineId: machines.length > 0 ? machines[0].id : "",
@@ -166,6 +169,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
   const watchedPrintSeconds = watch("printSeconds");
   const watchedLaborHours = watch("laborHours");
   const watchedLaborMinutes = watch("laborMinutes");
+  const watchedClientId = watch("clientId");
 
   const printHoursDecimal = useMemo(() => (Number(watchedPrintHours) || 0) + ((Number(watchedPrintMinutes) || 0) / 60) + ((Number(watchedPrintSeconds) || 0) / 3600), [watchedPrintHours, watchedPrintMinutes, watchedPrintSeconds]);
   const laborHoursDecimal = useMemo(() => (Number(watchedLaborHours) || 0) + ((Number(watchedLaborMinutes) || 0) / 60), [watchedLaborHours, watchedLaborMinutes]);
@@ -255,6 +259,10 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     return machines.find(m => m.id === watchedMachineId);
   }, [machines, watchedMachineId]);
 
+  const selectedClient = useMemo(() => {
+    return clients.find(c => c.id === watchedClientId);
+  }, [clients, watchedClientId]);
+
 
   const onSubmit = (data: QuoteFormValues) => {
     const finalPrintHours = (data.printHours || 0) + ((data.printMinutes || 0) / 60) + ((data.printSeconds || 0) / 3600);
@@ -265,7 +273,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       status: data.status,
       createdAt: quote?.createdAt || new Date().toISOString(),
       name: data.name,
-      clientName: data.clientName || "",
+      clientId: data.clientId,
       parts: data.parts,
       machineId: data.machineId,
       designCost: data.designCost || 0,
@@ -290,6 +298,21 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       toast({ title: "Presupuesto creado" })
     }
     router.push("/quotes")
+  }
+
+  const handleSaveClient = (data: ClientFormValues) => {
+      const newClient: Client = {
+        id: generateId(),
+        ...data,
+        createdAt: new Date().toISOString(),
+      };
+      setClients(prev => [newClient, ...prev]);
+      setValue('clientId', newClient.id);
+      toast({
+        title: "Cliente creado",
+        description: `${newClient.name} ha sido añadido y seleccionado.`,
+      });
+      setIsClientFormOpen(false);
   }
 
   const handleGeneratePdf = async () => {
@@ -446,13 +469,59 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                   />
                   <FormField
                     control={form.control}
-                    name="clientName"
+                    name="clientId"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nombre del Cliente (Opcional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Ej: Juan Pérez" {...field} />
-                        </FormControl>
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Cliente</FormLabel>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <FormControl>
+                                    <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    className={cn(
+                                        "w-full justify-between",
+                                        !field.value && "text-muted-foreground"
+                                    )}
+                                    >
+                                    {field.value
+                                        ? clients.find(
+                                            (client) => client.id === field.value
+                                        )?.name
+                                        : "Seleccionar cliente"}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                               <Command>
+                                 <CommandInput placeholder="Buscar cliente..." />
+                                 <CommandList>
+                                     <CommandEmpty>No se encontró ningún cliente.</CommandEmpty>
+                                     <CommandGroup>
+                                        <CommandItem
+                                            onSelect={() => setIsClientFormOpen(true)}
+                                            className="cursor-pointer"
+                                            >
+                                            <UserPlus className="mr-2 h-4 w-4" />
+                                            Crear nuevo cliente
+                                        </CommandItem>
+                                     {clients.map((client) => (
+                                        <CommandItem
+                                            value={client.name}
+                                            key={client.id}
+                                            onSelect={() => {
+                                                form.setValue("clientId", client.id)
+                                            }}
+                                            >
+                                            {client.name}
+                                        </CommandItem>
+                                        ))}
+                                     </CommandGroup>
+                                 </CommandList>
+                               </Command>
+                            </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -878,6 +947,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
              {calculationResult.breakdown && (
                 <QuotePDF
                     quote={{...watchedValues, id: quote?.id || '', createdAt: quote?.createdAt || new Date().toISOString(), deliveryDate: watchedValues.deliveryDate?.toISOString()} as Quote}
+                    client={selectedClient}
                     parts={partsWithNames}
                     settings={settings}
                     machine={selectedMachine}
@@ -888,6 +958,21 @@ export function QuoteForm({ quote }: QuoteFormProps) {
              )}
           </div>
       </div>
+
+       <Dialog open={isClientFormOpen} onOpenChange={setIsClientFormOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Nuevo Cliente</DialogTitle>
+              <DialogDescription>
+                Añade un nuevo cliente a tu lista.
+              </DialogDescription>
+            </DialogHeader>
+            <ClientForm
+              onSubmit={handleSaveClient}
+              onCancel={() => setIsClientFormOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
 
     </Form>
   )

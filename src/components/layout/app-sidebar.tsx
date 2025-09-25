@@ -9,12 +9,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Home, Layers, Settings, FileText, Printer, Banknote, ShoppingCart } from "lucide-react"
+import { Home, Layers, Settings, FileText, Printer, Banknote, ShoppingCart, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Dashboard" },
   { href: "/quotes", icon: FileText, label: "Presupuestos" },
+  { href: "/clients", icon: Users, label: "Clientes" },
   { href: "/materials", icon: Layers, label: "Insumos" },
   { href: "/machines", icon: Printer, label: "Máquinas" },
   { href: "/investments", icon: Banknote, label: "Inversiones" },
@@ -36,7 +37,7 @@ export function AppSidebar() {
                   href={item.href}
                   className={cn(
                     "flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8",
-                    pathname.startsWith(item.href) && "bg-accent text-accent-foreground"
+                    (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))) && "bg-accent text-accent-foreground"
                   )}
                 >
                   <item.icon className="h-5 w-5" />
