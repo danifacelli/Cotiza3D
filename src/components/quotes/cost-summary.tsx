@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { LATAM_CURRENCIES } from "@/lib/constants"
-import { useMemo } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -48,16 +48,53 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
   const { watch, setValue } = form;
   const finalPriceOverride = watch('finalPriceOverride');
   const isManualPrice = useMemo(() => typeof finalPriceOverride === 'number', [finalPriceOverride]);
+  
+  const [localPrice, setLocalPrice] = useState<number | string>("");
+
+  useEffect(() => {
+    if (breakdown && exchangeRate) {
+        const newLocalPrice = (breakdown.total * exchangeRate).toFixed(localCurrencyDecimalPlaces);
+        if (!isManualPrice) {
+            setLocalPrice(newLocalPrice);
+        } else if (finalPriceOverride) {
+            const currentLocal = (finalPriceOverride * exchangeRate).toFixed(localCurrencyDecimalPlaces)
+            setLocalPrice(currentLocal)
+        }
+    }
+  }, [breakdown, exchangeRate, isManualPrice, finalPriceOverride]);
+
 
   const handleManualPriceToggle = (checked: boolean) => {
     if (checked) {
         if (breakdown) {
-             setValue('finalPriceOverride', parseFloat(breakdown.total.toFixed(settings.currencyDecimalPlaces)), { shouldDirty: true });
+             const priceToSet = parseFloat(breakdown.total.toFixed(settings.currencyDecimalPlaces));
+             setValue('finalPriceOverride', priceToSet, { shouldDirty: true });
+             if (exchangeRate) {
+                setLocalPrice((priceToSet * exchangeRate).toFixed(localCurrencyDecimalPlaces));
+             }
         }
     } else {
         setValue('finalPriceOverride', undefined, { shouldDirty: true });
     }
   }
+
+  const handleUSDPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const usdValue = e.target.valueAsNumber || 0;
+    setValue('finalPriceOverride', usdValue, { shouldDirty: true });
+    if (exchangeRate) {
+        setLocalPrice((usdValue * exchangeRate).toFixed(localCurrencyDecimalPlaces));
+    }
+  }
+
+  const handleLocalPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const localValue = e.target.value;
+      setLocalPrice(localValue);
+      const localNumber = parseFloat(localValue);
+      if (!isNaN(localNumber) && exchangeRate && exchangeRate > 0) {
+          setValue('finalPriceOverride', localNumber / exchangeRate, { shouldDirty: true });
+      }
+  }
+
 
   if (!breakdown) {
     return (
@@ -195,45 +232,64 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
                         Precio Manual
                     </Label>
                 </div>
-                {!isManualPrice && (
+                 {!isManualPrice && (
                     <div className="text-2xl font-bold text-right">
-                        {formatCurrency(breakdown.total, "USD", decimalPlaces)}
+                         <div>{formatCurrency(breakdown.total, "USD", decimalPlaces)}</div>
+                         {exchangeRate && localCurrencyInfo && (
+                            <div className="text-lg font-semibold text-muted-foreground">{formatCurrency(breakdown.total * exchangeRate, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale)}</div>
+                         )}
                     </div>
                 )}
             </div>
             
             {isManualPrice && (
-                <FormField
-                    control={form.control}
-                    name="finalPriceOverride"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormControl>
-                            <Input 
-                                type="number" 
-                                step="0.01" 
-                                className="text-2xl font-bold h-12 text-right"
-                                {...field}
-                                onFocus={(e) => e.target.select()}
-                                onChange={e => field.onChange(e.target.value === '' ? 0 : e.target.valueAsNumber)}
-                             />
-                        </FormControl>
-                    </FormItem>
+                 <div className="space-y-4">
+                    <FormField
+                        control={form.control}
+                        name="finalPriceOverride"
+                        render={({ field }) => (
+                        <FormItem>
+                             <Label>Precio Total (USD)</Label>
+                            <FormControl>
+                                <Input 
+                                    type="number" 
+                                    step="0.01" 
+                                    className="text-2xl font-bold h-12 text-right"
+                                    {...field}
+                                    value={finalPriceOverride ?? 0}
+                                    onFocus={(e) => e.target.select()}
+                                    onChange={handleUSDPriceChange}
+                                />
+                            </FormControl>
+                        </FormItem>
+                        )}
+                    />
+                    {localCurrencyInfo && exchangeRate && (
+                         <FormItem>
+                            <Label>Precio Total ({localCurrencyInfo.value})</Label>
+                            <FormControl>
+                                <Input 
+                                    type="number"
+                                    step={localCurrencyDecimalPlaces === 0 ? "1" : "0.01"}
+                                    className="text-2xl font-bold h-12 text-right"
+                                    value={localPrice}
+                                    onFocus={(e) => e.target.select()}
+                                    onChange={handleLocalPriceChange}
+                                />
+                            </FormControl>
+                         </FormItem>
                     )}
-                />
+                 </div>
             )}
         </div>
 
 
         <div className="pt-2 space-y-1 text-right">
             {isExchangeRateLoading && <p className="text-xs text-muted-foreground">Obteniendo cambio...</p>}
-            {exchangeRate && localCurrencyInfo && (
-                <>
-                    <p className="text-xl font-bold">{formatCurrency(breakdown.total * exchangeRate, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale)}</p>
-                    <p className="text-xs text-muted-foreground">
-                        Tasa de cambio: 1 USD ≈ {exchangeRate.toFixed(2)} {localCurrencyInfo.value}
-                    </p>
-                </>
+            {exchangeRate && localCurrencyInfo && !isManualPrice && (
+                <p className="text-xs text-muted-foreground">
+                    Tasa de cambio: 1 USD ≈ {exchangeRate.toFixed(2)} {localCurrencyInfo.value}
+                </p>
             )}
             {exchangeRate === null && !isExchangeRateLoading && <p className="text-xs text-destructive">No se pudo obtener la tasa de cambio.</p>}
         </div>
