@@ -80,6 +80,7 @@ const QuoteSchema = z.object({
   ).optional(),
   notes: z.string().optional(),
   finalPriceOverride: z.coerce.number().optional(),
+  finalPriceOverrideLocal: z.coerce.number().optional(),
 }).refine(data => (data.printHours || 0) + (data.printMinutes || 0) + (data.printSeconds || 0) > 0, {
   message: "El tiempo de impresión total debe ser mayor a 0.",
   path: ["printHours"], 
@@ -143,6 +144,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         laborHours: 0,
         laborMinutes: 0,
         finalPriceOverride: undefined,
+        finalPriceOverrideLocal: undefined,
     },
   })
   
@@ -208,6 +210,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
 
     if (result.breakdown && !result.breakdown.isManualPrice && watchedFinalPriceOverride !== undefined) {
         setValue('finalPriceOverride', undefined);
+        setValue('finalPriceOverrideLocal', undefined);
     }
 
   }, [
@@ -289,6 +292,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       extraCosts: data.extraCosts || [],
       notes: data.notes || "",
       finalPriceOverride: data.finalPriceOverride,
+      finalPriceOverrideLocal: data.finalPriceOverrideLocal,
     }
 
     if (quote) {

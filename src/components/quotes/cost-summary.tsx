@@ -49,59 +49,53 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
 
   const { watch, setValue, getValues } = form;
   const finalPriceOverride = watch('finalPriceOverride');
+  const finalPriceOverrideLocal = watch('finalPriceOverrideLocal');
   const isManualPrice = useMemo(() => typeof finalPriceOverride === 'number', [finalPriceOverride]);
   
   const localCurrencyDecimalPlaces = localCurrencyInfo?.value === 'CLP' || localCurrencyInfo?.value === 'PYG' ? 0 : settings.currencyDecimalPlaces;
-
+  
   const [localPriceInput, setLocalPriceInput] = useState<string>("");
 
-   useEffect(() => {
+  useEffect(() => {
     const usdValue = getValues('finalPriceOverride');
-    if (isManualPrice && typeof usdValue === 'number' && exchangeRate) {
-      setLocalPriceInput((usdValue * exchangeRate).toFixed(localCurrencyDecimalPlaces));
-    } else if (!isManualPrice) {
-        setLocalPriceInput("");
+    const localValue = getValues('finalPriceOverrideLocal');
+    
+    if (isManualPrice && typeof localValue === 'number') {
+        setLocalPriceInput(String(localValue));
+    } else if (isManualPrice && typeof usdValue === 'number' && exchangeRate) {
+        setLocalPriceInput((usdValue * exchangeRate).toFixed(localCurrencyDecimalPlaces));
     }
-     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isManualPrice, exchangeRate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isManualPrice, exchangeRate, settings.currencyDecimalPlaces]);
+
 
   const handleManualPriceToggle = (checked: boolean) => {
     if (checked) {
         if (breakdown) {
              const priceToSet = parseFloat(breakdown.total.toFixed(settings.currencyDecimalPlaces));
              setValue('finalPriceOverride', priceToSet, { shouldDirty: true });
+             
              if (exchangeRate) {
-                setLocalPriceInput((priceToSet * exchangeRate).toFixed(localCurrencyDecimalPlaces));
+                 const localPrice = priceToSet * exchangeRate;
+                 const roundedLocalPrice = parseFloat(localPrice.toFixed(localCurrencyDecimalPlaces));
+                 setValue('finalPriceOverrideLocal', roundedLocalPrice, { shouldDirty: true });
+                 setLocalPriceInput(String(roundedLocalPrice));
              }
         }
     } else {
         setValue('finalPriceOverride', undefined, { shouldDirty: true });
+        setValue('finalPriceOverrideLocal', undefined, { shouldDirty: true });
         setLocalPriceInput("");
     }
   }
-
-  const handleUSDPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === "") {
-      setValue('finalPriceOverride', undefined, { shouldDirty: true });
-    } else {
-      const numValue = parseFloat(value);
-      if (!isNaN(numValue)) {
-        setValue('finalPriceOverride', numValue, { shouldDirty: true });
-      } else {
-        setValue('finalPriceOverride', 0, { shouldDirty: true });
-      }
-    }
-  };
-
-  const handleLocalPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocalPriceInput(e.target.value);
-  };
   
   const handleCalculateFromUSD = () => {
     const usdValue = getValues('finalPriceOverride');
     if (typeof usdValue === 'number' && exchangeRate) {
-        setLocalPriceInput((usdValue * exchangeRate).toFixed(localCurrencyDecimalPlaces));
+        const localPrice = usdValue * exchangeRate;
+        const roundedLocalPrice = parseFloat(localPrice.toFixed(localCurrencyDecimalPlaces));
+        setValue('finalPriceOverrideLocal', roundedLocalPrice, { shouldDirty: true });
+        setLocalPriceInput(String(roundedLocalPrice));
     }
   }
 
@@ -111,6 +105,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
         const usdValue = localValue / exchangeRate;
         const roundedUsdValue = parseFloat(usdValue.toFixed(settings.currencyDecimalPlaces));
         setValue('finalPriceOverride', roundedUsdValue, { shouldDirty: true });
+        setValue('finalPriceOverrideLocal', localValue, { shouldDirty: true });
     }
   };
 
@@ -276,7 +271,14 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
                                         className="text-2xl font-bold h-12 text-right"
                                         value={field.value ?? ""}
                                         onFocus={(e) => e.target.select()}
-                                        onChange={handleUSDPriceChange}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value === "") {
+                                                field.onChange(undefined);
+                                            } else {
+                                                field.onChange(e.target.valueAsNumber);
+                                            }
+                                        }}
                                     />
                                 </FormControl>
                                 <Button type="button" variant="outline" size="icon" className="h-12 w-12 flex-shrink-0" onClick={handleCalculateFromUSD} aria-label="Calcular desde USD">
@@ -297,7 +299,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
                                         className="text-2xl font-bold h-12 text-right"
                                         value={localPriceInput}
                                         onFocus={(e) => e.target.select()}
-                                        onChange={handleLocalPriceChange}
+                                        onChange={(e) => setLocalPriceInput(e.target.value)}
                                     />
                                 </FormControl>
                                 <Button type="button" variant="outline" size="icon" className="h-12 w-12 flex-shrink-0" onClick={handleCalculateFromLocal} aria-label="Calcular desde moneda local">

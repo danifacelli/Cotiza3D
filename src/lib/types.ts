@@ -99,4 +99,5 @@ export interface Quote {
   notes: string;
   deliveryDate?: string;
   finalPriceOverride?: number; // Manual override for the total price in USD
+  finalPriceOverrideLocal?: number; // Manual override for the total price in Local Currency
 }
