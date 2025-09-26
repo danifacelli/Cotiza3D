@@ -4,6 +4,7 @@ export const LOCAL_STORAGE_KEYS = {
   MACHINES: 'cotiza3d_machines',
   SETTINGS: 'cotiza3d_settings',
   QUOTES: 'cotiza3d_quotes',
+  DESIGNS: 'cotiza3d_designs',
   INVESTMENTS: 'cotiza3d_investments',
   FUTURE_PURCHASES: 'cotiza3d_future_purchases',
   CLIENTS: 'cotiza3d_clients',

@@ -9,11 +9,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Home, Layers, Settings, FileText, Printer, Banknote, ShoppingCart, Users, Link2 } from "lucide-react"
+import { Home, Layers, Settings, FileText, Printer, Banknote, ShoppingCart, Users, Link2, GalleryHorizontal } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Dashboard" },
+  { href: "/designs", icon: GalleryHorizontal, label: "Diseños" },
   { href: "/quotes", icon: FileText, label: "Presupuestos" },
   { href: "/clients", icon: Users, label: "Clientes" },
   { href: "/materials", icon: Layers, label: "Insumos" },

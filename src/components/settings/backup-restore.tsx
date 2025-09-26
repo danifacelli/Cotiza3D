@@ -25,15 +25,13 @@ export function BackupRestore() {
 
   const handleExport = () => {
     try {
-      const dataToExport = {
-        [LOCAL_STORAGE_KEYS.SETTINGS]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.SETTINGS) || "{}"),
-        [LOCAL_STORAGE_KEYS.MATERIALS]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIALS) || "[]"),
-        [LOCAL_STORAGE_KEYS.MACHINES]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.MACHINES) || "[]"),
-        [LOCAL_STORAGE_KEYS.QUOTES]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.QUOTES) || "[]"),
-        [LOCAL_STORAGE_KEYS.INVESTMENTS]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.INVESTMENTS) || "[]"),
-        [LOCAL_STORAGE_KEYS.FUTURE_PURCHASES]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.FUTURE_PURCHASES) || "[]"),
-        [LOCAL_STORAGE_KEYS.CLIENTS]: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.CLIENTS) || "[]"),
-      };
+      const dataToExport = Object.fromEntries(
+        Object.entries(LOCAL_STORAGE_KEYS).map(([key, value]) => {
+          const item = localStorage.getItem(value);
+          const defaultValue = value === LOCAL_STORAGE_KEYS.SETTINGS ? "{}" : "[]";
+          return [value, JSON.parse(item || defaultValue)];
+        })
+      );
 
       const jsonString = JSON.stringify(dataToExport, null, 2);
       const blob = new Blob([jsonString], { type: "application/json" });
@@ -89,26 +87,21 @@ export function BackupRestore() {
         }
         const importedData = JSON.parse(text);
         
-        const requiredKeys = Object.values(LOCAL_STORAGE_KEYS);
-
-        // For backward compatibility, some keys might not exist in old backups
-        const allKeysPresent = requiredKeys.every(key => {
+        // Check for required keys and add missing ones with default values
+        Object.values(LOCAL_STORAGE_KEYS).forEach(key => {
             if (importedData[key] === undefined) {
-                // If a key is missing, we add it with a default empty value
-                if (key === LOCAL_STORAGE_KEYS.SETTINGS) {
+                 if (key === LOCAL_STORAGE_KEYS.SETTINGS) {
                     importedData[key] = {};
                 } else {
                     importedData[key] = [];
                 }
             }
-            return true;
         });
-
-        // Now, we can safely import
-        Object.keys(LOCAL_STORAGE_KEYS).forEach(key => {
-            const storageKey = (LOCAL_STORAGE_KEYS as any)[key];
-            if (importedData[storageKey]) {
-                localStorage.setItem(storageKey, JSON.stringify(importedData[storageKey]));
+        
+        // Import all keys present in the file
+        Object.keys(importedData).forEach(key => {
+            if (Object.values(LOCAL_STORAGE_KEYS).includes(key as any)) {
+                localStorage.setItem(key, JSON.stringify(importedData[key]));
             }
         })
 

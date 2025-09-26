@@ -102,6 +102,12 @@ export interface Quote {
   finalPriceOverrideLocal?: number; // Manual override for the total price in Local Currency
 }
 
+export interface Design extends Omit<Quote, 'status' | 'clientId' | 'deliveryDate'> {
+  status: 'draft'; // Designs are always draft
+  photo1_base64?: string;
+  photo2_base64?: string;
+}
+
 export interface LinkItem {
   id: string;
   name: string;
