@@ -101,3 +101,11 @@ export interface Quote {
   finalPriceOverride?: number; // Manual override for the total price in USD
   finalPriceOverrideLocal?: number; // Manual override for the total price in Local Currency
 }
+
+export interface LinkItem {
+  id: string;
+  name: string;
+  description?: string;
+  link: string;
+  createdAt: string;
+}

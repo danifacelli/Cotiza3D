@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Home, Layers, Settings, FileText, Printer, Banknote, ShoppingCart, Users } from "lucide-react"
+import { Home, Layers, Settings, FileText, Printer, Banknote, ShoppingCart, Users, Link2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -20,6 +20,7 @@ const navItems = [
   { href: "/machines", icon: Printer, label: "Máquinas" },
   { href: "/investments", icon: Banknote, label: "Inversiones" },
   { href: "/future-purchases", icon: ShoppingCart, label: "Futuras Compras" },
+  { href: "/links", icon: Link2, label: "Links" },
   { href: "/settings", icon: Settings, label: "Configuración" },
 ];
 
