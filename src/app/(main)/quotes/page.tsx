@@ -78,7 +78,14 @@ export default function QuotesPage() {
     return quotes.map(quote => {
       const { breakdown } = calculateCosts(quote, materials, machines, settings);
       const totalUSD = breakdown?.total ?? 0;
-      const totalLocal = exchangeRate ? totalUSD * exchangeRate : 0;
+      
+      let totalLocal: number;
+      if (breakdown?.isManualPrice && typeof quote.finalPriceOverrideLocal === 'number') {
+        totalLocal = quote.finalPriceOverrideLocal;
+      } else {
+        totalLocal = exchangeRate ? totalUSD * exchangeRate : 0;
+      }
+
       const costUSD = breakdown?.costSubtotal ?? 0;
       const isManualPrice = breakdown?.isManualPrice ?? false;
       const client = clients.find(c => c.id === quote.clientId);
