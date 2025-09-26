@@ -49,6 +49,17 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
   const finalPriceOverride = watch('finalPriceOverride');
   const isManualPrice = useMemo(() => typeof finalPriceOverride === 'number', [finalPriceOverride]);
   
+  const [localPriceInput, setLocalPriceInput] = useState<string>("");
+
+  useEffect(() => {
+    if (finalPriceOverride !== undefined && exchangeRate) {
+      setLocalPriceInput((finalPriceOverride * exchangeRate).toFixed(localCurrencyDecimalPlaces));
+    } else {
+      setLocalPriceInput("");
+    }
+  }, [finalPriceOverride, exchangeRate, isManualPrice]);
+
+
   const localCurrencyDecimalPlaces = localCurrencyInfo?.value === 'CLP' || localCurrencyInfo?.value === 'PYG' ? 0 : settings.currencyDecimalPlaces;
 
   const handleManualPriceToggle = (checked: boolean) => {
@@ -63,21 +74,32 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
   }
 
   const handleUSDPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const usdValue = e.target.value === '' ? undefined : e.target.valueAsNumber;
-    setValue('finalPriceOverride', usdValue, { shouldDirty: true });
-  }
-
-  const handleLocalPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const localValue = e.target.value === '' ? undefined : e.target.valueAsNumber;
-      if (localValue === undefined) {
-          setValue('finalPriceOverride', undefined, { shouldDirty: true });
-          return;
+    const value = e.target.value;
+    if (value === "") {
+      setValue('finalPriceOverride', undefined, { shouldDirty: true });
+    } else {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue)) {
+        setValue('finalPriceOverride', numValue, { shouldDirty: true });
       }
+    }
+  };
 
-      if (exchangeRate && exchangeRate > 0) {
-          setValue('finalPriceOverride', localValue / exchangeRate, { shouldDirty: true });
-      }
-  }
+ const handleLocalPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalPriceInput(e.target.value);
+  };
+
+  const handleLocalPriceBlur = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === "") {
+        setValue('finalPriceOverride', undefined, { shouldDirty: true });
+        return;
+    }
+    const localValue = parseFloat(value);
+    if (!isNaN(localValue) && exchangeRate && exchangeRate > 0) {
+        setValue('finalPriceOverride', localValue / exchangeRate, { shouldDirty: true });
+    }
+  };
 
 
   if (!breakdown) {
@@ -238,8 +260,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
                                     type="number" 
                                     step="0.01" 
                                     className="text-2xl font-bold h-12 text-right"
-                                    {...field}
-                                    value={finalPriceOverride ?? ""}
+                                    value={field.value ?? ""}
                                     onFocus={(e) => e.target.select()}
                                     onChange={handleUSDPriceChange}
                                 />
@@ -255,13 +276,10 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
                                     type="number"
                                     step={localCurrencyDecimalPlaces === 0 ? "1" : "0.01"}
                                     className="text-2xl font-bold h-12 text-right"
-                                    value={
-                                        finalPriceOverride !== undefined && exchangeRate
-                                        ? (finalPriceOverride * exchangeRate).toFixed(localCurrencyDecimalPlaces)
-                                        : ""
-                                    }
+                                    value={localPriceInput}
                                     onFocus={(e) => e.target.select()}
                                     onChange={handleLocalPriceChange}
+                                    onBlur={handleLocalPriceBlur}
                                 />
                             </FormControl>
                          </FormItem>
