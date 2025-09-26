@@ -49,29 +49,13 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
   const finalPriceOverride = watch('finalPriceOverride');
   const isManualPrice = useMemo(() => typeof finalPriceOverride === 'number', [finalPriceOverride]);
   
-  const [localPrice, setLocalPrice] = useState<number | string>("");
-
-  useEffect(() => {
-    if (breakdown && exchangeRate) {
-        const newLocalPrice = (breakdown.total * exchangeRate).toFixed(localCurrencyDecimalPlaces);
-        if (!isManualPrice) {
-            setLocalPrice(newLocalPrice);
-        } else if (finalPriceOverride) {
-            const currentLocal = (finalPriceOverride * exchangeRate).toFixed(localCurrencyDecimalPlaces)
-            setLocalPrice(currentLocal)
-        }
-    }
-  }, [breakdown, exchangeRate, isManualPrice, finalPriceOverride]);
-
+  const localCurrencyDecimalPlaces = localCurrencyInfo?.value === 'CLP' || localCurrencyInfo?.value === 'PYG' ? 0 : settings.currencyDecimalPlaces;
 
   const handleManualPriceToggle = (checked: boolean) => {
     if (checked) {
         if (breakdown) {
              const priceToSet = parseFloat(breakdown.total.toFixed(settings.currencyDecimalPlaces));
              setValue('finalPriceOverride', priceToSet, { shouldDirty: true });
-             if (exchangeRate) {
-                setLocalPrice((priceToSet * exchangeRate).toFixed(localCurrencyDecimalPlaces));
-             }
         }
     } else {
         setValue('finalPriceOverride', undefined, { shouldDirty: true });
@@ -79,19 +63,19 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
   }
 
   const handleUSDPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const usdValue = e.target.valueAsNumber || 0;
+    const usdValue = e.target.value === '' ? undefined : e.target.valueAsNumber;
     setValue('finalPriceOverride', usdValue, { shouldDirty: true });
-    if (exchangeRate) {
-        setLocalPrice((usdValue * exchangeRate).toFixed(localCurrencyDecimalPlaces));
-    }
   }
 
   const handleLocalPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const localValue = e.target.value;
-      setLocalPrice(localValue);
-      const localNumber = parseFloat(localValue);
-      if (!isNaN(localNumber) && exchangeRate && exchangeRate > 0) {
-          setValue('finalPriceOverride', localNumber / exchangeRate, { shouldDirty: true });
+      const localValue = e.target.value === '' ? undefined : e.target.valueAsNumber;
+      if (localValue === undefined) {
+          setValue('finalPriceOverride', undefined, { shouldDirty: true });
+          return;
+      }
+
+      if (exchangeRate && exchangeRate > 0) {
+          setValue('finalPriceOverride', localValue / exchangeRate, { shouldDirty: true });
       }
   }
 
@@ -115,8 +99,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
   
   const decimalPlaces = settings.currencyDecimalPlaces;
   const highPrecisionDecimalPlaces = Math.max(4, decimalPlaces);
-  const localCurrencyDecimalPlaces = localCurrencyInfo?.value === 'CLP' || localCurrencyInfo?.value === 'PYG' ? 0 : decimalPlaces;
-
+  
   const formatLocal = (amount: number) => {
     if (!exchangeRate || !localCurrencyInfo) return null;
     return formatCurrency(amount * exchangeRate, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale);
@@ -244,7 +227,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
             
             {isManualPrice && (
                  <div className="space-y-4">
-                    <FormField
+                     <FormField
                         control={form.control}
                         name="finalPriceOverride"
                         render={({ field }) => (
@@ -256,7 +239,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
                                     step="0.01" 
                                     className="text-2xl font-bold h-12 text-right"
                                     {...field}
-                                    value={finalPriceOverride ?? 0}
+                                    value={finalPriceOverride ?? ""}
                                     onFocus={(e) => e.target.select()}
                                     onChange={handleUSDPriceChange}
                                 />
@@ -272,7 +255,11 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
                                     type="number"
                                     step={localCurrencyDecimalPlaces === 0 ? "1" : "0.01"}
                                     className="text-2xl font-bold h-12 text-right"
-                                    value={localPrice}
+                                    value={
+                                        finalPriceOverride !== undefined && exchangeRate
+                                        ? (finalPriceOverride * exchangeRate).toFixed(localCurrencyDecimalPlaces)
+                                        : ""
+                                    }
                                     onFocus={(e) => e.target.select()}
                                     onChange={handleLocalPriceChange}
                                 />
