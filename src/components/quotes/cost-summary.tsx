@@ -51,28 +51,30 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
   const finalPriceOverride = watch('finalPriceOverride');
   const isManualPrice = useMemo(() => typeof finalPriceOverride === 'number', [finalPriceOverride]);
   
+  const localCurrencyDecimalPlaces = localCurrencyInfo?.value === 'CLP' || localCurrencyInfo?.value === 'PYG' ? 0 : settings.currencyDecimalPlaces;
+
   const [localPriceInput, setLocalPriceInput] = useState<string>("");
 
-  useEffect(() => {
-    if (finalPriceOverride !== undefined && exchangeRate) {
-        setLocalPriceInput((finalPriceOverride * exchangeRate).toFixed(localCurrencyDecimalPlaces));
-    } else if (finalPriceOverride === undefined) {
-        setLocalPriceInput("");
+   useEffect(() => {
+    const usdValue = getValues('finalPriceOverride');
+    if (typeof usdValue === 'number' && exchangeRate) {
+      setLocalPriceInput((usdValue * exchangeRate).toFixed(localCurrencyDecimalPlaces));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [finalPriceOverride, exchangeRate]);
-
-
-  const localCurrencyDecimalPlaces = localCurrencyInfo?.value === 'CLP' || localCurrencyInfo?.value === 'PYG' ? 0 : settings.currencyDecimalPlaces;
+  }, [isManualPrice, exchangeRate]); // Run only when manual mode is toggled or rate changes
 
   const handleManualPriceToggle = (checked: boolean) => {
     if (checked) {
         if (breakdown) {
              const priceToSet = parseFloat(breakdown.total.toFixed(settings.currencyDecimalPlaces));
              setValue('finalPriceOverride', priceToSet, { shouldDirty: true });
+             if (exchangeRate) {
+                setLocalPriceInput((priceToSet * exchangeRate).toFixed(localCurrencyDecimalPlaces));
+             }
         }
     } else {
         setValue('finalPriceOverride', undefined, { shouldDirty: true });
+        setLocalPriceInput("");
     }
   }
 
@@ -84,6 +86,8 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
       const numValue = parseFloat(value);
       if (!isNaN(numValue)) {
         setValue('finalPriceOverride', numValue, { shouldDirty: true });
+      } else if (value === "") {
+        setValue('finalPriceOverride', undefined, { shouldDirty: true });
       }
     }
   };
