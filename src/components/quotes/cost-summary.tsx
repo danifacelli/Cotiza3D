@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
 import type { UseFormReturn } from "react-hook-form"
+import { Button } from "@/components/ui/button"
+import { Calculator } from "lucide-react"
 
 interface CostSummaryProps {
   breakdown: CostBreakdown | null
@@ -45,7 +47,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
     return LATAM_CURRENCIES.find(c => c.value === settings.localCurrency);
   }, [settings.localCurrency]);
 
-  const { watch, setValue } = form;
+  const { watch, setValue, getValues } = form;
   const finalPriceOverride = watch('finalPriceOverride');
   const isManualPrice = useMemo(() => typeof finalPriceOverride === 'number', [finalPriceOverride]);
   
@@ -53,7 +55,6 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
 
   useEffect(() => {
     // This effect now ONLY syncs the local input FROM the USD value.
-    // It avoids the loop that caused the re-formatting issue.
     if (isManualPrice && finalPriceOverride !== undefined && exchangeRate) {
         setLocalPriceInput((finalPriceOverride * exchangeRate).toFixed(localCurrencyDecimalPlaces));
     } else if (!isManualPrice) {
@@ -88,17 +89,19 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
     }
   };
 
- const handleLocalPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLocalPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalPriceInput(e.target.value);
   };
-
-  const handleLocalPriceBlur = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === "") {
-        setValue('finalPriceOverride', undefined, { shouldDirty: true });
-        return;
+  
+  const handleCalculateFromUSD = () => {
+    const usdValue = getValues('finalPriceOverride');
+    if (typeof usdValue === 'number' && exchangeRate) {
+        setLocalPriceInput((usdValue * exchangeRate).toFixed(localCurrencyDecimalPlaces));
     }
-    const localValue = parseFloat(value);
+  }
+
+  const handleCalculateFromLocal = () => {
+    const localValue = parseFloat(localPriceInput);
     if (!isNaN(localValue) && exchangeRate && exchangeRate > 0) {
         const usdValue = localValue / exchangeRate;
         const roundedUsdValue = parseFloat(usdValue.toFixed(settings.currencyDecimalPlaces));
@@ -260,33 +263,42 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
                         render={({ field }) => (
                         <FormItem>
                              <Label>Precio Total (USD)</Label>
-                            <FormControl>
-                                <Input 
-                                    type="number" 
-                                    step="0.01" 
-                                    className="text-2xl font-bold h-12 text-right"
-                                    value={field.value ?? ""}
-                                    onFocus={(e) => e.target.select()}
-                                    onChange={handleUSDPriceChange}
-                                />
-                            </FormControl>
+                            <div className="flex items-center gap-2">
+                                <FormControl>
+                                    <Input 
+                                        type="number" 
+                                        step="0.01" 
+                                        className="text-2xl font-bold h-12 text-right"
+                                        value={field.value ?? ""}
+                                        onFocus={(e) => e.target.select()}
+                                        onChange={handleUSDPriceChange}
+                                    />
+                                </FormControl>
+                                <Button type="button" variant="outline" size="icon" className="h-12 w-12 flex-shrink-0" onClick={handleCalculateFromUSD} aria-label="Calcular desde USD">
+                                    <Calculator className="h-5 w-5" />
+                                </Button>
+                            </div>
                         </FormItem>
                         )}
                     />
                     {localCurrencyInfo && exchangeRate && (
                          <FormItem>
                             <Label>Precio Total ({localCurrencyInfo.value})</Label>
-                            <FormControl>
-                                <Input 
-                                    type="number"
-                                    step={localCurrencyDecimalPlaces === 0 ? "1" : "0.01"}
-                                    className="text-2xl font-bold h-12 text-right"
-                                    value={localPriceInput}
-                                    onFocus={(e) => e.target.select()}
-                                    onChange={handleLocalPriceChange}
-                                    onBlur={handleLocalPriceBlur}
-                                />
-                            </FormControl>
+                            <div className="flex items-center gap-2">
+                                <FormControl>
+                                    <Input 
+                                        type="number"
+                                        step={localCurrencyDecimalPlaces === 0 ? "1" : "0.01"}
+                                        className="text-2xl font-bold h-12 text-right"
+                                        value={localPriceInput}
+                                        onFocus={(e) => e.target.select()}
+                                        onChange={handleLocalPriceChange}
+                                    />
+                                </FormControl>
+                                <Button type="button" variant="outline" size="icon" className="h-12 w-12 flex-shrink-0" onClick={handleCalculateFromLocal} aria-label="Calcular desde moneda local">
+                                    <Calculator className="h-5 w-5" />
+                                </Button>
+                            </div>
                          </FormItem>
                     )}
                  </div>
