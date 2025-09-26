@@ -69,8 +69,8 @@ export const DesignPDF = ({ design, settings, machine, breakdown, exchangeRate }
               <section className="my-6">
                 <h3 className="text-sm font-semibold text-muted-foreground mb-2">IMÁGENES DE REFERENCIA</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  {design.photo1_base64 && <Image src={design.photo1_base64} alt="Foto 1" width={300} height={300} className="rounded-md border" />}
-                  {design.photo2_base64 && <Image src={design.photo2_base64} alt="Foto 2" width={300} height={300} className="rounded-md border" />}
+                  {design.photo1_base64 && <div className="relative w-full h-48"><Image src={design.photo1_base64} alt="Foto 1" layout="fill" className="object-cover rounded-md border" /></div>}
+                  {design.photo2_base64 && <div className="relative w-full h-48"><Image src={design.photo2_base64} alt="Foto 2" layout="fill" className="object-cover rounded-md border" /></div>}
                 </div>
               </section>
             )}
@@ -132,3 +132,5 @@ export const DesignPDF = ({ design, settings, machine, breakdown, exchangeRate }
         </div>
     )
 }
+
+    

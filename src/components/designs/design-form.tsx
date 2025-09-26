@@ -395,8 +395,8 @@ export function DesignForm({ design }: DesignFormProps) {
                   <FormLabel>Foto 1</FormLabel>
                   <div className="relative">
                     {watchedPhoto1 ? (
-                        <div>
-                          <Image src={watchedPhoto1} alt="Preview 1" width={200} height={200} className="w-full h-auto rounded-md border" />
+                        <div className="h-32 w-full">
+                          <Image src={watchedPhoto1} alt="Preview 1" layout="fill" className="object-cover rounded-md border" />
                           <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={() => setValue('photo1_base64', undefined)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -418,8 +418,8 @@ export function DesignForm({ design }: DesignFormProps) {
                   <FormLabel>Foto 2</FormLabel>
                   <div className="relative">
                     {watchedPhoto2 ? (
-                        <div>
-                          <Image src={watchedPhoto2} alt="Preview 2" width={200} height={200} className="w-full h-auto rounded-md border" />
+                        <div className="h-32 w-full">
+                          <Image src={watchedPhoto2} alt="Preview 2" layout="fill" className="object-cover rounded-md border" />
                           <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={() => setValue('photo2_base64', undefined)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -777,3 +777,5 @@ export function DesignForm({ design }: DesignFormProps) {
     </Form>
   )
 }
+
+    
