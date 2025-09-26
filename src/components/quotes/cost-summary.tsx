@@ -52,10 +52,10 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
   const [localPriceInput, setLocalPriceInput] = useState<string>("");
 
   useEffect(() => {
-    if (finalPriceOverride !== undefined && exchangeRate) {
-      setLocalPriceInput((finalPriceOverride * exchangeRate).toFixed(localCurrencyDecimalPlaces));
-    } else {
-      setLocalPriceInput("");
+    if (isManualPrice && finalPriceOverride !== undefined && exchangeRate) {
+        setLocalPriceInput((finalPriceOverride * exchangeRate).toFixed(localCurrencyDecimalPlaces));
+    } else if (!isManualPrice) {
+        setLocalPriceInput("");
     }
   }, [finalPriceOverride, exchangeRate, isManualPrice]);
 
@@ -97,7 +97,9 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
     }
     const localValue = parseFloat(value);
     if (!isNaN(localValue) && exchangeRate && exchangeRate > 0) {
-        setValue('finalPriceOverride', localValue / exchangeRate, { shouldDirty: true });
+        const usdValue = localValue / exchangeRate;
+        const roundedUsdValue = parseFloat(usdValue.toFixed(settings.currencyDecimalPlaces));
+        setValue('finalPriceOverride', roundedUsdValue, { shouldDirty: true });
     }
   };
 
