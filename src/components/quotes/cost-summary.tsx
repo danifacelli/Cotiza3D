@@ -59,6 +59,8 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
     const usdValue = getValues('finalPriceOverride');
     if (isManualPrice && typeof usdValue === 'number' && exchangeRate) {
       setLocalPriceInput((usdValue * exchangeRate).toFixed(localCurrencyDecimalPlaces));
+    } else if (!isManualPrice) {
+        setLocalPriceInput("");
     }
      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isManualPrice, exchangeRate]);
@@ -86,6 +88,8 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
       const numValue = parseFloat(value);
       if (!isNaN(numValue)) {
         setValue('finalPriceOverride', numValue, { shouldDirty: true });
+      } else {
+        setValue('finalPriceOverride', 0, { shouldDirty: true });
       }
     }
   };
@@ -107,10 +111,6 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
         const usdValue = localValue / exchangeRate;
         const roundedUsdValue = parseFloat(usdValue.toFixed(settings.currencyDecimalPlaces));
         setValue('finalPriceOverride', roundedUsdValue, { shouldDirty: true });
-
-        // Re-calculate local price from the rounded USD value to ensure consistency
-        const consistentLocalValue = roundedUsdValue * exchangeRate;
-        setLocalPriceInput(consistentLocalValue.toFixed(localCurrencyDecimalPlaces));
     }
   };
 
@@ -329,5 +329,3 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
     </Card>
   )
 }
-
-    
