@@ -54,14 +54,13 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
   const [localPriceInput, setLocalPriceInput] = useState<string>("");
 
   useEffect(() => {
-    // This effect now ONLY syncs the local input FROM the USD value.
-    if (isManualPrice && finalPriceOverride !== undefined && exchangeRate) {
+    if (finalPriceOverride !== undefined && exchangeRate) {
         setLocalPriceInput((finalPriceOverride * exchangeRate).toFixed(localCurrencyDecimalPlaces));
-    } else if (!isManualPrice) {
+    } else if (finalPriceOverride === undefined) {
         setLocalPriceInput("");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [finalPriceOverride, exchangeRate, isManualPrice]);
+  }, [finalPriceOverride, exchangeRate]);
 
 
   const localCurrencyDecimalPlaces = localCurrencyInfo?.value === 'CLP' || localCurrencyInfo?.value === 'PYG' ? 0 : settings.currencyDecimalPlaces;
