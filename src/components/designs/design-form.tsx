@@ -36,6 +36,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { DesignPartForm, PartFormValues } from "./design-part-form"
 import { DesignPartsTable } from "./design-parts-table"
 import { DesignExtraCostForm, ExtraCostFormValues } from "./design-extra-cost-form"
+import { DesignExtraCostsTable } from "./design-extra-costs-table"
 import Image from "next/image"
 
 const PartSchema = z.object({
