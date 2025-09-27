@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { PlusCircle, FileDown, Info, Loader2, Image as ImageIcon, X, Trash2 } from "lucide-react"
+import { PlusCircle, FileDown, Info, Loader2, Image as ImageIcon, X, Trash2, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { calculateCosts, CostBreakdown } from "@/lib/calculations"
 import { CostSummary } from "@/components/quotes/cost-summary"
@@ -36,7 +36,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { DesignPartForm, PartFormValues } from "./design-part-form"
 import { DesignPartsTable } from "./design-parts-table"
 import { DesignExtraCostForm, ExtraCostFormValues } from "./design-extra-cost-form"
-import { DesignExtraCostsTable } from "./design-extra-costs-table"
 import Image from "next/image"
 
 const PartSchema = z.object({
@@ -853,6 +852,10 @@ export function DesignForm({ design }: DesignFormProps) {
                      <Button type="submit" className="w-full">
                        {design ? "Guardar Cambios" : "Guardar Diseño"}
                      </Button>
+                      <Button type="button" variant="outline" className="w-full" onClick={() => router.back()}>
+                        <ArrowLeft className="mr-2" />
+                       Cancelar
+                     </Button>
                   </>
                 }
             />
@@ -862,3 +865,5 @@ export function DesignForm({ design }: DesignFormProps) {
     </Form>
   )
 }
+
+    
