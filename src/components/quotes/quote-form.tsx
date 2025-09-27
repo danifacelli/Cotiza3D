@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { PlusCircle, FileDown, Info, Instagram, Loader2, CalendarIcon, ChevronsUpDown, UserPlus, PackageCheck, FileText, CheckCircle, XCircle, ClipboardList, Calculator } from "lucide-react"
+import { PlusCircle, FileDown, Info, Instagram, Loader2, CalendarIcon, ChevronsUpDown, UserPlus, PackageCheck, FileText, CheckCircle, XCircle, ClipboardList, Calculator, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { calculateCosts, CostBreakdown } from "@/lib/calculations"
 import { CostSummary } from "@/components/quotes/cost-summary"
@@ -941,6 +941,10 @@ export function QuoteForm({ quote }: QuoteFormProps) {
                      <Button type="button" variant="secondary" className="w-full" onClick={handleGeneratePdf} disabled={isGeneratingPdf}>
                        {isGeneratingPdf ? <Loader2 className="animate-spin mr-2" /> : <FileDown className="mr-2" />}
                        {isGeneratingPdf ? "Generando..." : "Generar PDF"}
+                     </Button>
+                     <Button type="button" variant="outline" className="w-full" onClick={() => router.back()}>
+                        <ArrowLeft className="mr-2" />
+                       Cancelar
                      </Button>
                   </>
                 }
