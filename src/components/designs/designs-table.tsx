@@ -110,10 +110,28 @@ export function DesignsTable({ designs, onDelete, onDuplicate, onConvertToQuote,
                 </TableCell>
                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                   <div className="flex justify-end gap-1">
-                     <Button variant="ghost" size="icon" className="h-8 w-8" title="Generar Presupuesto" onClick={(e) => { e.stopPropagation(); onConvertToQuote(design.id); }}>
-                        <ClipboardList className="h-4 w-4" />
-                        <span className="sr-only">Generar Presupuesto</span>
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Generar Presupuesto" onClick={(e) => e.stopPropagation()}>
+                            <ClipboardList className="h-4 w-4" />
+                            <span className="sr-only">Generar Presupuesto</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                          <AlertDialogHeader>
+                          <AlertDialogTitle>¿Generar un presupuesto a partir de este diseño?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                              Se creará un nuevo presupuesto en estado "Borrador" con los datos de <strong>{design.name}</strong> y serás redirigido para editarlo.
+                          </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction asChild>
+                              <Button onClick={(e) => { e.stopPropagation(); onConvertToQuote(design.id); }}>Sí, generar</Button>
+                          </AlertDialogAction>
+                          </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                     <Button variant="ghost" size="icon" className="h-8 w-8" title="Editar" onClick={(e) => { e.stopPropagation(); router.push(`/designs/${design.id}/edit`); }}>
                         <Pencil className="h-4 w-4" />
                         <span className="sr-only">Editar</span>
