@@ -36,6 +36,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { QuotePartForm, PartFormValues } from "./quote-part-form"
 import { QuotePartsTable } from "./quote-parts-table"
 import { QuoteExtraCostForm, ExtraCostFormValues } from "./quote-extra-cost-form"
+import { QuoteExtraCostsTable } from "./quote-extra-costs-table"
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
 import { QuotePDF } from "./quote-pdf"
