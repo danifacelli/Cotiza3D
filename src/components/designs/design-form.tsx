@@ -74,6 +74,7 @@ const DesignSchema = z.object({
   photo2_base64: z.string().optional(),
   mercadoLibreLink: z.string().url("URL no válida").optional().or(z.literal('')),
   instagramLink: z.string().url("URL no válida").optional().or(z.literal('')),
+  link: z.string().url("URL no válida").optional().or(z.literal('')),
 }).refine(data => (data.printHours || 0) + (data.printMinutes || 0) + (data.printSeconds || 0) > 0, {
   message: "El tiempo de impresión total debe ser mayor a 0.",
   path: ["printHours"], 
@@ -138,6 +139,7 @@ export function DesignForm({ design }: DesignFormProps) {
         photo2_base64: undefined,
         mercadoLibreLink: '',
         instagramLink: '',
+        link: '',
     },
   })
   
@@ -285,6 +287,7 @@ export function DesignForm({ design }: DesignFormProps) {
       photo2_base64: data.photo2_base64,
       mercadoLibreLink: data.mercadoLibreLink,
       instagramLink: data.instagramLink,
+      link: data.link,
     }
 
     if (design) {
@@ -423,6 +426,21 @@ export function DesignForm({ design }: DesignFormProps) {
                             </FormItem>
                         )}
                     />
+                    <div className="sm:col-span-2">
+                        <FormField
+                            control={form.control}
+                            name="link"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Otro Link (Opcional)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="https://..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                    </div>
                 </CardContent>
             </Card>
             

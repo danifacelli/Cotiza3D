@@ -110,6 +110,7 @@ export interface Design extends Omit<Quote, 'status' | 'clientId' | 'deliveryDat
   photo2_base64?: string;
   mercadoLibreLink?: string;
   instagramLink?: string;
+  link?: string;
 }
 
 export interface LinkItem {
