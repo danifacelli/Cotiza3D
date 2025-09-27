@@ -72,6 +72,8 @@ const DesignSchema = z.object({
   finalPriceOverrideLocal: z.coerce.number().optional(),
   photo1_base64: z.string().optional(),
   photo2_base64: z.string().optional(),
+  mercadoLibreLink: z.string().url("URL no válida").optional().or(z.literal('')),
+  instagramLink: z.string().url("URL no válida").optional().or(z.literal('')),
 }).refine(data => (data.printHours || 0) + (data.printMinutes || 0) + (data.printSeconds || 0) > 0, {
   message: "El tiempo de impresión total debe ser mayor a 0.",
   path: ["printHours"], 
@@ -133,6 +135,8 @@ export function DesignForm({ design }: DesignFormProps) {
         finalPriceOverrideLocal: undefined,
         photo1_base64: undefined,
         photo2_base64: undefined,
+        mercadoLibreLink: '',
+        instagramLink: '',
     },
   })
   
@@ -278,6 +282,8 @@ export function DesignForm({ design }: DesignFormProps) {
       finalPriceOverrideLocal: data.finalPriceOverrideLocal,
       photo1_base64: data.photo1_base64,
       photo2_base64: data.photo2_base64,
+      mercadoLibreLink: data.mercadoLibreLink,
+      instagramLink: data.instagramLink,
     }
 
     if (design) {
@@ -384,6 +390,40 @@ export function DesignForm({ design }: DesignFormProps) {
                   />
               </CardContent>
             </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Links de Publicación</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                     <FormField
+                        control={form.control}
+                        name="mercadoLibreLink"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Mercado Libre</FormLabel>
+                            <FormControl>
+                                <Input placeholder="https://..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                    <FormField
+                        control={form.control}
+                        name="instagramLink"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Instagram</FormLabel>
+                            <FormControl>
+                                <Input placeholder="https://..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </CardContent>
+            </Card>
             
             {/* Photos Card */}
             <Card>
@@ -395,7 +435,7 @@ export function DesignForm({ design }: DesignFormProps) {
                   <FormLabel>Foto 1</FormLabel>
                   <div className="relative">
                     {watchedPhoto1 ? (
-                        <div className="h-32 w-full">
+                        <div className="relative h-32 w-full">
                           <Image src={watchedPhoto1} alt="Preview 1" layout="fill" className="object-cover rounded-md border" />
                           <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={() => setValue('photo1_base64', undefined)}>
                             <Trash2 className="h-4 w-4" />
@@ -418,7 +458,7 @@ export function DesignForm({ design }: DesignFormProps) {
                   <FormLabel>Foto 2</FormLabel>
                   <div className="relative">
                     {watchedPhoto2 ? (
-                        <div className="h-32 w-full">
+                        <div className="relative h-32 w-full">
                           <Image src={watchedPhoto2} alt="Preview 2" layout="fill" className="object-cover rounded-md border" />
                           <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={() => setValue('photo2_base64', undefined)}>
                             <Trash2 className="h-4 w-4" />
@@ -777,5 +817,3 @@ export function DesignForm({ design }: DesignFormProps) {
     </Form>
   )
 }
-
-    

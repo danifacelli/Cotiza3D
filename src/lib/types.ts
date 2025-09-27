@@ -1,4 +1,5 @@
 
+
 export interface Material {
   id: string;
   name: string;
@@ -107,6 +108,8 @@ export interface Design extends Omit<Quote, 'status' | 'clientId' | 'deliveryDat
   status: 'draft'; // Designs are always draft
   photo1_base64?: string;
   photo2_base64?: string;
+  mercadoLibreLink?: string;
+  instagramLink?: string;
 }
 
 export interface LinkItem {
