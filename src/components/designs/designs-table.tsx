@@ -24,10 +24,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { Pencil, Trash2, Copy, Tag, Image as ImageIcon, ClipboardList } from "lucide-react"
+import { Pencil, Trash2, Copy, Tag, Image as ImageIcon, ClipboardList, Link2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn, formatCurrency } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 export type DesignWithTotals = Design & {
   totalUSD: number;
@@ -47,6 +54,15 @@ interface DesignsTableProps {
 
 export function DesignsTable({ designs, onDelete, onDuplicate, onConvertToQuote, settings, isHydrated }: DesignsTableProps) {
   const router = useRouter()
+  const { toast } = useToast()
+
+  const handleCopyLink = (link: string, linkName: string) => {
+    navigator.clipboard.writeText(link)
+    toast({
+      title: "¡Enlace copiado!",
+      description: `El enlace de ${linkName} se ha copiado a tu portapapeles.`,
+    })
+  }
 
   if (!isHydrated) {
     return (
@@ -72,7 +88,7 @@ export function DesignsTable({ designs, onDelete, onDuplicate, onConvertToQuote,
             <TableHead className="text-right">Total (USD)</TableHead>
             <TableHead className="text-right">Total (Local)</TableHead>
             <TableHead>Fecha</TableHead>
-            <TableHead className="w-[160px] text-right">Acciones</TableHead>
+            <TableHead className="w-[200px] text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -110,6 +126,29 @@ export function DesignsTable({ designs, onDelete, onDuplicate, onConvertToQuote,
                 </TableCell>
                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                   <div className="flex justify-end gap-1">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Copiar enlaces">
+                          <Link2 className="h-4 w-4" />
+                          <span className="sr-only">Copiar enlaces</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          disabled={!design.mercadoLibreLink}
+                          onClick={() => handleCopyLink(design.mercadoLibreLink!, 'Mercado Libre')}
+                        >
+                          Copiar link de Mercado Libre
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          disabled={!design.instagramLink}
+                          onClick={() => handleCopyLink(design.instagramLink!, 'Instagram')}
+                        >
+                          Copiar link de Instagram
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8" title="Generar Presupuesto" onClick={(e) => e.stopPropagation()}>
@@ -197,3 +236,5 @@ export function DesignsTable({ designs, onDelete, onDuplicate, onConvertToQuote,
     </div>
   )
 }
+
+    
