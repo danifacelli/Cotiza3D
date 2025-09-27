@@ -70,8 +70,9 @@ export default function DesignsPage() {
       }
 
       const costUSD = breakdown?.costSubtotal ?? 0;
+      const costLocal = exchangeRate ? costUSD * exchangeRate : 0;
       const isManualPrice = breakdown?.isManualPrice ?? false;
-      return { ...design, totalUSD, totalLocal, costUSD, isManualPrice };
+      return { ...design, totalUSD, totalLocal, costUSD, costLocal, isManualPrice };
     }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [designs, materials, machines, settings, exchangeRate, isHydrated]);
   

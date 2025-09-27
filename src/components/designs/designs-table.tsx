@@ -41,6 +41,7 @@ export type DesignWithTotals = Design & {
   totalUSD: number;
   totalLocal: number;
   costUSD: number;
+  costLocal: number;
   isManualPrice: boolean;
 };
 
@@ -85,7 +86,7 @@ export function DesignsTable({ designs, onDelete, onDuplicate, onConvertToQuote,
           <TableRow>
             <TableHead className="w-[50px]">Imagen</TableHead>
             <TableHead className="w-[30%]">Nombre</TableHead>
-            <TableHead className="text-right">Costo (USD)</TableHead>
+            <TableHead className="text-right">Costo</TableHead>
             <TableHead className="text-right">Total (USD)</TableHead>
             <TableHead className="text-right">Total ({localCurrencyCode})</TableHead>
             <TableHead>Fecha</TableHead>
@@ -111,7 +112,17 @@ export function DesignsTable({ designs, onDelete, onDuplicate, onConvertToQuote,
                   </div>
                 </TableCell>
                 <TableCell className="font-medium">{design.name}</TableCell>
-                <TableCell className="text-right font-mono">{formatCurrency(design.costUSD, "USD", decimalPlaces)}</TableCell>
+                <TableCell className="text-right font-mono">
+                    <div>{formatCurrency(design.costUSD, "USD", decimalPlaces)}</div>
+                    <div className="text-xs text-muted-foreground">
+                        {formatCurrency(
+                            design.costLocal, 
+                            localCurrencyCode,
+                            localCurrencyCode === 'CLP' || localCurrencyCode === 'PYG' ? 0 : decimalPlaces, 
+                            'symbol'
+                        )}
+                    </div>
+                </TableCell>
                 <TableCell className="text-right font-mono">
                     <div className="flex items-center justify-end gap-2">
                          {design.isManualPrice && <Tag className="h-3 w-3 text-muted-foreground" title="Precio manual"/>}
