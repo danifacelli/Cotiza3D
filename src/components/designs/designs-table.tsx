@@ -25,7 +25,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button"
-import { Pencil, Trash2, Copy, Tag, Image as ImageIcon } from "lucide-react"
+import { Pencil, Trash2, Copy, Tag, Image as ImageIcon, ClipboardList } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn, formatCurrency } from "@/lib/utils"
 
@@ -40,11 +40,12 @@ interface DesignsTableProps {
   designs: DesignWithTotals[]
   onDelete: (id: string) => void
   onDuplicate: (id: string) => void
+  onConvertToQuote: (id: string) => void
   settings: Settings | null;
   isHydrated: boolean
 }
 
-export function DesignsTable({ designs, onDelete, onDuplicate, settings, isHydrated }: DesignsTableProps) {
+export function DesignsTable({ designs, onDelete, onDuplicate, onConvertToQuote, settings, isHydrated }: DesignsTableProps) {
   const router = useRouter()
 
   if (!isHydrated) {
@@ -71,7 +72,7 @@ export function DesignsTable({ designs, onDelete, onDuplicate, settings, isHydra
             <TableHead className="text-right">Total (USD)</TableHead>
             <TableHead className="text-right">Total (Local)</TableHead>
             <TableHead>Fecha</TableHead>
-            <TableHead className="w-[120px] text-right">Acciones</TableHead>
+            <TableHead className="w-[160px] text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -107,15 +108,19 @@ export function DesignsTable({ designs, onDelete, onDuplicate, settings, isHydra
                 <TableCell>
                   {format(new Date(design.createdAt), "d MMM yyyy", { locale: es })}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                   <div className="flex justify-end gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); router.push(`/designs/${design.id}/edit`); }}>
+                     <Button variant="ghost" size="icon" className="h-8 w-8" title="Generar Presupuesto" onClick={(e) => { e.stopPropagation(); onConvertToQuote(design.id); }}>
+                        <ClipboardList className="h-4 w-4" />
+                        <span className="sr-only">Generar Presupuesto</span>
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" title="Editar" onClick={(e) => { e.stopPropagation(); router.push(`/designs/${design.id}/edit`); }}>
                         <Pencil className="h-4 w-4" />
                         <span className="sr-only">Editar</span>
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
+                         <Button variant="ghost" size="icon" className="h-8 w-8" title="Duplicar" onClick={(e) => e.stopPropagation()}>
                             <Copy className="h-4 w-4" />
                             <span className="sr-only">Duplicar</span>
                         </Button>
@@ -137,7 +142,7 @@ export function DesignsTable({ designs, onDelete, onDuplicate, settings, isHydra
                     </AlertDialog>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={(e) => e.stopPropagation()}>
+                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" title="Eliminar" onClick={(e) => e.stopPropagation()}>
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Eliminar</span>
                         </Button>

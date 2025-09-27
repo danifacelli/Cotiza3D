@@ -36,7 +36,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { QuotePartForm, PartFormValues } from "./quote-part-form"
 import { QuotePartsTable } from "./quote-parts-table"
 import { QuoteExtraCostForm, ExtraCostFormValues } from "./quote-extra-cost-form"
-import { QuoteExtraCostsTable } from "./quote-extra-costs-table"
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
 import { QuotePDF } from "./quote-pdf"
@@ -56,6 +55,7 @@ const PartSchema = z.object({
 const QuoteSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
   clientId: z.string().optional(),
+  designId: z.string().optional(),
   status: z.enum(["draft", "accepted", "in_preparation", "ready_to_deliver", "delivered", "canceled"]),
   parts: z.array(PartSchema).min(1, "Debes añadir al menos un material."),
   machineId: z.string().min(1, "Debes seleccionar una máquina."),
@@ -278,6 +278,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       createdAt: quote?.createdAt || new Date().toISOString(),
       name: data.name,
       clientId: data.clientId,
+      designId: data.designId,
       parts: data.parts,
       machineId: data.machineId,
       designCost: data.designCost || 0,

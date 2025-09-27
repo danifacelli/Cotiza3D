@@ -77,6 +77,7 @@ export interface Quote {
   id: string;
   name: string;
   clientId?: string;
+  designId?: string;
   status: 'draft' | 'accepted' | 'in_preparation' | 'ready_to_deliver' | 'delivered' | 'canceled';
   createdAt: string; // ISO date string
 
@@ -102,7 +103,7 @@ export interface Quote {
   finalPriceOverrideLocal?: number; // Manual override for the total price in Local Currency
 }
 
-export interface Design extends Omit<Quote, 'status' | 'clientId' | 'deliveryDate'> {
+export interface Design extends Omit<Quote, 'status' | 'clientId' | 'deliveryDate' | 'designId'> {
   status: 'draft'; // Designs are always draft
   photo1_base64?: string;
   photo2_base64?: string;
