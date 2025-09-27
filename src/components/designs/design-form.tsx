@@ -100,6 +100,7 @@ export function DesignForm({ design }: DesignFormProps) {
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(true);
   const [isPartFormOpen, setIsPartFormOpen] = useState(false);
   const [isExtraCostFormOpen, setIsExtraCostFormOpen] = useState(false);
+  const [imageToView, setImageToView] = useState<string | null>(null);
   
   const photo1InputRef = useRef<HTMLInputElement>(null);
   const photo2InputRef = useRef<HTMLInputElement>(null);
@@ -435,12 +436,22 @@ export function DesignForm({ design }: DesignFormProps) {
                   <FormLabel>Foto 1</FormLabel>
                   <div className="relative">
                     {watchedPhoto1 ? (
-                        <div className="relative h-32 w-full">
-                          <Image src={watchedPhoto1} alt="Preview 1" layout="fill" className="object-cover rounded-md border" />
-                          <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={() => setValue('photo1_base64', undefined)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <div className="relative h-32 w-full cursor-pointer group">
+                                    <Image src={watchedPhoto1} alt="Preview 1" layout="fill" className="object-cover rounded-md border" />
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <p className="text-white font-semibold">Ampliar</p>
+                                    </div>
+                                </div>
+                            </DialogTrigger>
+                            <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full z-10" onClick={() => setValue('photo1_base64', undefined)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                             <DialogContent className="max-w-3xl">
+                                <Image src={watchedPhoto1} alt="Preview 1 Ampliada" width={800} height={800} className="rounded-md w-full h-auto" />
+                            </DialogContent>
+                        </Dialog>
                     ) : (
                       <div className="flex items-center justify-center w-full">
                         <label htmlFor="photo1-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted">
@@ -456,14 +467,24 @@ export function DesignForm({ design }: DesignFormProps) {
                 </div>
                  <div className="space-y-2">
                   <FormLabel>Foto 2</FormLabel>
-                  <div className="relative">
+                   <div className="relative">
                     {watchedPhoto2 ? (
-                        <div className="relative h-32 w-full">
-                          <Image src={watchedPhoto2} alt="Preview 2" layout="fill" className="object-cover rounded-md border" />
-                          <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={() => setValue('photo2_base64', undefined)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <div className="relative h-32 w-full cursor-pointer group">
+                                    <Image src={watchedPhoto2} alt="Preview 2" layout="fill" className="object-cover rounded-md border" />
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <p className="text-white font-semibold">Ampliar</p>
+                                    </div>
+                                </div>
+                            </DialogTrigger>
+                            <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full z-10" onClick={() => setValue('photo2_base64', undefined)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                            <DialogContent className="max-w-3xl">
+                                <Image src={watchedPhoto2} alt="Preview 2 Ampliada" width={800} height={800} className="rounded-md w-full h-auto" />
+                            </DialogContent>
+                        </Dialog>
                     ) : (
                       <div className="flex items-center justify-center w-full">
                         <label htmlFor="photo2-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted">

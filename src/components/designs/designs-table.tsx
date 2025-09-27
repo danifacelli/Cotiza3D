@@ -31,10 +31,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { Pencil, Trash2, Copy, Tag, Image as ImageIcon, ClipboardList, Link2 } from "lucide-react"
+import { Pencil, Trash2, Copy, Tag, ClipboardList, Link2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn, formatCurrency } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
+import Image from 'next/image'
 
 export type DesignWithTotals = Design & {
   totalUSD: number;
@@ -82,8 +83,8 @@ export function DesignsTable({ designs, onDelete, onDuplicate, onConvertToQuote,
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[50px]">Imagen</TableHead>
             <TableHead className="w-[30%]">Nombre</TableHead>
-            <TableHead>Imágenes</TableHead>
             <TableHead className="text-right">Costo (USD)</TableHead>
             <TableHead className="text-right">Total (USD)</TableHead>
             <TableHead className="text-right">Total (Local)</TableHead>
@@ -96,16 +97,20 @@ export function DesignsTable({ designs, onDelete, onDuplicate, onConvertToQuote,
             designs.map((design) => {
               return (
               <TableRow key={design.id} className="cursor-pointer" onClick={() => router.push(`/designs/${design.id}/edit`)}>
-                <TableCell className="font-medium">{design.name}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    {(design.photo1_base64 || design.photo2_base64) ? (
-                      <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                    {design.photo1_base64 ? (
+                      <div className="w-10 h-10 rounded-md overflow-hidden relative">
+                         <Image src={design.photo1_base64} alt={design.name} layout="fill" className="object-cover" />
+                      </div>
                     ) : (
-                      <span className="text-xs text-muted-foreground">N/A</span>
+                      <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center text-muted-foreground">
+                        <span className="text-xs">N/A</span>
+                      </div>
                     )}
                   </div>
                 </TableCell>
+                <TableCell className="font-medium">{design.name}</TableCell>
                 <TableCell className="text-right font-mono">{formatCurrency(design.costUSD, "USD", decimalPlaces)}</TableCell>
                 <TableCell className="text-right font-mono">
                     <div className="flex items-center justify-end gap-2">
@@ -236,5 +241,3 @@ export function DesignsTable({ designs, onDelete, onDuplicate, onConvertToQuote,
     </div>
   )
 }
-
-    
