@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -87,7 +88,8 @@ export default function ClientsPage() {
         .filter(q => confirmedStatuses.includes(q.status))
         .reduce((sum, quote) => {
           const { breakdown } = calculateCosts(quote, materials, machines, settings);
-          return sum + (breakdown?.total ?? 0);
+          const quantity = quote.quantity || 1;
+          return sum + (breakdown?.total ?? 0) * quantity;
         }, 0);
 
       return {
@@ -157,9 +159,10 @@ export default function ClientsPage() {
       .filter(q => q.clientId === historyClient.id)
       .map(quote => {
         const { breakdown } = calculateCosts(quote, materials, machines, settings);
+        const quantity = quote.quantity || 1;
         return {
           ...quote,
-          totalUSD: breakdown?.total ?? 0,
+          totalUSD: (breakdown?.total ?? 0) * quantity,
         };
       })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

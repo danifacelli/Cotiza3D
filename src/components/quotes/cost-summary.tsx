@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import type { CostBreakdown } from "@/lib/calculations"
@@ -50,6 +51,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
   const { watch, setValue, getValues } = form;
   const finalPriceOverride = watch('finalPriceOverride');
   const finalPriceOverrideLocal = watch('finalPriceOverrideLocal');
+  const quantity = watch('quantity') || 1;
   const isManualPrice = useMemo(() => typeof finalPriceOverride === 'number', [finalPriceOverride]);
   
   const localCurrencyDecimalPlaces = localCurrencyInfo?.value === 'CLP' || localCurrencyInfo?.value === 'PYG' ? 0 : settings.currencyDecimalPlaces;
@@ -134,6 +136,10 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
     if (!exchangeRate || !localCurrencyInfo) return null;
     return formatCurrency(amount * exchangeRate, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale);
   };
+  
+  const finalTotal = breakdown.total * quantity;
+  const finalTotalLocal = exchangeRate ? finalTotal * exchangeRate : null;
+
 
   const getEnergyCostDetails = () => {
     if (!machine || !quoteInput.printHours || !settings) return "";
@@ -232,6 +238,36 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
         />
         
         <Separator />
+        
+        <SummaryRow
+          label="Total Unitario"
+          value={formatCurrency(breakdown.total, "USD", decimalPlaces)}
+          localValue={formatLocal(breakdown.total)}
+          className="font-semibold"
+        />
+        
+        <div className="space-y-2">
+            <FormField
+                control={form.control}
+                name="quantity"
+                render={({ field }) => (
+                <FormItem>
+                    <Label>Cantidad</Label>
+                    <FormControl>
+                        <Input 
+                            type="number" 
+                            min="1"
+                            step="1"
+                            className="text-right h-11 text-base"
+                            {...field}
+                            onFocus={(e) => e.target.select()}
+                            onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 1)}
+                        />
+                    </FormControl>
+                </FormItem>
+                )}
+            />
+        </div>
 
         <div className="pt-4 space-y-4">
             <div className="flex items-center justify-between">
@@ -247,9 +283,9 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
                 </div>
                  {!isManualPrice && (
                     <div className="text-2xl font-bold text-right">
-                         <div>{formatCurrency(breakdown.total, "USD", decimalPlaces)}</div>
-                         {exchangeRate && localCurrencyInfo && (
-                            <div className="text-lg font-semibold text-muted-foreground">{formatCurrency(breakdown.total * exchangeRate, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale)}</div>
+                         <div>{formatCurrency(finalTotal, "USD", decimalPlaces)}</div>
+                         {finalTotalLocal !== null && localCurrencyInfo && (
+                            <div className="text-lg font-semibold text-muted-foreground">{formatCurrency(finalTotalLocal, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale)}</div>
                          )}
                     </div>
                 )}
@@ -262,13 +298,13 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
                         name="finalPriceOverride"
                         render={({ field }) => (
                         <FormItem>
-                             <Label>Precio Total (USD)</Label>
+                             <Label>Precio Total Unitario (USD)</Label>
                             <div className="flex items-center gap-2">
                                 <FormControl>
                                     <Input 
                                         type="number" 
                                         step="0.01" 
-                                        className="text-2xl font-bold h-12 text-right"
+                                        className="font-bold h-10 text-right"
                                         value={field.value ?? ""}
                                         onFocus={(e) => e.target.select()}
                                         onChange={(e) => {
@@ -281,7 +317,7 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
                                         }}
                                     />
                                 </FormControl>
-                                <Button type="button" variant="outline" size="icon" className="h-12 w-12 flex-shrink-0" onClick={handleCalculateFromUSD} aria-label="Calcular desde USD">
+                                <Button type="button" variant="outline" size="icon" className="h-10 w-10 flex-shrink-0" onClick={handleCalculateFromUSD} aria-label="Calcular desde USD">
                                     <Calculator className="h-5 w-5" />
                                 </Button>
                             </div>
@@ -290,24 +326,30 @@ export function CostSummary({ breakdown, settings, machine, quoteInput, actions,
                     />
                     {localCurrencyInfo && exchangeRate && (
                          <FormItem>
-                            <Label>Precio Total ({localCurrencyInfo.value})</Label>
+                            <Label>Precio Total Unitario ({localCurrencyInfo.value})</Label>
                             <div className="flex items-center gap-2">
                                 <FormControl>
                                     <Input 
                                         type="number"
                                         step={localCurrencyDecimalPlaces === 0 ? "1" : "0.01"}
-                                        className="text-2xl font-bold h-12 text-right"
+                                        className="font-bold h-10 text-right"
                                         value={localPriceInput}
                                         onFocus={(e) => e.target.select()}
                                         onChange={(e) => setLocalPriceInput(e.target.value)}
                                     />
                                 </FormControl>
-                                <Button type="button" variant="outline" size="icon" className="h-12 w-12 flex-shrink-0" onClick={handleCalculateFromLocal} aria-label="Calcular desde moneda local">
+                                <Button type="button" variant="outline" size="icon" className="h-10 w-10 flex-shrink-0" onClick={handleCalculateFromLocal} aria-label="Calcular desde moneda local">
                                     <Calculator className="h-5 w-5" />
                                 </Button>
                             </div>
                          </FormItem>
                     )}
+                    <div className="text-2xl font-bold text-right pt-2">
+                        <div>{formatCurrency(finalTotal, "USD", decimalPlaces)}</div>
+                        {finalTotalLocal !== null && localCurrencyInfo && (
+                        <div className="text-lg font-semibold text-muted-foreground">{formatCurrency(finalTotalLocal, localCurrencyInfo.value, localCurrencyDecimalPlaces, 'symbol', localCurrencyInfo.locale)}</div>
+                        )}
+                    </div>
                  </div>
             )}
         </div>

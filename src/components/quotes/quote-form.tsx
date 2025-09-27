@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { useForm, useFieldArray } from "react-hook-form"
@@ -58,6 +59,7 @@ const QuoteSchema = z.object({
   clientId: z.string().optional(),
   designId: z.string().optional(),
   status: z.enum(["draft", "accepted", "in_preparation", "ready_to_deliver", "delivered", "canceled"]),
+  quantity: z.coerce.number().min(1, "La cantidad debe ser al menos 1.").default(1),
   parts: z.array(PartSchema).min(1, "Debes añadir al menos un material."),
   machineId: z.string().min(1, "Debes seleccionar una máquina."),
   designCost: z.coerce.number().optional(),
@@ -118,6 +120,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
     resolver: zodResolver(QuoteSchema),
     defaultValues: quote ? {
         ...quote,
+        quantity: quote.quantity || 1,
         printHours: quote.printHours ? Math.floor(quote.printHours) : 0,
         printMinutes: quote.printHours ? Math.floor((quote.printHours * 60) % 60) : 0,
         printSeconds: quote.printHours ? Math.round((quote.printHours * 3600) % 60) : 0,
@@ -128,6 +131,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
         name: "",
         clientId: "",
         status: "draft",
+        quantity: 1,
         parts: [],
         machineId: machines.length > 0 ? machines[0].id : "",
         designCost: 0,
@@ -280,6 +284,7 @@ export function QuoteForm({ quote }: QuoteFormProps) {
       name: data.name,
       clientId: data.clientId,
       designId: data.designId,
+      quantity: data.quantity,
       parts: data.parts,
       machineId: data.machineId,
       designCost: data.designCost || 0,

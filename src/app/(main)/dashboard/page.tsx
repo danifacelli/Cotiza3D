@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import Link from "next/link"
@@ -97,8 +98,9 @@ export default function Dashboard() {
     const totals = confirmedQuotes.reduce((acc, quote) => {
         const { breakdown } = calculateCosts(quote, materials, machines, settings);
         if (breakdown) {
-            acc.revenue += breakdown.total;
-            acc.cost += breakdown.costSubtotal;
+            const quantity = quote.quantity || 1;
+            acc.revenue += breakdown.total * quantity;
+            acc.cost += breakdown.costSubtotal * quantity;
         }
         return acc;
     }, { revenue: 0, cost: 0 });

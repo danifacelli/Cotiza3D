@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -77,16 +78,17 @@ export default function QuotesPage() {
     
     return quotes.map(quote => {
       const { breakdown } = calculateCosts(quote, materials, machines, settings);
-      const totalUSD = breakdown?.total ?? 0;
+      const quantity = quote.quantity || 1;
+      const totalUSD = (breakdown?.total ?? 0) * quantity;
       
       let totalLocal: number;
       if (breakdown?.isManualPrice && typeof quote.finalPriceOverrideLocal === 'number') {
-        totalLocal = quote.finalPriceOverrideLocal;
+        totalLocal = quote.finalPriceOverrideLocal * quantity;
       } else {
         totalLocal = exchangeRate ? totalUSD * exchangeRate : 0;
       }
 
-      const costUSD = breakdown?.costSubtotal ?? 0;
+      const costUSD = (breakdown?.costSubtotal ?? 0) * quantity;
       const isManualPrice = breakdown?.isManualPrice ?? false;
       const client = clients.find(c => c.id === quote.clientId);
       return { ...quote, clientName: client?.name, totalUSD, totalLocal, costUSD, isManualPrice };

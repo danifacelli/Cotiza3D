@@ -81,6 +81,7 @@ export interface Quote {
   designId?: string;
   status: 'draft' | 'accepted' | 'in_preparation' | 'ready_to_deliver' | 'delivered' | 'canceled';
   createdAt: string; // ISO date string
+  quantity: number;
 
   parts: QuotePart[];
   
@@ -104,7 +105,7 @@ export interface Quote {
   finalPriceOverrideLocal?: number; // Manual override for the total price in Local Currency
 }
 
-export interface Design extends Omit<Quote, 'status' | 'clientId' | 'deliveryDate' | 'designId'> {
+export interface Design extends Omit<Quote, 'status' | 'clientId' | 'deliveryDate' | 'designId' | 'quantity'> {
   status: 'draft'; // Designs are always draft
   photo1_base64?: string;
   photo2_base64?: string;
@@ -120,3 +121,4 @@ export interface LinkItem {
   link: string;
   createdAt: string;
 }
+
