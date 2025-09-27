@@ -36,7 +36,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { DesignPartForm, PartFormValues } from "./design-part-form"
 import { DesignPartsTable } from "./design-parts-table"
 import { DesignExtraCostForm, ExtraCostFormValues } from "./design-extra-cost-form"
-import { DesignExtraCostsTable } from "./design-extra-costs-table"
 import Image from "next/image"
 
 const PartSchema = z.object({
@@ -449,6 +448,9 @@ export function DesignForm({ design }: DesignFormProps) {
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                              <DialogContent className="max-w-3xl">
+                                <DialogHeader className="sr-only">
+                                    <DialogTitle>Vista Previa de Imagen 1</DialogTitle>
+                                </DialogHeader>
                                 <Image src={watchedPhoto1} alt="Preview 1 Ampliada" width={800} height={800} className="rounded-md w-full h-auto" />
                             </DialogContent>
                         </Dialog>
@@ -482,6 +484,9 @@ export function DesignForm({ design }: DesignFormProps) {
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                             <DialogContent className="max-w-3xl">
+                                <DialogHeader className="sr-only">
+                                    <DialogTitle>Vista Previa de Imagen 2</DialogTitle>
+                                </DialogHeader>
                                 <Image src={watchedPhoto2} alt="Preview 2 Ampliada" width={800} height={800} className="rounded-md w-full h-auto" />
                             </DialogContent>
                         </Dialog>
