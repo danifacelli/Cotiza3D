@@ -88,7 +88,7 @@ export default function QuotesPage() {
         totalLocal = exchangeRate ? totalUSD * exchangeRate : 0;
       }
 
-      const costUSD = (breakdown?.costSubtotal ?? 0) * quantity;
+      const costUSD = breakdown?.costSubtotal ?? 0;
       const isManualPrice = breakdown?.isManualPrice ?? false;
       const client = clients.find(c => c.id === quote.clientId);
       return { ...quote, clientName: client?.name, totalUSD, totalLocal, costUSD, isManualPrice };

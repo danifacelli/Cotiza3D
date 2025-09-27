@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { useRouter } from "next/navigation"
@@ -86,7 +87,8 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
             <TableHead>Cliente</TableHead>
             <TableHead className="w-[30%]">Nombre</TableHead>
             <TableHead>Estado</TableHead>
-            <TableHead className="text-right">Costo (USD)</TableHead>
+            <TableHead>Cant.</TableHead>
+            <TableHead className="text-right">Costo Unidad</TableHead>
             <TableHead className="text-right">Total (USD)</TableHead>
             <TableHead className="text-right">Total (Local)</TableHead>
             <TableHead>Fecha</TableHead>
@@ -131,6 +133,7 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </TableCell>
+                <TableCell className="cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{quote.quantity}</TableCell>
                 <TableCell className="text-right font-mono cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{formatCurrency(quote.costUSD, "USD", decimalPlaces)}</TableCell>
                 <TableCell className="text-right font-mono cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
                     <div className="flex items-center justify-end gap-2">
@@ -206,7 +209,7 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={8} className="h-24 text-center">
+              <TableCell colSpan={9} className="h-24 text-center">
                 No hay presupuestos que coincidan con el filtro.
               </TableCell>
             </TableRow>
