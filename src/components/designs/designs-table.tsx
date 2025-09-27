@@ -87,7 +87,7 @@ export function DesignsTable({ designs, onDelete, onDuplicate, onConvertToQuote,
             <TableHead className="w-[30%]">Nombre</TableHead>
             <TableHead className="text-right">Costo (USD)</TableHead>
             <TableHead className="text-right">Total (USD)</TableHead>
-            <TableHead className="text-right">Total (Local)</TableHead>
+            <TableHead className="text-right">Total ({localCurrencyCode})</TableHead>
             <TableHead>Fecha</TableHead>
             <TableHead className="w-[200px] text-right">Acciones</TableHead>
           </TableRow>
@@ -150,6 +150,12 @@ export function DesignsTable({ designs, onDelete, onDuplicate, onConvertToQuote,
                           onClick={() => handleCopyLink(design.instagramLink!, 'Instagram')}
                         >
                           Copiar link de Instagram
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          disabled={!design.link}
+                          onClick={() => handleCopyLink(design.link!, 'Otro Link')}
+                        >
+                          Copiar otro link
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
