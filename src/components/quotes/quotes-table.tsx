@@ -86,7 +86,7 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
           <TableHeader>
             <TableRow>
               <TableHead>Cliente</TableHead>
-              <TableHead className="w-[30%]">Nombre</TableHead>
+              <TableHead>Nombre</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Cant.</TableHead>
               <TableHead className="text-right">Costo Unidad</TableHead>
@@ -135,7 +135,16 @@ export function QuotesTable({ quotes, onDelete, onDuplicate, onUpdateStatus, set
                       </DropdownMenu>
                   </TableCell>
                   <TableCell className="cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{quote.quantity}</TableCell>
-                  <TableCell className="text-right font-mono cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>{formatCurrency(quote.costUSD, "USD", decimalPlaces)}</TableCell>
+                  <TableCell className="text-right font-mono cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
+                     <Tooltip>
+                        <TooltipTrigger asChild>
+                           <span>{formatCurrency(quote.costUSD, "USD", decimalPlaces)}</span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                           <p>{formatCurrency(quote.costUSD, localCurrencyCode, localCurrencyCode === 'CLP' || localCurrencyCode === 'PYG' ? 0 : decimalPlaces, 'symbol')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                  </TableCell>
                   <TableCell className="text-right font-mono cursor-pointer" onClick={() => router.push(`/quotes/${quote.id}/edit`)}>
                       <Tooltip>
                         <TooltipTrigger asChild>
